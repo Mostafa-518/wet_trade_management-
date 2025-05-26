@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -31,6 +30,7 @@ interface Subcontract {
 
 interface SubcontractTableProps {
   onCreateNew: () => void;
+  onViewDetail: (contractId: string) => void;
 }
 
 const mockSubcontracts: Subcontract[] = [
@@ -40,11 +40,11 @@ const mockSubcontracts: Subcontract[] = [
     project: 'Residential Complex A',
     subcontractor: 'Al-Khaleej Construction',
     trade: 'Electrical',
-    item: 'Power Distribution Panels',
-    quantity: 15,
-    unitPrice: 2500,
-    total: 37500,
-    budget: 35000,
+    item: 'Multiple Items',
+    quantity: 1,
+    unitPrice: 67500,
+    total: 67500,
+    budget: 65000,
     variance: 2500,
     status: 'overbudget',
     responsibilities: ['Installation', 'Testing', 'Documentation']
@@ -81,7 +81,7 @@ const mockSubcontracts: Subcontract[] = [
   }
 ];
 
-export function SubcontractTable({ onCreateNew }: SubcontractTableProps) {
+export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTableProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredData, setFilteredData] = useState(mockSubcontracts);
 
@@ -160,8 +160,12 @@ export function SubcontractTable({ onCreateNew }: SubcontractTableProps) {
           </TableHeader>
           <TableBody>
             {filteredData.map((contract) => (
-              <TableRow key={contract.id}>
-                <TableCell className="font-medium">{contract.contractId}</TableCell>
+              <TableRow 
+                key={contract.id}
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => onViewDetail(contract.contractId)}
+              >
+                <TableCell className="font-medium text-blue-600">{contract.contractId}</TableCell>
                 <TableCell>{contract.project}</TableCell>
                 <TableCell>{contract.subcontractor}</TableCell>
                 <TableCell>{contract.trade}</TableCell>
@@ -175,8 +179,8 @@ export function SubcontractTable({ onCreateNew }: SubcontractTableProps) {
                 </TableCell>
                 <TableCell>{getStatusBadge(contract.status, contract.variance)}</TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="sm">
+                  <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                    <Button variant="ghost" size="sm" onClick={() => onViewDetail(contract.contractId)}>
                       <Eye className="h-4 w-4" />
                     </Button>
                     <Button variant="ghost" size="sm">

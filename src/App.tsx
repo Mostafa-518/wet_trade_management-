@@ -7,16 +7,28 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Layout } from '@/components/Layout';
 import { SubcontractTable } from '@/components/SubcontractTable';
 import { SubcontractStepper } from '@/components/SubcontractStepper';
+import { SubcontractDetailView } from '@/components/SubcontractDetailView';
 
 const queryClient = new QueryClient();
 
 const App = () => {
   const [currentPage, setCurrentPage] = useState('subcontracts');
   const [showStepper, setShowStepper] = useState(false);
+  const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
 
   const handleSaveSubcontract = (data: any) => {
     console.log('Saving subcontract:', data);
     // Here you would typically save to your backend
+  };
+
+  const handleViewDetail = (contractId: string) => {
+    setSelectedContractId(contractId);
+    setCurrentPage('subcontract-detail');
+  };
+
+  const handleBackToList = () => {
+    setSelectedContractId(null);
+    setCurrentPage('subcontracts');
   };
 
   const renderPage = () => {
@@ -24,7 +36,10 @@ const App = () => {
       case 'subcontracts':
         return (
           <>
-            <SubcontractTable onCreateNew={() => setShowStepper(true)} />
+            <SubcontractTable 
+              onCreateNew={() => setShowStepper(true)} 
+              onViewDetail={handleViewDetail}
+            />
             {showStepper && (
               <SubcontractStepper
                 onClose={() => setShowStepper(false)}
@@ -33,6 +48,14 @@ const App = () => {
             )}
           </>
         );
+      case 'subcontract-detail':
+        return selectedContractId ? (
+          <SubcontractDetailView
+            contractId={selectedContractId}
+            onBack={handleBackToList}
+            onEdit={() => setShowStepper(true)}
+          />
+        ) : null;
       case 'dashboard':
         return (
           <div className="space-y-6">
