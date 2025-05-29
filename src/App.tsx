@@ -1,8 +1,10 @@
+
 import React, { useState } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
 import { Layout } from '@/components/Layout';
 import { SubcontractTable } from '@/components/SubcontractTable';
 import { SubcontractStepper } from '@/components/SubcontractStepper';
@@ -54,19 +56,37 @@ const App = () => {
     switch (currentPage) {
       case 'subcontracts':
         return (
+          <SubcontractTable 
+            onCreateNew={() => setShowStepper(true)}
+            onViewDetail={handleViewDetail}
+          />
+        );
+      case 'subcontractors':
+        return (
           <SubcontractorsTable 
             onCreateNew={() => console.log('Create new subcontractor')}
             onViewDetail={handleViewSubcontractorDetail}
             onEdit={handleEditSubcontractor}
           />
         );
-      case 'subcontract-detail':
+      case 'subcontractor-detail':
         return (
           <div className="space-y-4">
             <Button onClick={handleBackToSubcontractorsList}>← Back to Subcontractors</Button>
             <div className="text-center py-12">
               <h2 className="text-2xl font-bold mb-2">Subcontractor Detail</h2>
               <p className="text-muted-foreground">ID: {selectedSubcontractorId}</p>
+              <p className="text-muted-foreground">Detailed view coming soon...</p>
+            </div>
+          </div>
+        );
+      case 'subcontract-detail':
+        return (
+          <div className="space-y-4">
+            <Button onClick={handleBackToList}>← Back to Subcontracts</Button>
+            <div className="text-center py-12">
+              <h2 className="text-2xl font-bold mb-2">Subcontract Detail</h2>
+              <p className="text-muted-foreground">ID: {selectedContractId}</p>
               <p className="text-muted-foreground">Detailed view coming soon...</p>
             </div>
           </div>
