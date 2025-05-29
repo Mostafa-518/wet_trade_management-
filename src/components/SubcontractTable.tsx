@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { AdvancedSearch } from './subcontract/AdvancedSearch';
 
 interface Subcontract {
   id: string;
@@ -31,6 +32,11 @@ interface Subcontract {
 interface SubcontractTableProps {
   onCreateNew: () => void;
   onViewDetail: (contractId: string) => void;
+}
+
+interface SearchCondition {
+  field: string;
+  value: string;
 }
 
 const mockSubcontracts: Subcontract[] = [
@@ -84,8 +90,9 @@ const mockSubcontracts: Subcontract[] = [
 export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTableProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredData, setFilteredData] = useState(mockSubcontracts);
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
 
-  const handleSearch = (value: string) => {
+  const handleSimpleSearch = (value: string) => {
     setSearchTerm(value);
     const filtered = mockSubcontracts.filter(item =>
       item.contractId.toLowerCase().includes(value.toLowerCase()) ||
@@ -93,6 +100,24 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
       item.subcontractor.toLowerCase().includes(value.toLowerCase()) ||
       item.trade.toLowerCase().includes(value.toLowerCase())
     );
+    setFilteredData(filtered);
+  };
+
+  const handleAdvancedSearch = (conditions: SearchCondition[]) => {
+    if (conditions.length === 0) {
+      setFilteredData(mockSubcontracts);
+      return;
+    }
+
+    const filtered = mockSubcontracts.filter(item => {
+      return conditions.every(condition => {
+        const fieldValue = item[condition.field as keyof Subcontract];
+        if (typeof fieldValue === 'string') {
+          return fieldValue.toLowerCase().includes(condition.value.toLowerCase());
+        }
+        return false;
+      });
+    });
     setFilteredData(filtered);
   };
 
@@ -128,15 +153,31 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
         </Button>
       </div>
 
-      {/* Search */}
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-        <Input
-          placeholder="Search by Contract ID, Project, Trade, or Subcontractor..."
-          value={searchTerm}
-          onChange={(e) => handleSearch(e.target.value)}
-          className="pl-10"
-        />
+      {/* Search Section */}
+      <div className="space-y-4">
+        {/* Simple Search */}
+        <div className="flex gap-2 items-center">
+          <div className="relative max-w-md flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder="Quick search by Contract ID, Project, Trade, or Subcontractor..."
+              value={searchTerm}
+              onChange={(e) => handleSimpleSearch(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+          >
+            Advanced Search
+          </Button>
+        </div>
+
+        {/* Advanced Search */}
+        {showAdvancedSearch && (
+          <AdvancedSearch onSearch={handleAdvancedSearch} />
+        )}
       </div>
 
       {/* Table */}
