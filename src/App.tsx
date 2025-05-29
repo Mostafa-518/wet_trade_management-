@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -8,6 +7,8 @@ import { Layout } from '@/components/Layout';
 import { SubcontractTable } from '@/components/SubcontractTable';
 import { SubcontractStepper } from '@/components/SubcontractStepper';
 import { SubcontractDetailView } from '@/components/SubcontractDetailView';
+import { SubcontractorsTable } from '@/components/SubcontractorsTable';
+import { Subcontractor } from '@/types/subcontractor';
 
 const queryClient = new QueryClient();
 
@@ -15,6 +16,8 @@ const App = () => {
   const [currentPage, setCurrentPage] = useState('subcontracts');
   const [showStepper, setShowStepper] = useState(false);
   const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
+  const [selectedSubcontractorId, setSelectedSubcontractorId] = useState<string | null>(null);
+  const [editingSubcontractor, setEditingSubcontractor] = useState<Subcontractor | null>(null);
 
   const handleSaveSubcontract = (data: any) => {
     console.log('Saving subcontract:', data);
@@ -31,31 +34,43 @@ const App = () => {
     setCurrentPage('subcontracts');
   };
 
+  const handleViewSubcontractorDetail = (subcontractorId: string) => {
+    setSelectedSubcontractorId(subcontractorId);
+    setCurrentPage('subcontractor-detail');
+  };
+
+  const handleEditSubcontractor = (subcontractor: Subcontractor) => {
+    setEditingSubcontractor(subcontractor);
+    // This would open a form/modal for editing
+  };
+
+  const handleBackToSubcontractorsList = () => {
+    setSelectedSubcontractorId(null);
+    setEditingSubcontractor(null);
+    setCurrentPage('subcontractors');
+  };
+
   const renderPage = () => {
     switch (currentPage) {
       case 'subcontracts':
         return (
-          <>
-            <SubcontractTable 
-              onCreateNew={() => setShowStepper(true)} 
-              onViewDetail={handleViewDetail}
-            />
-            {showStepper && (
-              <SubcontractStepper
-                onClose={() => setShowStepper(false)}
-                onSave={handleSaveSubcontract}
-              />
-            )}
-          </>
+          <SubcontractorsTable 
+            onCreateNew={() => console.log('Create new subcontractor')}
+            onViewDetail={handleViewSubcontractorDetail}
+            onEdit={handleEditSubcontractor}
+          />
         );
       case 'subcontract-detail':
-        return selectedContractId ? (
-          <SubcontractDetailView
-            contractId={selectedContractId}
-            onBack={handleBackToList}
-            onEdit={() => setShowStepper(true)}
-          />
-        ) : null;
+        return (
+          <div className="space-y-4">
+            <Button onClick={handleBackToSubcontractorsList}>← Back to Subcontractors</Button>
+            <div className="text-center py-12">
+              <h2 className="text-2xl font-bold mb-2">Subcontractor Detail</h2>
+              <p className="text-muted-foreground">ID: {selectedSubcontractorId}</p>
+              <p className="text-muted-foreground">Detailed view coming soon...</p>
+            </div>
+          </div>
+        );
       case 'dashboard':
         return (
           <div className="space-y-6">
