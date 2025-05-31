@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -9,6 +10,7 @@ import { SubcontractTable } from '@/components/SubcontractTable';
 import { SubcontractStepper } from '@/components/SubcontractStepper';
 import { SubcontractDetailView } from '@/components/SubcontractDetailView';
 import { SubcontractorsTable } from '@/components/SubcontractorsTable';
+import { SubcontractorDetailView } from '@/components/SubcontractorDetailView';
 import { Subcontractor } from '@/types/subcontractor';
 import { SubcontractorForm } from '@/components/SubcontractorForm';
 import { SubcontractorFormData } from '@/types/subcontractor';
@@ -109,13 +111,18 @@ const App = () => {
           />
         );
       case 'subcontractor-detail':
-        return (
+        return selectedSubcontractorId ? (
+          <SubcontractorDetailView
+            subcontractorId={selectedSubcontractorId}
+            onBack={handleBackToSubcontractorsList}
+            onEdit={handleEditSubcontractor}
+          />
+        ) : (
           <div className="space-y-4">
             <Button onClick={handleBackToSubcontractorsList}>← Back to Subcontractors</Button>
             <div className="text-center py-12">
-              <h2 className="text-2xl font-bold mb-2">Subcontractor Detail</h2>
-              <p className="text-muted-foreground">ID: {selectedSubcontractorId}</p>
-              <p className="text-muted-foreground">Detailed view coming soon...</p>
+              <h2 className="text-2xl font-bold mb-2">Subcontractor Not Found</h2>
+              <p className="text-muted-foreground">The requested subcontractor could not be found.</p>
             </div>
           </div>
         );
