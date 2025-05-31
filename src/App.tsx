@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -11,12 +10,15 @@ import { SubcontractStepper } from '@/components/SubcontractStepper';
 import { SubcontractDetailView } from '@/components/SubcontractDetailView';
 import { SubcontractorsTable } from '@/components/SubcontractorsTable';
 import { Subcontractor } from '@/types/subcontractor';
+import { SubcontractorForm } from '@/components/SubcontractorForm';
+import { SubcontractorFormData } from '@/types/subcontractor';
 
 const queryClient = new QueryClient();
 
 const App = () => {
   const [currentPage, setCurrentPage] = useState('subcontracts');
   const [showStepper, setShowStepper] = useState(false);
+  const [showSubcontractorForm, setShowSubcontractorForm] = useState(false);
   const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
   const [selectedSubcontractorId, setSelectedSubcontractorId] = useState<string | null>(null);
   const [editingSubcontractor, setEditingSubcontractor] = useState<Subcontractor | null>(null);
@@ -24,6 +26,18 @@ const App = () => {
   const handleSaveSubcontract = (data: any) => {
     console.log('Saving subcontract:', data);
     // Here you would typically save to your backend
+  };
+
+  const handleSaveSubcontractor = (data: SubcontractorFormData) => {
+    console.log('Saving subcontractor:', data);
+    if (editingSubcontractor) {
+      console.log('Updating existing subcontractor:', editingSubcontractor.id);
+    } else {
+      console.log('Creating new subcontractor');
+    }
+    // Here you would typically save to your backend
+    setShowSubcontractorForm(false);
+    setEditingSubcontractor(null);
   };
 
   const handleViewDetail = (contractId: string) => {
@@ -43,16 +57,40 @@ const App = () => {
 
   const handleEditSubcontractor = (subcontractor: Subcontractor) => {
     setEditingSubcontractor(subcontractor);
-    // This would open a form/modal for editing
+    setShowSubcontractorForm(true);
+  };
+
+  const handleCreateNewSubcontractor = () => {
+    setEditingSubcontractor(null);
+    setShowSubcontractorForm(true);
+  };
+
+  const handleDeleteSubcontractor = (subcontractorId: string) => {
+    console.log('Deleting subcontractor:', subcontractorId);
+    // Here you would typically delete from your backend
   };
 
   const handleBackToSubcontractorsList = () => {
     setSelectedSubcontractorId(null);
     setEditingSubcontractor(null);
+    setShowSubcontractorForm(false);
     setCurrentPage('subcontractors');
   };
 
   const renderPage = () => {
+    if (showSubcontractorForm) {
+      return (
+        <SubcontractorForm
+          subcontractor={editingSubcontractor}
+          onSubmit={handleSaveSubcontractor}
+          onCancel={() => {
+            setShowSubcontractorForm(false);
+            setEditingSubcontractor(null);
+          }}
+        />
+      );
+    }
+
     switch (currentPage) {
       case 'subcontracts':
         return (
@@ -64,9 +102,10 @@ const App = () => {
       case 'subcontractors':
         return (
           <SubcontractorsTable 
-            onCreateNew={() => console.log('Create new subcontractor')}
+            onCreateNew={handleCreateNewSubcontractor}
             onViewDetail={handleViewSubcontractorDetail}
             onEdit={handleEditSubcontractor}
+            onDelete={handleDeleteSubcontractor}
           />
         );
       case 'subcontractor-detail':

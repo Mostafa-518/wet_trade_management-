@@ -5,6 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Plus, Eye, Edit, Trash2, Users, Star } from 'lucide-react';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import {
   Table,
   TableBody,
   TableCell,
@@ -19,9 +30,10 @@ interface SubcontractorsTableProps {
   onCreateNew: () => void;
   onViewDetail: (subcontractorId: string) => void;
   onEdit: (subcontractor: Subcontractor) => void;
+  onDelete?: (subcontractorId: string) => void;
 }
 
-export function SubcontractorsTable({ onCreateNew, onViewDetail, onEdit }: SubcontractorsTableProps) {
+export function SubcontractorsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: SubcontractorsTableProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredData, setFilteredData] = useState(mockSubcontractors);
 
@@ -35,6 +47,13 @@ export function SubcontractorsTable({ onCreateNew, onViewDetail, onEdit }: Subco
       subcontractor.trades.some(trade => trade.toLowerCase().includes(value.toLowerCase()))
     );
     setFilteredData(filtered);
+  };
+
+  const handleDelete = (subcontractorId: string) => {
+    if (onDelete) {
+      onDelete(subcontractorId);
+    }
+    console.log('Delete subcontractor:', subcontractorId);
   };
 
   const getStatusBadge = (status: string) => {
@@ -154,9 +173,31 @@ export function SubcontractorsTable({ onCreateNew, onViewDetail, onEdit }: Subco
                     <Button variant="ghost" size="sm" onClick={() => onEdit(subcontractor)}>
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Subcontractor</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete "{subcontractor.name}"? 
+                            This action cannot be undone and will remove all associated data.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(subcontractor.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </TableCell>
               </TableRow>
