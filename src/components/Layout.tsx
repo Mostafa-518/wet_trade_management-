@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
-import { Building2, FileText, Users, Settings, BarChart3, AlertTriangle, ClipboardList, Wrench } from 'lucide-react';
+import { Building2, FileText, Users, Settings, BarChart3, AlertTriangle, ClipboardList, Wrench, FolderOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface LayoutProps {
@@ -11,6 +11,7 @@ interface LayoutProps {
 
 const menuItems = [
   { id: 'dashboard', title: 'Dashboard', icon: BarChart3, path: '/' },
+  { id: 'projects', title: 'Projects', icon: FolderOpen, path: '/projects' },
   { id: 'subcontracts', title: 'Subcontracts', icon: FileText, path: '/subcontracts' },
   { id: 'subcontractors', title: 'Subcontractors', icon: Building2, path: '/subcontractors' },
   { id: 'trades', title: 'Trades & Items', icon: Wrench, path: '/trades' },

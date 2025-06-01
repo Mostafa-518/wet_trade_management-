@@ -7,6 +7,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Layout } from '@/components/Layout';
 import { Dashboard } from '@/pages/Dashboard';
+import { Projects } from '@/pages/Projects';
+import { ProjectDetail } from '@/pages/ProjectDetail';
 import { Subcontracts } from '@/pages/Subcontracts';
 import { SubcontractDetail } from '@/pages/SubcontractDetail';
 import { Subcontractors } from '@/pages/Subcontractors';
@@ -25,6 +27,8 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/projects" element={<Projects />} />
+              <Route path="/projects/:projectId" element={<ProjectDetail />} />
               <Route path="/subcontracts" element={<Subcontracts />} />
               <Route path="/subcontracts/:contractId" element={<SubcontractDetail />} />
               <Route path="/subcontractors" element={<Subcontractors />} />
