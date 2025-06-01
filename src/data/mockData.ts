@@ -13,6 +13,41 @@ export const mockSubcontractors: Subcontractor[] = [
   { id: '3', name: 'Elite HVAC Systems', rep: 'Mohamed Farid', phone: '+20 123 456 7892' },
 ];
 
+export const mockContracts = [
+  {
+    id: 'SC001',
+    projectName: 'Downtown Office Complex',
+    subcontractor: 'Al-Khaleej Construction',
+    trade: 'General Construction',
+    value: '$2,500,000',
+    status: 'Active'
+  },
+  {
+    id: 'SC002',
+    projectName: 'Residential Tower Phase 1',
+    subcontractor: 'Modern Plumbing Co.',
+    trade: 'Plumbing',
+    value: '$150,000',
+    status: 'Draft'
+  },
+  {
+    id: 'SC003',
+    projectName: 'Shopping Mall Renovation',
+    subcontractor: 'Elite HVAC Systems',
+    trade: 'HVAC',
+    value: '$300,000',
+    status: 'Active'
+  },
+  {
+    id: 'SC004',
+    projectName: 'Downtown Office Complex',
+    subcontractor: 'Elite HVAC Systems',
+    trade: 'HVAC',
+    value: '$180,000',
+    status: 'Draft'
+  }
+];
+
 export const mockTrades: Record<string, TradeItemOption[]> = {
   'Electrical': [
     { item: 'Power Distribution Panels', unit: 'Each' },

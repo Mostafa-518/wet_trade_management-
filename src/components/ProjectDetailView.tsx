@@ -10,7 +10,7 @@ import { mockContracts } from '@/data/mockData';
 interface ProjectDetailViewProps {
   projectId: string;
   onBack: () => void;
-  onEdit: () => void;
+  onEdit: (project: any) => void;
 }
 
 export function ProjectDetailView({ projectId, onBack, onEdit }: ProjectDetailViewProps) {
@@ -41,7 +41,7 @@ export function ProjectDetailView({ projectId, onBack, onEdit }: ProjectDetailVi
             <p className="text-muted-foreground">{project.code}</p>
           </div>
         </div>
-        <Button onClick={onEdit}>
+        <Button onClick={() => onEdit(project)}>
           <Edit className="h-4 w-4 mr-2" />
           Edit Project
         </Button>
