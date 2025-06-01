@@ -1,27 +1,39 @@
 
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
 import { Building2, FileText, Users, Settings, BarChart3, AlertTriangle, ClipboardList, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface LayoutProps {
   children: React.ReactNode;
-  currentPage: string;
-  onNavigate: (page: string) => void;
 }
 
 const menuItems = [
-  { id: 'dashboard', title: 'Dashboard', icon: BarChart3 },
-  { id: 'subcontracts', title: 'Subcontracts', icon: FileText },
-  { id: 'subcontractors', title: 'Subcontractors', icon: Building2 },
-  { id: 'trades', title: 'Trades & Items', icon: Wrench },
-  { id: 'responsibilities', title: 'Responsibilities', icon: ClipboardList },
-  { id: 'users', title: 'User Management', icon: Users },
-  { id: 'alerts', title: 'Alerts', icon: AlertTriangle },
-  { id: 'settings', title: 'Settings', icon: Settings },
+  { id: 'dashboard', title: 'Dashboard', icon: BarChart3, path: '/' },
+  { id: 'subcontracts', title: 'Subcontracts', icon: FileText, path: '/subcontracts' },
+  { id: 'subcontractors', title: 'Subcontractors', icon: Building2, path: '/subcontractors' },
+  { id: 'trades', title: 'Trades & Items', icon: Wrench, path: '/trades' },
+  { id: 'responsibilities', title: 'Responsibilities', icon: ClipboardList, path: '/responsibilities' },
+  { id: 'users', title: 'User Management', icon: Users, path: '/users' },
+  { id: 'alerts', title: 'Alerts', icon: AlertTriangle, path: '/alerts' },
+  { id: 'settings', title: 'Settings', icon: Settings, path: '/settings' },
 ];
 
-export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
+export function Layout({ children }: LayoutProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const getCurrentPage = () => {
+    const currentPath = location.pathname;
+    const currentItem = menuItems.find(item => item.path === currentPath);
+    return currentItem?.id || 'dashboard';
+  };
+
+  const handleNavigate = (path: string) => {
+    navigate(path);
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -40,8 +52,8 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.id}>
                   <SidebarMenuButton 
-                    onClick={() => onNavigate(item.id)}
-                    isActive={currentPage === item.id}
+                    onClick={() => handleNavigate(item.path)}
+                    isActive={getCurrentPage() === item.id}
                     className="w-full justify-start"
                   >
                     <item.icon className="h-4 w-4" />

@@ -25,7 +25,7 @@ export function Subcontracts() {
     return (
       <SubcontractStepper
         onSave={handleSaveSubcontract}
-        onCancel={() => setShowStepper(false)}
+        onClose={() => setShowStepper(false)}
       />
     );
   }
