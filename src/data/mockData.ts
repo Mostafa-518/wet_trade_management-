@@ -1,5 +1,6 @@
 
 import { Project, Subcontractor, TradeItemOption } from '@/types/subcontract';
+import { mockResponsibilities } from '@/data/responsibilitiesData';
 
 export const mockProjects: Project[] = [
   { id: '1', name: 'Residential Complex A' },
@@ -66,12 +67,5 @@ export const mockTrades: Record<string, TradeItemOption[]> = {
   ]
 };
 
-export const responsibilities = [
-  'Installation',
-  'Testing',
-  'Documentation',
-  'Commissioning',
-  'Maintenance Setup',
-  'Training',
-  'Warranty Support'
-];
+// Use the centralized responsibilities from the new system
+export const responsibilities = mockResponsibilities.filter(r => r.isActive).map(r => r.name);

@@ -15,6 +15,7 @@ import { Subcontractors } from '@/pages/Subcontractors';
 import { SubcontractorDetail } from '@/pages/SubcontractorDetail';
 import { Trades } from '@/pages/Trades';
 import { TradeDetail } from '@/pages/TradeDetail';
+import { Responsibilities } from '@/pages/Responsibilities';
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const App = () => {
               <Route path="/subcontractors/:subcontractorId" element={<SubcontractorDetail />} />
               <Route path="/trades" element={<Trades />} />
               <Route path="/trades/:tradeId" element={<TradeDetail />} />
+              <Route path="/responsibilities" element={<Responsibilities />} />
               <Route path="*" element={
                 <div className="text-center py-12">
                   <h2 className="text-2xl font-bold mb-2">Page Not Found</h2>
