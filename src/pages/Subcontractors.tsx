@@ -4,11 +4,16 @@ import { useNavigate } from 'react-router-dom';
 import { SubcontractorsTable } from '@/components/SubcontractorsTable';
 import { SubcontractorForm } from '@/components/SubcontractorForm';
 import { Subcontractor, SubcontractorFormData } from '@/types/subcontractor';
+import { useData } from '@/contexts/DataContext';
+import { useToast } from '@/hooks/use-toast';
 
 export function Subcontractors() {
   const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
   const [editingSubcontractor, setEditingSubcontractor] = useState<Subcontractor | null>(null);
+  
+  const { addSubcontractor, updateSubcontractor, deleteSubcontractor } = useData();
+  const { toast } = useToast();
 
   const handleCreateNew = () => {
     setEditingSubcontractor(null);
@@ -25,15 +30,26 @@ export function Subcontractors() {
   };
 
   const handleDelete = (subcontractorId: string) => {
-    console.log('Deleting subcontractor:', subcontractorId);
+    deleteSubcontractor(subcontractorId);
+    toast({
+      title: "Subcontractor deleted",
+      description: "The subcontractor has been removed successfully."
+    });
   };
 
   const handleSave = (data: SubcontractorFormData) => {
-    console.log('Saving subcontractor:', data);
     if (editingSubcontractor) {
-      console.log('Updating existing subcontractor:', editingSubcontractor.id);
+      updateSubcontractor(editingSubcontractor.id, data);
+      toast({
+        title: "Subcontractor updated",
+        description: "The subcontractor has been updated successfully."
+      });
     } else {
-      console.log('Creating new subcontractor');
+      addSubcontractor(data);
+      toast({
+        title: "Subcontractor created",
+        description: "A new subcontractor has been created successfully."
+      });
     }
     setShowForm(false);
     setEditingSubcontractor(null);

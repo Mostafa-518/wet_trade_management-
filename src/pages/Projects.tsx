@@ -4,11 +4,16 @@ import { useNavigate } from 'react-router-dom';
 import { ProjectsTable } from '@/components/ProjectsTable';
 import { ProjectForm } from '@/components/ProjectForm';
 import { Project, ProjectFormData } from '@/types/project';
+import { useData } from '@/contexts/DataContext';
+import { useToast } from '@/hooks/use-toast';
 
 export function Projects() {
   const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  
+  const { addProject, updateProject, deleteProject } = useData();
+  const { toast } = useToast();
 
   const handleCreateNew = () => {
     setEditingProject(null);
@@ -25,15 +30,26 @@ export function Projects() {
   };
 
   const handleDelete = (projectId: string) => {
-    console.log('Deleting project:', projectId);
+    deleteProject(projectId);
+    toast({
+      title: "Project deleted",
+      description: "The project has been removed successfully."
+    });
   };
 
   const handleSave = (data: ProjectFormData) => {
-    console.log('Saving project:', data);
     if (editingProject) {
-      console.log('Updating existing project:', editingProject.id);
+      updateProject(editingProject.id, data);
+      toast({
+        title: "Project updated",
+        description: "The project has been updated successfully."
+      });
     } else {
-      console.log('Creating new project');
+      addProject(data);
+      toast({
+        title: "Project created",
+        description: "A new project has been created successfully."
+      });
     }
     setShowForm(false);
     setEditingProject(null);

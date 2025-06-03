@@ -5,6 +5,8 @@ import { TradesTable } from '@/components/TradesTable';
 import { TradeForm } from '@/components/TradeForm';
 import { TradeItemForm } from '@/components/TradeItemForm';
 import { Trade, TradeFormData, TradeItem, TradeItemFormData } from '@/types/trade';
+import { useData } from '@/contexts/DataContext';
+import { useToast } from '@/hooks/use-toast';
 
 export function Trades() {
   const navigate = useNavigate();
@@ -13,6 +15,9 @@ export function Trades() {
   const [editingTrade, setEditingTrade] = useState<Trade | null>(null);
   const [editingItem, setEditingItem] = useState<TradeItem | null>(null);
   const [selectedTradeId, setSelectedTradeId] = useState<string>('');
+  
+  const { addTrade, updateTrade, deleteTrade, addTradeItem, updateTradeItem, deleteTradeItem } = useData();
+  const { toast } = useToast();
 
   const handleCreateNewTrade = () => {
     setEditingTrade(null);
@@ -29,15 +34,26 @@ export function Trades() {
   };
 
   const handleDeleteTrade = (tradeId: string) => {
-    console.log('Deleting trade:', tradeId);
+    deleteTrade(tradeId);
+    toast({
+      title: "Trade deleted",
+      description: "The trade has been removed successfully."
+    });
   };
 
   const handleSaveTrade = (data: TradeFormData) => {
-    console.log('Saving trade:', data);
     if (editingTrade) {
-      console.log('Updating existing trade:', editingTrade.id);
+      updateTrade(editingTrade.id, data);
+      toast({
+        title: "Trade updated",
+        description: "The trade has been updated successfully."
+      });
     } else {
-      console.log('Creating new trade');
+      addTrade(data);
+      toast({
+        title: "Trade created",
+        description: "A new trade has been created successfully."
+      });
     }
     setShowTradeForm(false);
     setEditingTrade(null);
@@ -59,12 +75,27 @@ export function Trades() {
     setShowItemForm(true);
   };
 
+  const handleDeleteItem = (itemId: string) => {
+    deleteTradeItem(itemId);
+    toast({
+      title: "Trade item deleted",
+      description: "The trade item has been removed successfully."
+    });
+  };
+
   const handleSaveItem = (data: TradeItemFormData) => {
-    console.log('Saving trade item:', data);
     if (editingItem) {
-      console.log('Updating existing item:', editingItem.id);
+      updateTradeItem(editingItem.id, data);
+      toast({
+        title: "Trade item updated",
+        description: "The trade item has been updated successfully."
+      });
     } else {
-      console.log('Creating new item');
+      addTradeItem(data);
+      toast({
+        title: "Trade item created",
+        description: "A new trade item has been created successfully."
+      });
     }
     setShowItemForm(false);
     setEditingItem(null);
@@ -104,6 +135,9 @@ export function Trades() {
       onViewDetail={handleViewDetail}
       onEdit={handleEditTrade}
       onDelete={handleDeleteTrade}
+      onAddItem={handleAddItem}
+      onEditItem={handleEditItem}
+      onDeleteItem={handleDeleteItem}
     />
   );
 }
