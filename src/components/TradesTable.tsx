@@ -1,11 +1,12 @@
+
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Search, Eye, Edit, Trash2, FileDown } from 'lucide-react';
-import { mockTrades } from '@/data/tradesData';
 import { Trade, TradeSearchFilters, TradeItem } from '@/types/trade';
+import { useData } from '@/contexts/DataContext';
 
 interface TradesTableProps {
   onCreateNew: () => void;
@@ -26,6 +27,7 @@ export function TradesTable({
   onEditItem, 
   onDeleteItem 
 }: TradesTableProps) {
+  const { trades } = useData();
   const [searchFilters, setSearchFilters] = useState<TradeSearchFilters>({
     name: '',
     category: '',
@@ -34,7 +36,7 @@ export function TradesTable({
 
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
 
-  const filteredTrades = mockTrades.filter(trade => {
+  const filteredTrades = trades.filter(trade => {
     return (
       trade.name.toLowerCase().includes(searchFilters.name.toLowerCase()) &&
       trade.category.toLowerCase().includes(searchFilters.category.toLowerCase()) &&
