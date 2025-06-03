@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { FormData } from '@/types/subcontract';
-import { responsibilities } from '@/data/mockData';
+import { useData } from '@/contexts/DataContext';
 
 interface ResponsibilitiesStepProps {
   formData: FormData;
@@ -12,6 +12,8 @@ interface ResponsibilitiesStepProps {
 }
 
 export function ResponsibilitiesStep({ formData, setFormData }: ResponsibilitiesStepProps) {
+  const { responsibilities } = useData();
+
   const toggleResponsibility = (resp: string) => {
     setFormData(prev => ({
       ...prev,
@@ -31,13 +33,13 @@ export function ResponsibilitiesStep({ formData, setFormData }: Responsibilities
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
           {responsibilities.map(resp => (
             <Button
-              key={resp}
-              variant={formData.responsibilities.includes(resp) ? "default" : "outline"}
+              key={resp.id}
+              variant={formData.responsibilities.includes(resp.name) ? "default" : "outline"}
               size="sm"
-              onClick={() => toggleResponsibility(resp)}
+              onClick={() => toggleResponsibility(resp.name)}
               className="justify-start"
             >
-              {resp}
+              {resp.name}
             </Button>
           ))}
         </div>

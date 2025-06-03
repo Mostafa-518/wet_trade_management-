@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ArrowLeft, Edit, Wrench, Package, Plus } from 'lucide-react';
-import { mockTrades, mockTradeItems } from '@/data/tradesData';
+import { useData } from '@/contexts/DataContext';
 
 interface TradeDetailViewProps {
   tradeId: string;
@@ -16,8 +16,10 @@ interface TradeDetailViewProps {
 }
 
 export function TradeDetailView({ tradeId, onBack, onEdit, onAddItem, onEditItem }: TradeDetailViewProps) {
-  const trade = mockTrades.find(t => t.id === tradeId);
-  const tradeItems = mockTradeItems.filter(item => item.tradeId === tradeId);
+  const { trades, tradeItems } = useData();
+  
+  const trade = trades.find(t => t.id === tradeId);
+  const items = tradeItems.filter(item => item.tradeId === tradeId);
 
   if (!trade) {
     return (
@@ -50,7 +52,7 @@ export function TradeDetailView({ tradeId, onBack, onEdit, onAddItem, onEditItem
       <Tabs defaultValue="info" className="space-y-6">
         <TabsList>
           <TabsTrigger value="info">Trade Info</TabsTrigger>
-          <TabsTrigger value="items">Items ({tradeItems.length})</TabsTrigger>
+          <TabsTrigger value="items">Items ({items.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="info">
@@ -99,7 +101,7 @@ export function TradeDetailView({ tradeId, onBack, onEdit, onAddItem, onEditItem
               </div>
             </CardHeader>
             <CardContent>
-              {tradeItems.length > 0 ? (
+              {items.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -111,17 +113,17 @@ export function TradeDetailView({ tradeId, onBack, onEdit, onAddItem, onEditItem
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {tradeItems.map(item => (
+                    {items.map(item => (
                       <TableRow key={item.id}>
-                        <td className="font-medium">{item.name}</td>
-                        <td>{item.unit}</td>
-                        <td>{item.category}</td>
-                        <td>${item.unitPrice.toLocaleString()}</td>
-                        <td className="text-right">
+                        <TableCell className="font-medium">{item.name}</TableCell>
+                        <TableCell>{item.unit}</TableCell>
+                        <TableCell>{item.category}</TableCell>
+                        <TableCell>${item.unitPrice.toLocaleString()}</TableCell>
+                        <TableCell className="text-right">
                           <Button variant="outline" size="sm" onClick={() => onEditItem(item)}>
                             <Edit className="h-4 w-4" />
                           </Button>
-                        </td>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

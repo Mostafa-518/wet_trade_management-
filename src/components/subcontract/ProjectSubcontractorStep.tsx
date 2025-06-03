@@ -3,7 +3,7 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FormData } from '@/types/subcontract';
-import { mockProjects, mockSubcontractors } from '@/data/mockData';
+import { useData } from '@/contexts/DataContext';
 
 interface ProjectSubcontractorStepProps {
   formData: FormData;
@@ -11,6 +11,8 @@ interface ProjectSubcontractorStepProps {
 }
 
 export function ProjectSubcontractorStep({ formData, setFormData }: ProjectSubcontractorStepProps) {
+  const { projects, subcontractors } = useData();
+
   return (
     <div className="space-y-4">
       <div>
@@ -20,7 +22,7 @@ export function ProjectSubcontractorStep({ formData, setFormData }: ProjectSubco
             <SelectValue placeholder="Choose a project..." />
           </SelectTrigger>
           <SelectContent>
-            {mockProjects.map(project => (
+            {projects.map(project => (
               <SelectItem key={project.id} value={project.name}>
                 {project.name}
               </SelectItem>
@@ -36,11 +38,11 @@ export function ProjectSubcontractorStep({ formData, setFormData }: ProjectSubco
             <SelectValue placeholder="Choose a subcontractor..." />
           </SelectTrigger>
           <SelectContent>
-            {mockSubcontractors.map(sub => (
+            {subcontractors.map(sub => (
               <SelectItem key={sub.id} value={sub.name}>
                 <div>
                   <div className="font-medium">{sub.name}</div>
-                  <div className="text-sm text-muted-foreground">{sub.rep} • {sub.phone}</div>
+                  <div className="text-sm text-muted-foreground">{sub.contactPerson} • {sub.phone}</div>
                 </div>
               </SelectItem>
             ))}
