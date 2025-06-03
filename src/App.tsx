@@ -3,7 +3,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
 import { DataProvider } from '@/contexts/DataContext';
-import { Index } from '@/pages/Index';
+import Index from '@/pages/Index';
 import { Dashboard } from '@/pages/Dashboard';
 import { Projects } from '@/pages/Projects';
 import { ProjectDetail } from '@/pages/ProjectDetail';
@@ -14,7 +14,7 @@ import { Trades } from '@/pages/Trades';
 import { TradeDetail } from '@/pages/TradeDetail';
 import { Subcontracts } from '@/pages/Subcontracts';
 import { SubcontractDetail } from '@/pages/SubcontractDetail';
-import { NotFound } from '@/pages/NotFound';
+import NotFound from '@/pages/NotFound';
 
 function App() {
   return (
