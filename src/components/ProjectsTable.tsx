@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Search, FileText, Edit, Trash2, Eye, FileDown } from 'lucide-react';
-import { mockProjects } from '@/data/projectsData';
 import { Project, ProjectSearchFilters } from '@/types/project';
+import { useData } from '@/contexts/DataContext';
 
 interface ProjectsTableProps {
   onCreateNew: () => void;
@@ -16,7 +16,7 @@ interface ProjectsTableProps {
 }
 
 export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: ProjectsTableProps) {
-  const [projects] = useState<Project[]>(mockProjects);
+  const { projects } = useData();
   const [searchFilters, setSearchFilters] = useState<ProjectSearchFilters>({
     name: '',
     code: '',

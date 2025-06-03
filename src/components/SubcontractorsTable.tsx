@@ -24,7 +24,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Subcontractor } from '@/types/subcontractor';
-import { mockSubcontractors } from '@/data/subcontractorsData';
+import { useData } from '@/contexts/DataContext';
 
 interface SubcontractorsTableProps {
   onCreateNew: () => void;
@@ -34,19 +34,19 @@ interface SubcontractorsTableProps {
 }
 
 export function SubcontractorsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: SubcontractorsTableProps) {
+  const { subcontractors } = useData();
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredData, setFilteredData] = useState(mockSubcontractors);
+
+  const filteredData = subcontractors.filter(subcontractor =>
+    subcontractor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    subcontractor.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    subcontractor.contactPerson.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    subcontractor.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    subcontractor.trades.some(trade => trade.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
-    const filtered = mockSubcontractors.filter(subcontractor =>
-      subcontractor.name.toLowerCase().includes(value.toLowerCase()) ||
-      subcontractor.companyName.toLowerCase().includes(value.toLowerCase()) ||
-      subcontractor.contactPerson.toLowerCase().includes(value.toLowerCase()) ||
-      subcontractor.email.toLowerCase().includes(value.toLowerCase()) ||
-      subcontractor.trades.some(trade => trade.toLowerCase().includes(value.toLowerCase()))
-    );
-    setFilteredData(filtered);
   };
 
   const handleDelete = (subcontractorId: string) => {
@@ -226,7 +226,7 @@ export function SubcontractorsTable({ onCreateNew, onViewDetail, onEdit, onDelet
         </div>
         <div className="text-center">
           <div className="text-2xl font-bold text-purple-600">
-            {(filteredData.reduce((sum, s) => sum + s.rating, 0) / filteredData.length).toFixed(1)}
+            {filteredData.length > 0 ? (filteredData.reduce((sum, s) => sum + s.rating, 0) / filteredData.length).toFixed(1) : '0.0'}
           </div>
           <div className="text-sm text-muted-foreground">Average Rating</div>
         </div>
