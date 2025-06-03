@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,16 +5,27 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Search, Eye, Edit, Trash2, FileDown } from 'lucide-react';
 import { mockTrades } from '@/data/tradesData';
-import { Trade, TradeSearchFilters } from '@/types/trade';
+import { Trade, TradeSearchFilters, TradeItem } from '@/types/trade';
 
 interface TradesTableProps {
   onCreateNew: () => void;
   onViewDetail: (tradeId: string) => void;
   onEdit: (trade: Trade) => void;
   onDelete: (tradeId: string) => void;
+  onAddItem: (tradeId: string) => void;
+  onEditItem: (item: TradeItem) => void;
+  onDeleteItem: (itemId: string) => void;
 }
 
-export function TradesTable({ onCreateNew, onViewDetail, onEdit, onDelete }: TradesTableProps) {
+export function TradesTable({ 
+  onCreateNew, 
+  onViewDetail, 
+  onEdit, 
+  onDelete, 
+  onAddItem, 
+  onEditItem, 
+  onDeleteItem 
+}: TradesTableProps) {
   const [searchFilters, setSearchFilters] = useState<TradeSearchFilters>({
     name: '',
     category: '',
