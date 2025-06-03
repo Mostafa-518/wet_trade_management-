@@ -8,7 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
 import { Responsibility, ResponsibilitySearchFilters } from '@/types/responsibility';
-import { mockResponsibilities, responsibilityCategories } from '@/data/responsibilitiesData';
+import { responsibilityCategories } from '@/data/responsibilitiesData';
+import { useData } from '@/contexts/DataContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface ResponsibilitiesTableProps {
   onCreateNew: () => void;
@@ -18,13 +20,16 @@ interface ResponsibilitiesTableProps {
 }
 
 export function ResponsibilitiesTable({ onCreateNew, onEdit, onDelete, onViewDetail }: ResponsibilitiesTableProps) {
+  const { responsibilities } = useData();
+  const { toast } = useToast();
+  
   const [searchFilters, setSearchFilters] = useState<ResponsibilitySearchFilters>({
     name: '',
     category: '',
     isActive: ''
   });
 
-  const filteredResponsibilities = mockResponsibilities.filter(responsibility => {
+  const filteredResponsibilities = responsibilities.filter(responsibility => {
     return (
       responsibility.name.toLowerCase().includes(searchFilters.name.toLowerCase()) &&
       (searchFilters.category === '' || searchFilters.category === 'all' || responsibility.category === searchFilters.category) &&
@@ -40,6 +45,14 @@ export function ResponsibilitiesTable({ onCreateNew, onEdit, onDelete, onViewDet
 
   const clearFilters = () => {
     setSearchFilters({ name: '', category: '', isActive: '' });
+  };
+  
+  const handleDelete = (responsibilityId: string) => {
+    onDelete(responsibilityId);
+    toast({
+      title: "Responsibility deleted",
+      description: "The responsibility has been successfully deleted."
+    });
   };
 
   return (
@@ -156,7 +169,7 @@ export function ResponsibilitiesTable({ onCreateNew, onEdit, onDelete, onViewDet
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => onDelete(responsibility.id)}
+                        onClick={() => handleDelete(responsibility.id)}
                         className="text-destructive hover:text-destructive"
                       >
                         <Trash2 className="h-4 w-4" />

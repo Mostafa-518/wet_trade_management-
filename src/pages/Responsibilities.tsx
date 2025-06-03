@@ -5,12 +5,17 @@ import { ResponsibilitiesTable } from '@/components/ResponsibilitiesTable';
 import { ResponsibilityForm } from '@/components/ResponsibilityForm';
 import { ResponsibilityDetailView } from '@/components/ResponsibilityDetailView';
 import { Responsibility, ResponsibilityFormData } from '@/types/responsibility';
+import { useData } from '@/contexts/DataContext';
+import { useToast } from '@/hooks/use-toast';
 
 export function Responsibilities() {
   const navigate = useNavigate();
   const [view, setView] = useState<'table' | 'form' | 'detail'>('table');
   const [editingResponsibility, setEditingResponsibility] = useState<Responsibility | null>(null);
   const [viewingResponsibilityId, setViewingResponsibilityId] = useState<string>('');
+  
+  const { responsibilities, addResponsibility, updateResponsibility, deleteResponsibility } = useData();
+  const { toast } = useToast();
 
   const handleCreateNew = () => {
     setEditingResponsibility(null);
@@ -23,8 +28,11 @@ export function Responsibilities() {
   };
 
   const handleDelete = (responsibilityId: string) => {
-    console.log('Deleting responsibility:', responsibilityId);
-    // In a real app, this would make an API call
+    deleteResponsibility(responsibilityId);
+    toast({
+      title: "Responsibility deleted",
+      description: "The responsibility has been removed successfully."
+    });
   };
 
   const handleViewDetail = (responsibilityId: string) => {
@@ -33,11 +41,18 @@ export function Responsibilities() {
   };
 
   const handleSave = (data: ResponsibilityFormData) => {
-    console.log('Saving responsibility:', data);
     if (editingResponsibility) {
-      console.log('Updating existing responsibility:', editingResponsibility.id);
+      updateResponsibility(editingResponsibility.id, data);
+      toast({
+        title: "Responsibility updated",
+        description: "The responsibility has been updated successfully."
+      });
     } else {
-      console.log('Creating new responsibility');
+      const newResponsibility = addResponsibility(data);
+      toast({
+        title: "Responsibility created",
+        description: "A new responsibility has been created successfully."
+      });
     }
     setView('table');
     setEditingResponsibility(null);

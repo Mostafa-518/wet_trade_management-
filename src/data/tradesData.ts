@@ -3,82 +3,123 @@ import { Trade, TradeItem } from '@/types/trade';
 
 export const mockTrades: Trade[] = [
   {
-    id: 'TRD001',
+    id: 'TRADE001',
     name: 'Electrical',
-    category: 'MEP',
-    description: 'Electrical systems installation and maintenance',
+    category: 'Building Services',
+    description: 'All electrical installations and systems',
     createdAt: '2024-01-15',
     updatedAt: '2024-01-15'
   },
   {
-    id: 'TRD002',
+    id: 'TRADE002',
     name: 'Plumbing',
-    category: 'MEP',
-    description: 'Water supply and drainage systems',
-    createdAt: '2024-02-10',
-    updatedAt: '2024-02-10'
+    category: 'Building Services',
+    description: 'Water supply, drainage, and sanitary systems',
+    createdAt: '2024-01-16',
+    updatedAt: '2024-01-16'
   },
   {
-    id: 'TRD003',
+    id: 'TRADE003',
     name: 'HVAC',
-    category: 'MEP',
-    description: 'Heating, Ventilation, and Air Conditioning',
-    createdAt: '2024-03-05',
-    updatedAt: '2024-03-05'
+    category: 'Building Services',
+    description: 'Heating, Ventilation, and Air Conditioning systems',
+    createdAt: '2024-01-17',
+    updatedAt: '2024-01-17'
   },
   {
-    id: 'TRD004',
-    name: 'General Construction',
-    category: 'Civil',
-    description: 'General construction and structural work',
-    createdAt: '2024-03-20',
-    updatedAt: '2024-03-20'
+    id: 'TRADE004',
+    name: 'Masonry',
+    category: 'Construction',
+    description: 'Brick and block work, stone installations',
+    createdAt: '2024-01-18',
+    updatedAt: '2024-01-18'
+  },
+  {
+    id: 'TRADE005',
+    name: 'Painting',
+    category: 'Finishing',
+    description: 'Interior and exterior painting services',
+    createdAt: '2024-01-19',
+    updatedAt: '2024-01-19'
   }
 ];
 
 export const mockTradeItems: TradeItem[] = [
   {
-    id: 'ITM001',
-    tradeId: 'TRD001',
+    id: 'ITEM001',
+    tradeId: 'TRADE001',
     tradeName: 'Electrical',
     name: 'Power Distribution Panels',
     unit: 'Each',
-    category: 'Power Systems',
-    unitPrice: 2500,
-    createdAt: '2024-01-15',
-    updatedAt: '2024-01-15'
+    category: 'Panels',
+    unitPrice: 1500,
+    createdAt: '2024-01-20',
+    updatedAt: '2024-01-20'
   },
   {
-    id: 'ITM002',
-    tradeId: 'TRD001',
+    id: 'ITEM002',
+    tradeId: 'TRADE001',
     tradeName: 'Electrical',
     name: 'Lighting Systems',
     unit: 'Sqm',
     category: 'Lighting',
-    unitPrice: 150,
-    createdAt: '2024-01-16',
-    updatedAt: '2024-01-16'
+    unitPrice: 250,
+    createdAt: '2024-01-21',
+    updatedAt: '2024-01-21'
   },
   {
-    id: 'ITM003',
-    tradeId: 'TRD002',
+    id: 'ITEM003',
+    tradeId: 'TRADE002',
     tradeName: 'Plumbing',
     name: 'Water Supply System',
     unit: 'Set',
-    category: 'Water Systems',
-    unitPrice: 5000,
-    createdAt: '2024-02-10',
-    updatedAt: '2024-02-10'
+    category: 'Supply',
+    unitPrice: 3200,
+    createdAt: '2024-01-22',
+    updatedAt: '2024-01-22'
   },
   {
-    id: 'ITM004',
-    tradeId: 'TRD003',
+    id: 'ITEM004',
+    tradeId: 'TRADE003',
     tradeName: 'HVAC',
     name: 'Central Air Conditioning',
     unit: 'Each',
-    category: 'Cooling Systems',
-    unitPrice: 15000,
-    createdAt: '2024-03-05',
-    updatedAt: '2024-03-05'
+    category: 'Cooling',
+    unitPrice: 5000,
+    createdAt: '2024-01-23',
+    updatedAt: '2024-01-23'
   }
+];
+
+export const tradeCategories = [
+  'Building Services',
+  'Construction',
+  'Finishing',
+  'Structural',
+  'Infrastructure',
+  'Landscaping',
+  'Specialty'
+];
+
+export const tradeItemCategories = [
+  'Panels',
+  'Lighting',
+  'Supply',
+  'Cooling',
+  'Heating',
+  'Materials',
+  'Equipment',
+  'Labor'
+];
+
+export const tradeUnits = [
+  'Each',
+  'Sqm',
+  'Set',
+  'Lm',
+  'Lot',
+  'Roll',
+  'Box',
+  'Day',
+  'Hour'
 ];
