@@ -27,13 +27,15 @@ export function ResponsibilitiesTable({ onCreateNew, onEdit, onDelete, onViewDet
   const filteredResponsibilities = mockResponsibilities.filter(responsibility => {
     return (
       responsibility.name.toLowerCase().includes(searchFilters.name.toLowerCase()) &&
-      (searchFilters.category === '' || responsibility.category === searchFilters.category) &&
-      (searchFilters.isActive === '' || responsibility.isActive.toString() === searchFilters.isActive)
+      (searchFilters.category === '' || searchFilters.category === 'all' || responsibility.category === searchFilters.category) &&
+      (searchFilters.isActive === '' || searchFilters.isActive === 'all' || responsibility.isActive.toString() === searchFilters.isActive)
     );
   });
 
   const handleFilterChange = (field: keyof ResponsibilitySearchFilters, value: string) => {
-    setSearchFilters(prev => ({ ...prev, [field]: value }));
+    // Convert "all" back to empty string for filtering logic
+    const filterValue = value === 'all' ? '' : value;
+    setSearchFilters(prev => ({ ...prev, [field]: filterValue }));
   };
 
   const clearFilters = () => {
@@ -71,12 +73,12 @@ export function ResponsibilitiesTable({ onCreateNew, onEdit, onDelete, onViewDet
               />
             </div>
             <div>
-              <Select value={searchFilters.category} onValueChange={(value) => handleFilterChange('category', value)}>
+              <Select value={searchFilters.category || 'all'} onValueChange={(value) => handleFilterChange('category', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Filter by category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Categories</SelectItem>
+                  <SelectItem value="all">All Categories</SelectItem>
                   {responsibilityCategories.map(category => (
                     <SelectItem key={category} value={category}>{category}</SelectItem>
                   ))}
@@ -84,12 +86,12 @@ export function ResponsibilitiesTable({ onCreateNew, onEdit, onDelete, onViewDet
               </Select>
             </div>
             <div>
-              <Select value={searchFilters.isActive} onValueChange={(value) => handleFilterChange('isActive', value)}>
+              <Select value={searchFilters.isActive || 'all'} onValueChange={(value) => handleFilterChange('isActive', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Status</SelectItem>
+                  <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="true">Active</SelectItem>
                   <SelectItem value="false">Inactive</SelectItem>
                 </SelectContent>
