@@ -18,7 +18,7 @@ export function ProjectDetailView({ project, onBack, onEdit }: ProjectDetailView
   
   // Find subcontracts for this project
   const projectSubcontracts = subcontracts.filter(subcontract => 
-    subcontract.project.id === project.id
+    subcontract.project === project.name
   );
 
   return (
@@ -92,16 +92,16 @@ export function ProjectDetailView({ project, onBack, onEdit }: ProjectDetailView
                     <div key={subcontract.id} className="border rounded-lg p-4 hover:bg-muted/50">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h3 className="font-semibold">{subcontract.subcontractor.company}</h3>
+                          <h3 className="font-semibold">{subcontract.subcontractor}</h3>
                           <p className="text-sm text-muted-foreground">
-                            {subcontract.tradeItems.map(item => item.tradeName).join(', ')}
+                            {subcontract.tradeItems.map(item => item.trade).join(', ')}
                           </p>
                           <p className="text-sm text-muted-foreground">Value: ${subcontract.totalValue.toLocaleString()}</p>
                         </div>
                         <div className="text-right">
                           <span className={`px-2 py-1 rounded-full text-xs ${
                             subcontract.status === 'active' ? 'bg-green-100 text-green-800' :
-                            subcontract.status === 'draft' ? 'bg-yellow-100 text-yellow-800' :
+                            subcontract.status === 'completed' ? 'bg-blue-100 text-blue-800' :
                             'bg-gray-100 text-gray-800'
                           }`}>
                             {subcontract.status}
