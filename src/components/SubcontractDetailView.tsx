@@ -5,89 +5,19 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ArrowLeft, Download, Edit, FileText, Building2, User, Calendar, DollarSign } from 'lucide-react';
-
-interface TradeItem {
-  id: string;
-  trade: string;
-  item: string;
-  unit: string;
-  quantity: number;
-  unitPrice: number;
-  total: number;
-}
-
-interface SubcontractDetail {
-  id: string;
-  contractId: string;
-  project: string;
-  subcontractor: string;
-  subcontractorContact: {
-    rep: string;
-    phone: string;
-    email: string;
-  };
-  tradeItems: TradeItem[];
-  totalAmount: number;
-  budget: number;
-  variance: number;
-  status: 'active' | 'completed' | 'overbudget';
-  responsibilities: string[];
-  createdDate: string;
-  startDate: string;
-  endDate: string;
-  pdfUrl?: string;
-}
+import { Subcontract } from '@/types/subcontract';
+import { useData } from '@/contexts/DataContext';
 
 interface SubcontractDetailViewProps {
-  contractId: string;
+  subcontract: Subcontract;
   onBack: () => void;
   onEdit: () => void;
 }
 
-// Mock data - in real app this would come from API
-const mockSubcontractDetail: SubcontractDetail = {
-  id: '1',
-  contractId: 'SC-2024-001',
-  project: 'Residential Complex A',
-  subcontractor: 'Al-Khaleej Construction',
-  subcontractorContact: {
-    rep: 'Ahmed Ali',
-    phone: '+20 123 456 7890',
-    email: 'ahmed.ali@alkhaleej.com'
-  },
-  tradeItems: [
-    {
-      id: '1',
-      trade: 'Electrical',
-      item: 'Power Distribution Panels',
-      unit: 'Each',
-      quantity: 15,
-      unitPrice: 2500,
-      total: 37500
-    },
-    {
-      id: '2',
-      trade: 'Electrical',
-      item: 'Lighting Systems',
-      unit: 'Sqm',
-      quantity: 200,
-      unitPrice: 150,
-      total: 30000
-    }
-  ],
-  totalAmount: 67500,
-  budget: 65000,
-  variance: 2500,
-  status: 'overbudget',
-  responsibilities: ['Installation', 'Testing', 'Documentation', 'Commissioning'],
-  createdDate: '2024-01-15',
-  startDate: '2024-02-01',
-  endDate: '2024-04-30',
-  pdfUrl: '/contracts/SC-2024-001.pdf'
-};
+export function SubcontractDetailView({ subcontract, onBack, onEdit }: SubcontractDetailViewProps) {
+  const { subcontractors } = useData();
 
-export function SubcontractDetailView({ contractId, onBack, onEdit }: SubcontractDetailViewProps) {
-  const contract = mockSubcontractDetail; // In real app, fetch by contractId
+  const subcontractorData = subcontractors.find(s => s.name === subcontract.subcontractor);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -97,8 +27,8 @@ export function SubcontractDetailView({ contractId, onBack, onEdit }: Subcontrac
     }).format(amount);
   };
 
-  const getStatusBadge = (status: string, variance: number) => {
-    if (status === 'overbudget' || variance > 0) {
+  const getStatusBadge = (status: string) => {
+    if (status === 'overbudget') {
       return <Badge variant="destructive">Over Budget</Badge>;
     }
     if (status === 'completed') {
@@ -116,63 +46,33 @@ export function SubcontractDetailView({ contractId, onBack, onEdit }: Subcontrac
           Back to Subcontracts
         </Button>
         <div className="flex-1">
-          <h1 className="text-3xl font-bold">{contract.contractId}</h1>
-          <p className="text-muted-foreground">{contract.project}</p>
+          <h1 className="text-3xl font-bold">{subcontract.contractId}</h1>
+          <p className="text-muted-foreground">{subcontract.project}</p>
         </div>
         <div className="flex items-center gap-2">
-          {getStatusBadge(contract.status, contract.variance)}
+          {getStatusBadge(subcontract.status)}
           <Button variant="outline" onClick={onEdit} className="flex items-center gap-2">
             <Edit className="h-4 w-4" />
             Edit
           </Button>
-          {contract.pdfUrl && (
-            <Button variant="outline" className="flex items-center gap-2">
-              <Download className="h-4 w-4" />
-              Download PDF
-            </Button>
-          )}
+          <Button variant="outline" className="flex items-center gap-2">
+            <Download className="h-4 w-4" />
+            Download PDF
+          </Button>
         </div>
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-2">
               <DollarSign className="h-5 w-5 text-green-600" />
               <div>
                 <div className="text-2xl font-bold text-green-600">
-                  {formatCurrency(contract.totalAmount)}
+                  {formatCurrency(subcontract.totalValue)}
                 </div>
                 <div className="text-sm text-muted-foreground">Contract Value</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-blue-600" />
-              <div>
-                <div className="text-2xl font-bold text-blue-600">
-                  {formatCurrency(contract.budget)}
-                </div>
-                <div className="text-sm text-muted-foreground">Budget</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-red-600" />
-              <div>
-                <div className={`text-2xl font-bold ${contract.variance > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                  {contract.variance > 0 ? '+' : ''}{formatCurrency(contract.variance)}
-                </div>
-                <div className="text-sm text-muted-foreground">Variance</div>
               </div>
             </div>
           </CardContent>
@@ -184,9 +84,23 @@ export function SubcontractDetailView({ contractId, onBack, onEdit }: Subcontrac
               <FileText className="h-5 w-5 text-purple-600" />
               <div>
                 <div className="text-2xl font-bold text-purple-600">
-                  {contract.tradeItems.length}
+                  {subcontract.tradeItems.length}
                 </div>
                 <div className="text-sm text-muted-foreground">Trade Items</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-blue-600" />
+              <div>
+                <div className="text-2xl font-bold text-blue-600">
+                  {getStatusBadge(subcontract.status)}
+                </div>
+                <div className="text-sm text-muted-foreground">Status</div>
               </div>
             </div>
           </CardContent>
@@ -216,7 +130,7 @@ export function SubcontractDetailView({ contractId, onBack, onEdit }: Subcontrac
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {contract.tradeItems.map((item) => (
+                  {subcontract.tradeItems.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell className="font-medium">{item.trade}</TableCell>
                       <TableCell>{item.item}</TableCell>
@@ -227,7 +141,7 @@ export function SubcontractDetailView({ contractId, onBack, onEdit }: Subcontrac
                   ))}
                   <TableRow className="border-t-2">
                     <TableCell colSpan={4} className="font-bold">Total Contract Value</TableCell>
-                    <TableCell className="text-right font-bold text-lg">{formatCurrency(contract.totalAmount)}</TableCell>
+                    <TableCell className="text-right font-bold text-lg">{formatCurrency(subcontract.totalValue)}</TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
@@ -241,7 +155,7 @@ export function SubcontractDetailView({ contractId, onBack, onEdit }: Subcontrac
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
-                {contract.responsibilities.map(resp => (
+                {subcontract.responsibilities.map(resp => (
                   <Badge key={resp} variant="secondary" className="px-3 py-1">
                     {resp}
                   </Badge>
@@ -263,22 +177,24 @@ export function SubcontractDetailView({ contractId, onBack, onEdit }: Subcontrac
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
-                <div className="font-semibold">{contract.subcontractor}</div>
+                <div className="font-semibold">{subcontract.subcontractor}</div>
               </div>
-              <div className="space-y-1 text-sm">
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <span>{contract.subcontractorContact.rep}</span>
+              {subcontractorData && (
+                <div className="space-y-1 text-sm">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span>{subcontractorData.contactPerson}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground">📞</span>
+                    <span>{subcontractorData.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground">✉️</span>
+                    <span>{subcontractorData.email}</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">📞</span>
-                  <span>{contract.subcontractorContact.phone}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">✉️</span>
-                  <span>{contract.subcontractorContact.email}</span>
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
 
@@ -293,42 +209,32 @@ export function SubcontractDetailView({ contractId, onBack, onEdit }: Subcontrac
             <CardContent className="space-y-3 text-sm">
               <div>
                 <div className="font-medium">Created</div>
-                <div className="text-muted-foreground">{new Date(contract.createdDate).toLocaleDateString()}</div>
+                <div className="text-muted-foreground">{new Date(subcontract.createdAt).toLocaleDateString()}</div>
               </div>
               <div>
-                <div className="font-medium">Start Date</div>
-                <div className="text-muted-foreground">{new Date(contract.startDate).toLocaleDateString()}</div>
-              </div>
-              <div>
-                <div className="font-medium">End Date</div>
-                <div className="text-muted-foreground">{new Date(contract.endDate).toLocaleDateString()}</div>
+                <div className="font-medium">Last Updated</div>
+                <div className="text-muted-foreground">{new Date(subcontract.updatedAt).toLocaleDateString()}</div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Budget Analysis */}
+          {/* Contract Summary */}
           <Card>
             <CardHeader>
-              <CardTitle>Budget Analysis</CardTitle>
+              <CardTitle>Contract Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span>Contract Value:</span>
-                <span className="font-medium">{formatCurrency(contract.totalAmount)}</span>
+                <span>Contract ID:</span>
+                <span className="font-medium">{subcontract.contractId}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span>Budget:</span>
-                <span className="font-medium">{formatCurrency(contract.budget)}</span>
-              </div>
-              <div className="flex justify-between text-sm border-t pt-2">
-                <span>Variance:</span>
-                <span className={`font-bold ${contract.variance > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                  {contract.variance > 0 ? '+' : ''}{formatCurrency(contract.variance)}
-                </span>
+                <span>Total Value:</span>
+                <span className="font-medium">{formatCurrency(subcontract.totalValue)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Status:</span>
-                <span>{getStatusBadge(contract.status, contract.variance)}</span>
+                <span>{getStatusBadge(subcontract.status)}</span>
               </div>
             </CardContent>
           </Card>

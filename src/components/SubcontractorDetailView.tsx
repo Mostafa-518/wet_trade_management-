@@ -6,71 +6,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ArrowLeft, Edit, Phone, Mail, MapPin, Calendar, Star, TrendingUp, FileText, Building2, User, Award } from 'lucide-react';
 import { Subcontractor } from '@/types/subcontractor';
-import { mockSubcontractors } from '@/data/subcontractorsData';
-
-interface ProjectHistory {
-  id: string;
-  projectName: string;
-  contractValue: number;
-  status: 'completed' | 'active' | 'cancelled';
-  startDate: string;
-  endDate?: string;
-  performance: 'excellent' | 'good' | 'average' | 'poor';
-}
+import { useData } from '@/contexts/DataContext';
 
 interface SubcontractorDetailViewProps {
-  subcontractorId: string;
+  subcontractor: Subcontractor;
   onBack: () => void;
   onEdit: (subcontractor: Subcontractor) => void;
 }
 
-// Mock project history data
-const mockProjectHistory: ProjectHistory[] = [
-  {
-    id: '1',
-    projectName: 'Residential Complex A',
-    contractValue: 125000,
-    status: 'completed',
-    startDate: '2024-01-15',
-    endDate: '2024-04-30',
-    performance: 'excellent'
-  },
-  {
-    id: '2',
-    projectName: 'Office Building B',
-    contractValue: 89000,
-    status: 'active',
-    startDate: '2024-03-01',
-    performance: 'good'
-  },
-  {
-    id: '3',
-    projectName: 'Shopping Mall C',
-    contractValue: 156000,
-    status: 'completed',
-    startDate: '2023-08-15',
-    endDate: '2023-12-20',
-    performance: 'excellent'
-  }
-];
+export function SubcontractorDetailView({ subcontractor, onBack, onEdit }: SubcontractorDetailViewProps) {
+  const { subcontracts } = useData();
 
-export function SubcontractorDetailView({ subcontractorId, onBack, onEdit }: SubcontractorDetailViewProps) {
-  const subcontractor = mockSubcontractors.find(s => s.id === subcontractorId);
-  
-  if (!subcontractor) {
-    return (
-      <div className="space-y-4">
-        <Button onClick={onBack} className="flex items-center gap-2">
-          <ArrowLeft className="h-4 w-4" />
-          Back to Subcontractors
-        </Button>
-        <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-2">Subcontractor Not Found</h2>
-          <p className="text-muted-foreground">The requested subcontractor could not be found.</p>
-        </div>
-      </div>
-    );
-  }
+  // Get subcontracts for this subcontractor
+  const subcontractorProjects = subcontracts.filter(s => s.subcontractor === subcontractor.name);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -93,29 +41,14 @@ export function SubcontractorDetailView({ subcontractorId, onBack, onEdit }: Sub
     }
   };
 
-  const getPerformanceBadge = (performance: string) => {
-    switch (performance) {
-      case 'excellent':
-        return <Badge className="bg-green-100 text-green-800">Excellent</Badge>;
-      case 'good':
-        return <Badge className="bg-blue-100 text-blue-800">Good</Badge>;
-      case 'average':
-        return <Badge className="bg-yellow-100 text-yellow-800">Average</Badge>;
-      case 'poor':
-        return <Badge variant="destructive">Poor</Badge>;
-      default:
-        return <Badge variant="outline">{performance}</Badge>;
-    }
-  };
-
   const getProjectStatusBadge = (status: string) => {
     switch (status) {
       case 'completed':
         return <Badge className="bg-green-100 text-green-800">Completed</Badge>;
       case 'active':
         return <Badge className="bg-blue-100 text-blue-800">Active</Badge>;
-      case 'cancelled':
-        return <Badge variant="destructive">Cancelled</Badge>;
+      case 'overbudget':
+        return <Badge variant="destructive">Over Budget</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -137,7 +70,7 @@ export function SubcontractorDetailView({ subcontractorId, onBack, onEdit }: Sub
     );
   };
 
-  const totalContractValue = mockProjectHistory.reduce((sum, project) => sum + project.contractValue, 0);
+  const totalContractValue = subcontractorProjects.reduce((sum, project) => sum + project.totalValue, 0);
 
   return (
     <div className="space-y-6">
@@ -230,33 +163,37 @@ export function SubcontractorDetailView({ subcontractorId, onBack, onEdit }: Sub
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Project Name</TableHead>
-                    <TableHead className="text-right">Contract Value</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Performance</TableHead>
-                    <TableHead>Duration</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {mockProjectHistory.map((project) => (
-                    <TableRow key={project.id}>
-                      <TableCell className="font-medium">{project.projectName}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(project.contractValue)}</TableCell>
-                      <TableCell>{getProjectStatusBadge(project.status)}</TableCell>
-                      <TableCell>{getPerformanceBadge(project.performance)}</TableCell>
-                      <TableCell className="text-sm">
-                        <div>Start: {new Date(project.startDate).toLocaleDateString()}</div>
-                        {project.endDate && (
-                          <div>End: {new Date(project.endDate).toLocaleDateString()}</div>
-                        )}
-                      </TableCell>
+              {subcontractorProjects.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Contract ID</TableHead>
+                      <TableHead>Project Name</TableHead>
+                      <TableHead className="text-right">Contract Value</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Created Date</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {subcontractorProjects.map((project) => (
+                      <TableRow key={project.id}>
+                        <TableCell className="font-medium">{project.contractId}</TableCell>
+                        <TableCell>{project.project}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(project.totalValue)}</TableCell>
+                        <TableCell>{getProjectStatusBadge(project.status)}</TableCell>
+                        <TableCell className="text-sm">
+                          {new Date(project.createdAt).toLocaleDateString()}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="text-center py-8">
+                  <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">No projects found for this subcontractor.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -355,12 +292,8 @@ export function SubcontractorDetailView({ subcontractorId, onBack, onEdit }: Sub
                 <span className="font-medium">{subcontractor.currentProjects}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span>Success Rate:</span>
-                <span className="font-medium text-green-600">94%</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>On-Time Completion:</span>
-                <span className="font-medium text-blue-600">88%</span>
+                <span>Total Contract Value:</span>
+                <span className="font-medium text-green-600">{formatCurrency(totalContractValue)}</span>
               </div>
             </CardContent>
           </Card>
