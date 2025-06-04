@@ -1,9 +1,9 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Project, ProjectFormData } from '@/types/project';
 import { Subcontractor, SubcontractorFormData } from '@/types/subcontractor';
 import { Responsibility, ResponsibilityFormData } from '@/types/responsibility';
 import { Trade, TradeFormData, TradeItem, TradeItemFormData } from '@/types/trade';
+import { Subcontract, SubcontractFormData } from '@/types/subcontract';
 import { mockProjects } from '@/data/projectsData';
 import { mockSubcontractors } from '@/data/subcontractorsData';
 import { mockResponsibilities } from '@/data/responsibilitiesData';
@@ -39,6 +39,12 @@ interface DataContextType {
   addTradeItem: (data: TradeItemFormData) => TradeItem;
   updateTradeItem: (id: string, data: TradeItemFormData) => void;
   deleteTradeItem: (id: string) => void;
+  
+  // Subcontracts
+  subcontracts: Subcontract[];
+  addSubcontract: (data: SubcontractFormData) => Subcontract;
+  updateSubcontract: (id: string, data: SubcontractFormData) => void;
+  deleteSubcontract: (id: string) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -49,6 +55,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [responsibilities, setResponsibilities] = useState<Responsibility[]>([]);
   const [trades, setTrades] = useState<Trade[]>([]);
   const [tradeItems, setTradeItems] = useState<TradeItem[]>([]);
+  const [subcontracts, setSubcontracts] = useState<Subcontract[]>([]);
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -57,12 +64,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const savedResponsibilities = localStorage.getItem('responsibilities');
     const savedTrades = localStorage.getItem('trades');
     const savedTradeItems = localStorage.getItem('tradeItems');
+    const savedSubcontracts = localStorage.getItem('subcontracts');
 
     setProjects(savedProjects ? JSON.parse(savedProjects) : mockProjects);
     setSubcontractors(savedSubcontractors ? JSON.parse(savedSubcontractors) : mockSubcontractors);
     setResponsibilities(savedResponsibilities ? JSON.parse(savedResponsibilities) : mockResponsibilities);
     setTrades(savedTrades ? JSON.parse(savedTrades) : mockTrades);
     setTradeItems(savedTradeItems ? JSON.parse(savedTradeItems) : mockTradeItems);
+    setSubcontracts(savedSubcontracts ? JSON.parse(savedSubcontracts) : []);
   }, []);
 
   // Save to localStorage whenever data changes
@@ -85,6 +94,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     localStorage.setItem('tradeItems', JSON.stringify(tradeItems));
   }, [tradeItems]);
+
+  useEffect(() => {
+    localStorage.setItem('subcontracts', JSON.stringify(subcontracts));
+  }, [subcontracts]);
 
   // Helper function to generate IDs
   const generateId = (prefix: string) => {
@@ -219,6 +232,48 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setTradeItems(prev => prev.filter(item => item.id !== id));
   };
 
+  // Subcontract CRUD operations
+  const addSubcontract = (data: SubcontractFormData): Subcontract => {
+    const totalValue = data.tradeItems.reduce((sum, item) => sum + item.total, 0);
+    const contractId = `SC-${new Date().getFullYear()}-${String(subcontracts.length + 1).padStart(3, '0')}`;
+    
+    const newSubcontract: Subcontract = {
+      id: generateId('SC'),
+      contractId,
+      project: data.project,
+      subcontractor: data.subcontractor,
+      tradeItems: data.tradeItems,
+      responsibilities: data.responsibilities,
+      totalValue,
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    setSubcontracts(prev => [...prev, newSubcontract]);
+    return newSubcontract;
+  };
+
+  const updateSubcontract = (id: string, data: SubcontractFormData) => {
+    const totalValue = data.tradeItems.reduce((sum, item) => sum + item.total, 0);
+    setSubcontracts(prev => prev.map(subcontract => 
+      subcontract.id === id 
+        ? { 
+            ...subcontract, 
+            project: data.project,
+            subcontractor: data.subcontractor,
+            tradeItems: data.tradeItems,
+            responsibilities: data.responsibilities,
+            totalValue,
+            updatedAt: new Date().toISOString() 
+          }
+        : subcontract
+    ));
+  };
+
+  const deleteSubcontract = (id: string) => {
+    setSubcontracts(prev => prev.filter(subcontract => subcontract.id !== id));
+  };
+
   const value: DataContextType = {
     projects,
     addProject,
@@ -239,7 +294,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
     tradeItems,
     addTradeItem,
     updateTradeItem,
-    deleteTradeItem
+    deleteTradeItem,
+    subcontracts,
+    addSubcontract,
+    updateSubcontract,
+    deleteSubcontract
   };
 
   return (

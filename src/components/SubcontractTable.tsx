@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,22 +13,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { AdvancedSearch } from './subcontract/AdvancedSearch';
-
-interface Subcontract {
-  id: string;
-  contractId: string;
-  project: string;
-  subcontractor: string;
-  trade: string;
-  item: string;
-  quantity: number;
-  unitPrice: number;
-  total: number;
-  budget: number;
-  variance: number;
-  status: 'active' | 'completed' | 'overbudget';
-  responsibilities: string[];
-}
+import { useData } from '@/contexts/DataContext';
 
 interface SubcontractTableProps {
   onCreateNew: () => void;
@@ -39,79 +25,36 @@ interface SearchCondition {
   value: string;
 }
 
-const mockSubcontracts: Subcontract[] = [
-  {
-    id: '1',
-    contractId: 'SC-2024-001',
-    project: 'Residential Complex A',
-    subcontractor: 'Al-Khaleej Construction',
-    trade: 'Electrical',
-    item: 'Multiple Items',
-    quantity: 1,
-    unitPrice: 67500,
-    total: 67500,
-    budget: 65000,
-    variance: 2500,
-    status: 'overbudget',
-    responsibilities: ['Installation', 'Testing', 'Documentation']
-  },
-  {
-    id: '2',
-    contractId: 'SC-2024-002',
-    project: 'Commercial Tower B',
-    subcontractor: 'Modern Plumbing Co.',
-    trade: 'Plumbing',
-    item: 'Water Supply System',
-    quantity: 1,
-    unitPrice: 125000,
-    total: 125000,
-    budget: 130000,
-    variance: -5000,
-    status: 'active',
-    responsibilities: ['Installation', 'Commissioning']
-  },
-  {
-    id: '3',
-    contractId: 'SC-2024-003',
-    project: 'Villa Project C',
-    subcontractor: 'Elite HVAC Systems',
-    trade: 'HVAC',
-    item: 'Central Air Conditioning',
-    quantity: 2,
-    unitPrice: 45000,
-    total: 90000,
-    budget: 90000,
-    variance: 0,
-    status: 'completed',
-    responsibilities: ['Installation', 'Maintenance Setup']
-  }
-];
-
 export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTableProps) {
+  const { subcontracts } = useData();
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredData, setFilteredData] = useState(mockSubcontracts);
+  const [filteredData, setFilteredData] = useState(subcontracts);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+
+  // Update filtered data when subcontracts change
+  React.useEffect(() => {
+    setFilteredData(subcontracts);
+  }, [subcontracts]);
 
   const handleSimpleSearch = (value: string) => {
     setSearchTerm(value);
-    const filtered = mockSubcontracts.filter(item =>
+    const filtered = subcontracts.filter(item =>
       item.contractId.toLowerCase().includes(value.toLowerCase()) ||
       item.project.toLowerCase().includes(value.toLowerCase()) ||
-      item.subcontractor.toLowerCase().includes(value.toLowerCase()) ||
-      item.trade.toLowerCase().includes(value.toLowerCase())
+      item.subcontractor.toLowerCase().includes(value.toLowerCase())
     );
     setFilteredData(filtered);
   };
 
   const handleAdvancedSearch = (conditions: SearchCondition[]) => {
     if (conditions.length === 0) {
-      setFilteredData(mockSubcontracts);
+      setFilteredData(subcontracts);
       return;
     }
 
-    const filtered = mockSubcontracts.filter(item => {
+    const filtered = subcontracts.filter(item => {
       return conditions.every(condition => {
-        const fieldValue = item[condition.field as keyof Subcontract];
+        const fieldValue = item[condition.field as keyof typeof item];
         if (typeof fieldValue === 'string') {
           return fieldValue.toLowerCase().includes(condition.value.toLowerCase());
         }
@@ -121,8 +64,8 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
     setFilteredData(filtered);
   };
 
-  const getStatusBadge = (status: string, variance: number) => {
-    if (status === 'overbudget' || variance > 0) {
+  const getStatusBadge = (status: string) => {
+    if (status === 'overbudget') {
       return <Badge variant="destructive">Over Budget</Badge>;
     }
     if (status === 'completed') {
@@ -160,7 +103,7 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
           <div className="relative max-w-md flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
-              placeholder="Quick search by Contract ID, Project, Trade, or Subcontractor..."
+              placeholder="Quick search by Contract ID, Project, or Subcontractor..."
               value={searchTerm}
               onChange={(e) => handleSimpleSearch(e.target.value)}
               className="pl-10"
@@ -188,14 +131,10 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
               <TableHead>Contract ID</TableHead>
               <TableHead>Project</TableHead>
               <TableHead>Subcontractor</TableHead>
-              <TableHead>Trade</TableHead>
-              <TableHead>Item</TableHead>
-              <TableHead className="text-right">Qty</TableHead>
-              <TableHead className="text-right">Price</TableHead>
-              <TableHead className="text-right">Total</TableHead>
-              <TableHead className="text-right">Budget</TableHead>
-              <TableHead className="text-right">Variance</TableHead>
+              <TableHead>Items Count</TableHead>
+              <TableHead className="text-right">Total Value</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Created Date</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -209,16 +148,10 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
                 <TableCell className="font-medium text-blue-600">{contract.contractId}</TableCell>
                 <TableCell>{contract.project}</TableCell>
                 <TableCell>{contract.subcontractor}</TableCell>
-                <TableCell>{contract.trade}</TableCell>
-                <TableCell>{contract.item}</TableCell>
-                <TableCell className="text-right">{contract.quantity}</TableCell>
-                <TableCell className="text-right">{formatCurrency(contract.unitPrice)}</TableCell>
-                <TableCell className="text-right font-medium">{formatCurrency(contract.total)}</TableCell>
-                <TableCell className="text-right">{formatCurrency(contract.budget)}</TableCell>
-                <TableCell className={`text-right font-medium ${contract.variance > 0 ? 'text-red-600' : contract.variance < 0 ? 'text-green-600' : ''}`}>
-                  {contract.variance > 0 ? '+' : ''}{formatCurrency(contract.variance)}
-                </TableCell>
-                <TableCell>{getStatusBadge(contract.status, contract.variance)}</TableCell>
+                <TableCell>{contract.tradeItems.length}</TableCell>
+                <TableCell className="text-right font-medium">{formatCurrency(contract.totalValue)}</TableCell>
+                <TableCell>{getStatusBadge(contract.status)}</TableCell>
+                <TableCell>{new Date(contract.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                     <Button variant="ghost" size="sm" onClick={() => onViewDetail(contract.contractId)}>
@@ -239,28 +172,22 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-muted/50 rounded-lg">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
         <div className="text-center">
           <div className="text-2xl font-bold">{filteredData.length}</div>
           <div className="text-sm text-muted-foreground">Total Contracts</div>
         </div>
         <div className="text-center">
           <div className="text-2xl font-bold text-green-600">
-            {formatCurrency(filteredData.reduce((sum, item) => sum + item.total, 0))}
+            {formatCurrency(filteredData.reduce((sum, item) => sum + item.totalValue, 0))}
           </div>
           <div className="text-sm text-muted-foreground">Total Value</div>
         </div>
         <div className="text-center">
           <div className="text-2xl font-bold text-blue-600">
-            {formatCurrency(filteredData.reduce((sum, item) => sum + item.budget, 0))}
+            {filteredData.filter(item => item.status === 'active').length}
           </div>
-          <div className="text-sm text-muted-foreground">Total Budget</div>
-        </div>
-        <div className="text-center">
-          <div className={`text-2xl font-bold ${filteredData.reduce((sum, item) => sum + item.variance, 0) > 0 ? 'text-red-600' : 'text-green-600'}`}>
-            {formatCurrency(filteredData.reduce((sum, item) => sum + item.variance, 0))}
-          </div>
-          <div className="text-sm text-muted-foreground">Total Variance</div>
+          <div className="text-sm text-muted-foreground">Active Contracts</div>
         </div>
       </div>
     </div>

@@ -38,3 +38,24 @@ export interface SubcontractStepperProps {
   onClose: () => void;
   onSave: (data: any) => void;
 }
+
+export interface Subcontract {
+  id: string;
+  contractId: string;
+  project: string;
+  subcontractor: string;
+  tradeItems: TradeItem[];
+  responsibilities: string[];
+  totalValue: number;
+  status: 'active' | 'completed' | 'overbudget';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SubcontractFormData {
+  project: string;
+  subcontractor: string;
+  tradeItems: TradeItem[];
+  responsibilities: string[];
+  pdfFile: File | null;
+}
