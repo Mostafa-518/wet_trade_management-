@@ -5,7 +5,8 @@ import { TradeDetailView } from '@/components/TradeDetailView';
 import { TradeForm } from '@/components/TradeForm';
 import { TradeItemForm } from '@/components/TradeItemForm';
 import { TradeFormData, TradeItem, TradeItemFormData } from '@/types/trade';
-import { mockTrades } from '@/data/tradesData';
+import { useData } from '@/contexts/DataContext';
+import { useToast } from '@/hooks/use-toast';
 
 export function TradeDetail() {
   const { tradeId } = useParams<{ tradeId: string }>();
@@ -13,6 +14,9 @@ export function TradeDetail() {
   const [showEditForm, setShowEditForm] = useState(false);
   const [showItemForm, setShowItemForm] = useState(false);
   const [editingItem, setEditingItem] = useState<TradeItem | null>(null);
+  
+  const { trades, updateTrade, addTradeItem, updateTradeItem } = useData();
+  const { toast } = useToast();
 
   const handleBack = () => {
     navigate('/trades');
@@ -23,7 +27,13 @@ export function TradeDetail() {
   };
 
   const handleSaveEdit = (data: TradeFormData) => {
-    console.log('Updating trade:', data);
+    if (tradeId) {
+      updateTrade(tradeId, data);
+      toast({
+        title: "Trade updated",
+        description: "The trade has been updated successfully."
+      });
+    }
     setShowEditForm(false);
   };
 
@@ -42,7 +52,19 @@ export function TradeDetail() {
   };
 
   const handleSaveItem = (data: TradeItemFormData) => {
-    console.log('Saving item:', data);
+    if (editingItem) {
+      updateTradeItem(editingItem.id, data);
+      toast({
+        title: "Trade item updated",
+        description: "The trade item has been updated successfully."
+      });
+    } else {
+      addTradeItem(data);
+      toast({
+        title: "Trade item created",
+        description: "A new trade item has been created successfully."
+      });
+    }
     setShowItemForm(false);
     setEditingItem(null);
   };
@@ -61,7 +83,7 @@ export function TradeDetail() {
     );
   }
 
-  const trade = mockTrades.find(t => t.id === tradeId);
+  const trade = trades.find(t => t.id === tradeId);
 
   if (showEditForm && trade) {
     return (

@@ -16,10 +16,14 @@ interface TradeDetailViewProps {
 }
 
 export function TradeDetailView({ tradeId, onBack, onEdit, onAddItem, onEditItem }: TradeDetailViewProps) {
-  const { trades, tradeItems } = useData();
+  const { trades, tradeItems, deleteTradeItem } = useData();
   
   const trade = trades.find(t => t.id === tradeId);
   const items = tradeItems.filter(item => item.tradeId === tradeId);
+
+  const handleDeleteItem = (itemId: string) => {
+    deleteTradeItem(itemId);
+  };
 
   if (!trade) {
     return (
@@ -120,9 +124,14 @@ export function TradeDetailView({ tradeId, onBack, onEdit, onAddItem, onEditItem
                         <TableCell>{item.category}</TableCell>
                         <TableCell>${item.unitPrice.toLocaleString()}</TableCell>
                         <TableCell className="text-right">
-                          <Button variant="outline" size="sm" onClick={() => onEditItem(item)}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
+                          <div className="flex gap-2 justify-end">
+                            <Button variant="outline" size="sm" onClick={() => onEditItem(item)}>
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => handleDeleteItem(item.id)}>
+                              Delete
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
