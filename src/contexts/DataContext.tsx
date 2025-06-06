@@ -1,280 +1,339 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Project, ProjectFormData } from '@/types/project';
-import { Subcontractor, SubcontractorFormData } from '@/types/subcontractor';
-import { Responsibility, ResponsibilityFormData } from '@/types/responsibility';
-import { Trade, TradeFormData, TradeItem, TradeItemFormData } from '@/types/trade';
-import { Subcontract, SubcontractFormData } from '@/types/subcontract';
-import { mockProjects } from '@/data/projectsData';
-import { mockSubcontractors } from '@/data/subcontractorsData';
-import { mockResponsibilities } from '@/data/responsibilitiesData';
-import { mockTrades, mockTradeItems } from '@/data/tradesData';
+import { 
+  ProjectService, 
+  SubcontractorService, 
+  TradeService, 
+  ResponsibilityService,
+  Project,
+  Subcontractor, 
+  Trade, 
+  Responsibility
+} from '@/services/supabaseService';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+
+// Legacy types for compatibility with existing components
+interface LegacyProject {
+  id: string;
+  name: string;
+  code: string;
+  location: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface LegacySubcontractor {
+  id: string;
+  name: string;
+  companyName: string;
+  contactPerson: string;
+  email: string;
+  phone: string;
+  address: string;
+  trades: string[];
+  status: 'active' | 'inactive' | 'suspended';
+  rating: number;
+  totalProjects: number;
+  currentProjects: number;
+  registrationDate: string;
+  taxId: string;
+  bankAccount: string;
+}
+
+interface LegacyResponsibility {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface DataContextType {
   // Projects
-  projects: Project[];
-  addProject: (data: ProjectFormData) => Project;
-  updateProject: (id: string, data: ProjectFormData) => void;
-  deleteProject: (id: string) => void;
+  projects: LegacyProject[];
+  addProject: (projectData: any) => Promise<void>;
+  updateProject: (id: string, projectData: any) => Promise<void>;
+  deleteProject: (id: string) => Promise<void>;
   
   // Subcontractors
-  subcontractors: Subcontractor[];
-  addSubcontractor: (data: SubcontractorFormData) => Subcontractor;
-  updateSubcontractor: (id: string, data: SubcontractorFormData) => void;
-  deleteSubcontractor: (id: string) => void;
-  
-  // Responsibilities
-  responsibilities: Responsibility[];
-  addResponsibility: (data: ResponsibilityFormData) => Responsibility;
-  updateResponsibility: (id: string, data: ResponsibilityFormData) => void;
-  deleteResponsibility: (id: string) => void;
+  subcontractors: LegacySubcontractor[];
+  addSubcontractor: (subcontractorData: any) => Promise<void>;
+  updateSubcontractor: (id: string, subcontractorData: any) => Promise<void>;
+  deleteSubcontractor: (id: string) => Promise<void>;
   
   // Trades
   trades: Trade[];
-  addTrade: (data: TradeFormData) => Trade;
-  updateTrade: (id: string, data: TradeFormData) => void;
-  deleteTrade: (id: string) => void;
   
-  // Trade Items
-  tradeItems: TradeItem[];
-  addTradeItem: (data: TradeItemFormData) => TradeItem;
-  updateTradeItem: (id: string, data: TradeItemFormData) => void;
-  deleteTradeItem: (id: string) => void;
+  // Responsibilities
+  responsibilities: LegacyResponsibility[];
+  addResponsibility: (responsibilityData: any) => Promise<void>;
+  updateResponsibility: (id: string, responsibilityData: any) => Promise<void>;
+  deleteResponsibility: (id: string) => Promise<void>;
   
-  // Subcontracts
-  subcontracts: Subcontract[];
-  addSubcontract: (data: SubcontractFormData) => Subcontract;
-  updateSubcontract: (id: string, data: SubcontractFormData) => void;
-  deleteSubcontract: (id: string) => void;
+  // Legacy subcontracts data for compatibility
+  subcontracts: any[];
+  
+  loading: boolean;
+  refreshData: () => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [subcontractors, setSubcontractors] = useState<Subcontractor[]>([]);
-  const [responsibilities, setResponsibilities] = useState<Responsibility[]>([]);
+  const [projects, setProjects] = useState<LegacyProject[]>([]);
+  const [subcontractors, setSubcontractors] = useState<LegacySubcontractor[]>([]);
   const [trades, setTrades] = useState<Trade[]>([]);
-  const [tradeItems, setTradeItems] = useState<TradeItem[]>([]);
-  const [subcontracts, setSubcontracts] = useState<Subcontract[]>([]);
+  const [responsibilities, setResponsibilities] = useState<LegacyResponsibility[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const { toast } = useToast();
 
-  // Load data from localStorage on mount
+  // Convert Supabase project to legacy format
+  const convertProject = (project: Project): LegacyProject => ({
+    id: project.id,
+    name: project.name,
+    code: project.code,
+    location: project.location,
+    createdAt: project.created_at,
+    updatedAt: project.updated_at
+  });
+
+  // Convert Supabase subcontractor to legacy format
+  const convertSubcontractor = (subcontractor: Subcontractor): LegacySubcontractor => ({
+    id: subcontractor.id,
+    name: subcontractor.name,
+    companyName: subcontractor.name, // Using name as company name
+    contactPerson: subcontractor.contact_person || '',
+    email: subcontractor.email || '',
+    phone: subcontractor.phone || '',
+    address: subcontractor.address || '',
+    trades: [], // This would need to be fetched from a junction table
+    status: 'active', // Default status
+    rating: subcontractor.rating || 0,
+    totalProjects: 0, // This would need to be calculated
+    currentProjects: 0, // This would need to be calculated
+    registrationDate: subcontractor.created_at,
+    taxId: '', // Not in current schema
+    bankAccount: '' // Not in current schema
+  });
+
+  // Convert Supabase responsibility to legacy format
+  const convertResponsibility = (responsibility: Responsibility): LegacyResponsibility => ({
+    id: responsibility.id,
+    name: responsibility.name,
+    description: responsibility.description || '',
+    category: responsibility.category || '',
+    isActive: true, // Default to active since not in schema
+    createdAt: responsibility.created_at,
+    updatedAt: responsibility.updated_at
+  });
+
+  const loadData = async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      
+      const [projectsData, subcontractorsData, tradesData, responsibilitiesData] = await Promise.all([
+        ProjectService.getAll(),
+        SubcontractorService.getAll(),
+        TradeService.getAll(),
+        ResponsibilityService.getAll()
+      ]);
+
+      setProjects(projectsData.map(convertProject));
+      setSubcontractors(subcontractorsData.map(convertSubcontractor));
+      setTrades(tradesData);
+      setResponsibilities(responsibilitiesData.map(convertResponsibility));
+    } catch (error: any) {
+      console.error('Error loading data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load data",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const savedProjects = localStorage.getItem('projects');
-    const savedSubcontractors = localStorage.getItem('subcontractors');
-    const savedResponsibilities = localStorage.getItem('responsibilities');
-    const savedTrades = localStorage.getItem('trades');
-    const savedTradeItems = localStorage.getItem('tradeItems');
-    const savedSubcontracts = localStorage.getItem('subcontracts');
+    if (user) {
+      loadData();
+    } else {
+      setProjects([]);
+      setSubcontractors([]);
+      setTrades([]);
+      setResponsibilities([]);
+      setLoading(false);
+    }
+  }, [user]);
 
-    setProjects(savedProjects ? JSON.parse(savedProjects) : mockProjects);
-    setSubcontractors(savedSubcontractors ? JSON.parse(savedSubcontractors) : mockSubcontractors);
-    setResponsibilities(savedResponsibilities ? JSON.parse(savedResponsibilities) : mockResponsibilities);
-    setTrades(savedTrades ? JSON.parse(savedTrades) : mockTrades);
-    setTradeItems(savedTradeItems ? JSON.parse(savedTradeItems) : mockTradeItems);
-    setSubcontracts(savedSubcontracts ? JSON.parse(savedSubcontracts) : []);
-  }, []);
-
-  // Save to localStorage whenever data changes
-  useEffect(() => {
-    localStorage.setItem('projects', JSON.stringify(projects));
-  }, [projects]);
-
-  useEffect(() => {
-    localStorage.setItem('subcontractors', JSON.stringify(subcontractors));
-  }, [subcontractors]);
-
-  useEffect(() => {
-    localStorage.setItem('responsibilities', JSON.stringify(responsibilities));
-  }, [responsibilities]);
-
-  useEffect(() => {
-    localStorage.setItem('trades', JSON.stringify(trades));
-  }, [trades]);
-
-  useEffect(() => {
-    localStorage.setItem('tradeItems', JSON.stringify(tradeItems));
-  }, [tradeItems]);
-
-  useEffect(() => {
-    localStorage.setItem('subcontracts', JSON.stringify(subcontracts));
-  }, [subcontracts]);
-
-  // Helper function to generate IDs
-  const generateId = (prefix: string) => {
-    return `${prefix}${Date.now()}${Math.random().toString(36).substr(2, 9)}`;
+  // Project functions
+  const addProject = async (projectData: any) => {
+    try {
+      const newProject = await ProjectService.create({
+        name: projectData.name,
+        code: projectData.code,
+        location: projectData.location
+      });
+      setProjects(prev => [convertProject(newProject), ...prev]);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create project",
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
-  // Project CRUD operations
-  const addProject = (data: ProjectFormData): Project => {
-    const newProject: Project = {
-      id: generateId('PRJ'),
-      ...data,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    setProjects(prev => [...prev, newProject]);
-    return newProject;
+  const updateProject = async (id: string, projectData: any) => {
+    try {
+      const updatedProject = await ProjectService.update(id, {
+        name: projectData.name,
+        code: projectData.code,
+        location: projectData.location
+      });
+      setProjects(prev => prev.map(p => p.id === id ? convertProject(updatedProject) : p));
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update project",
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
-  const updateProject = (id: string, data: ProjectFormData) => {
-    setProjects(prev => prev.map(project => 
-      project.id === id 
-        ? { ...project, ...data, updatedAt: new Date().toISOString() }
-        : project
-    ));
+  const deleteProject = async (id: string) => {
+    try {
+      await ProjectService.delete(id);
+      setProjects(prev => prev.filter(p => p.id !== id));
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete project",
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
-  const deleteProject = (id: string) => {
-    setProjects(prev => prev.filter(project => project.id !== id));
+  // Subcontractor functions
+  const addSubcontractor = async (subcontractorData: any) => {
+    try {
+      const newSubcontractor = await SubcontractorService.create({
+        name: subcontractorData.name,
+        contact_person: subcontractorData.contactPerson,
+        email: subcontractorData.email,
+        phone: subcontractorData.phone,
+        address: subcontractorData.address
+      });
+      setSubcontractors(prev => [convertSubcontractor(newSubcontractor), ...prev]);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create subcontractor",
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
-  // Subcontractor CRUD operations
-  const addSubcontractor = (data: SubcontractorFormData): Subcontractor => {
-    const newSubcontractor: Subcontractor = {
-      id: generateId('SUB'),
-      ...data,
-      status: 'active' as const,
-      rating: 0,
-      totalProjects: 0,
-      currentProjects: 0,
-      registrationDate: new Date().toISOString()
-    };
-    setSubcontractors(prev => [...prev, newSubcontractor]);
-    return newSubcontractor;
+  const updateSubcontractor = async (id: string, subcontractorData: any) => {
+    try {
+      const updatedSubcontractor = await SubcontractorService.update(id, {
+        name: subcontractorData.name,
+        contact_person: subcontractorData.contactPerson,
+        email: subcontractorData.email,
+        phone: subcontractorData.phone,
+        address: subcontractorData.address
+      });
+      setSubcontractors(prev => prev.map(s => s.id === id ? convertSubcontractor(updatedSubcontractor) : s));
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update subcontractor",
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
-  const updateSubcontractor = (id: string, data: SubcontractorFormData) => {
-    setSubcontractors(prev => prev.map(subcontractor => 
-      subcontractor.id === id 
-        ? { ...subcontractor, ...data }
-        : subcontractor
-    ));
+  const deleteSubcontractor = async (id: string) => {
+    try {
+      await SubcontractorService.delete(id);
+      setSubcontractors(prev => prev.filter(s => s.id !== id));
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete subcontractor",
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
-  const deleteSubcontractor = (id: string) => {
-    setSubcontractors(prev => prev.filter(subcontractor => subcontractor.id !== id));
+  // Responsibility functions
+  const addResponsibility = async (responsibilityData: any) => {
+    try {
+      const newResponsibility = await ResponsibilityService.create({
+        name: responsibilityData.name,
+        description: responsibilityData.description,
+        category: responsibilityData.category
+      });
+      setResponsibilities(prev => [convertResponsibility(newResponsibility), ...prev]);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create responsibility",
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
-  // Responsibility CRUD operations
-  const addResponsibility = (data: ResponsibilityFormData): Responsibility => {
-    const newResponsibility: Responsibility = {
-      id: generateId('RESP'),
-      ...data,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    setResponsibilities(prev => [...prev, newResponsibility]);
-    return newResponsibility;
+  const updateResponsibility = async (id: string, responsibilityData: any) => {
+    try {
+      const updatedResponsibility = await ResponsibilityService.update(id, {
+        name: responsibilityData.name,
+        description: responsibilityData.description,
+        category: responsibilityData.category
+      });
+      setResponsibilities(prev => prev.map(r => r.id === id ? convertResponsibility(updatedResponsibility) : r));
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update responsibility",
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
-  const updateResponsibility = (id: string, data: ResponsibilityFormData) => {
-    setResponsibilities(prev => prev.map(responsibility => 
-      responsibility.id === id 
-        ? { ...responsibility, ...data, updatedAt: new Date().toISOString() }
-        : responsibility
-    ));
+  const deleteResponsibility = async (id: string) => {
+    try {
+      await ResponsibilityService.delete(id);
+      setResponsibilities(prev => prev.filter(r => r.id !== id));
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete responsibility",
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
-  const deleteResponsibility = (id: string) => {
-    setResponsibilities(prev => prev.filter(responsibility => responsibility.id !== id));
+  const refreshData = async () => {
+    await loadData();
   };
 
-  // Trade CRUD operations
-  const addTrade = (data: TradeFormData): Trade => {
-    const newTrade: Trade = {
-      id: generateId('TRD'),
-      ...data,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    setTrades(prev => [...prev, newTrade]);
-    return newTrade;
-  };
-
-  const updateTrade = (id: string, data: TradeFormData) => {
-    setTrades(prev => prev.map(trade => 
-      trade.id === id 
-        ? { ...trade, ...data, updatedAt: new Date().toISOString() }
-        : trade
-    ));
-  };
-
-  const deleteTrade = (id: string) => {
-    setTrades(prev => prev.filter(trade => trade.id !== id));
-    // Also delete related trade items
-    setTradeItems(prev => prev.filter(item => item.tradeId !== id));
-  };
-
-  // Trade Item CRUD operations
-  const addTradeItem = (data: TradeItemFormData): TradeItem => {
-    const trade = trades.find(t => t.id === data.tradeId);
-    const newTradeItem: TradeItem = {
-      id: generateId('TI'),
-      ...data,
-      tradeName: trade?.name || '',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    setTradeItems(prev => [...prev, newTradeItem]);
-    return newTradeItem;
-  };
-
-  const updateTradeItem = (id: string, data: TradeItemFormData) => {
-    const trade = trades.find(t => t.id === data.tradeId);
-    setTradeItems(prev => prev.map(item => 
-      item.id === id 
-        ? { ...item, ...data, tradeName: trade?.name || '', updatedAt: new Date().toISOString() }
-        : item
-    ));
-  };
-
-  const deleteTradeItem = (id: string) => {
-    setTradeItems(prev => prev.filter(item => item.id !== id));
-  };
-
-  // Subcontract CRUD operations
-  const addSubcontract = (data: SubcontractFormData): Subcontract => {
-    const totalValue = data.tradeItems.reduce((sum, item) => sum + item.total, 0);
-    const contractId = `SC-${new Date().getFullYear()}-${String(subcontracts.length + 1).padStart(3, '0')}`;
-    
-    const newSubcontract: Subcontract = {
-      id: generateId('SC'),
-      contractId,
-      project: data.project,
-      subcontractor: data.subcontractor,
-      tradeItems: data.tradeItems,
-      responsibilities: data.responsibilities,
-      totalValue,
-      status: 'active',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    setSubcontracts(prev => [...prev, newSubcontract]);
-    return newSubcontract;
-  };
-
-  const updateSubcontract = (id: string, data: SubcontractFormData) => {
-    const totalValue = data.tradeItems.reduce((sum, item) => sum + item.total, 0);
-    setSubcontracts(prev => prev.map(subcontract => 
-      subcontract.id === id 
-        ? { 
-            ...subcontract, 
-            project: data.project,
-            subcontractor: data.subcontractor,
-            tradeItems: data.tradeItems,
-            responsibilities: data.responsibilities,
-            totalValue,
-            updatedAt: new Date().toISOString() 
-          }
-        : subcontract
-    ));
-  };
-
-  const deleteSubcontract = (id: string) => {
-    setSubcontracts(prev => prev.filter(subcontract => subcontract.id !== id));
-  };
-
-  const value: DataContextType = {
+  const value = {
     projects,
     addProject,
     updateProject,
@@ -283,22 +342,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
     addSubcontractor,
     updateSubcontractor,
     deleteSubcontractor,
+    trades,
     responsibilities,
     addResponsibility,
     updateResponsibility,
     deleteResponsibility,
-    trades,
-    addTrade,
-    updateTrade,
-    deleteTrade,
-    tradeItems,
-    addTradeItem,
-    updateTradeItem,
-    deleteTradeItem,
-    subcontracts,
-    addSubcontract,
-    updateSubcontract,
-    deleteSubcontract
+    subcontracts: [], // Empty array for compatibility
+    loading,
+    refreshData
   };
 
   return (
