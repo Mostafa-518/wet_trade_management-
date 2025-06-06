@@ -1,4 +1,3 @@
-
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/hooks/useAuth';
@@ -12,7 +11,7 @@ import { Login } from '@/pages/Login';
 import { SignUp } from '@/pages/SignUp';
 
 // Protected pages
-import { Index } from '@/pages/Index';
+import Index from '@/pages/Index';
 import { Dashboard } from '@/pages/Dashboard';
 import { Projects } from '@/pages/Projects';
 import { ProjectDetail } from '@/pages/ProjectDetail';
@@ -25,7 +24,7 @@ import { Subcontracts } from '@/pages/Subcontracts';
 import { SubcontractDetail } from '@/pages/SubcontractDetail';
 import { Users } from '@/pages/Users';
 import { UserDetail } from '@/pages/UserDetail';
-import { NotFound } from '@/pages/NotFound';
+import NotFound from '@/pages/NotFound';
 
 // Create a client
 const queryClient = new QueryClient({
