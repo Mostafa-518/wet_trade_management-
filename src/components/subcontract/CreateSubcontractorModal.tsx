@@ -27,10 +27,11 @@ export function CreateSubcontractorModal({ open, onClose, onSubcontractorCreated
     address: '',
     trades: [],
     taxId: '',
-    bankAccount: ''
+    bankAccount: '',
+    rating: 0
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.contactPerson || !formData.phone) {
       toast({
@@ -42,12 +43,12 @@ export function CreateSubcontractorModal({ open, onClose, onSubcontractorCreated
     }
 
     try {
-      const newSubcontractor = addSubcontractor(formData);
+      await addSubcontractor(formData);
       toast({
         title: "Subcontractor Created",
-        description: `${newSubcontractor.name} has been created successfully`
+        description: `${formData.name} has been created successfully`
       });
-      onSubcontractorCreated(newSubcontractor.name);
+      onSubcontractorCreated(formData.name);
       setFormData({
         name: '',
         companyName: '',
@@ -57,7 +58,8 @@ export function CreateSubcontractorModal({ open, onClose, onSubcontractorCreated
         address: '',
         trades: [],
         taxId: '',
-        bankAccount: ''
+        bankAccount: '',
+        rating: 0
       });
       onClose();
     } catch (error) {
@@ -69,7 +71,7 @@ export function CreateSubcontractorModal({ open, onClose, onSubcontractorCreated
     }
   };
 
-  const handleInputChange = (field: keyof SubcontractorFormData, value: string) => {
+  const handleInputChange = (field: keyof SubcontractorFormData, value: string | string[] | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 

@@ -12,9 +12,12 @@ import { useToast } from '@/hooks/use-toast';
 interface TradeItem {
   id: string;
   tradeId: string;
+  tradeName: string;
   name: string;
   description?: string;
   unit?: string;
+  category?: string;
+  unitPrice?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -91,7 +94,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   // Project operations
   const addProject = async (data: ProjectFormData) => {
     try {
-      const result = await ProjectService.create({
+      await ProjectService.create({
         name: data.name,
         code: data.code,
         location: data.location,
@@ -101,7 +104,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         status: data.status as any
       });
       refetchProjects();
-      return result;
     } catch (error) {
       console.error('Error adding project:', error);
       toast({
@@ -142,7 +144,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   // Subcontractor operations
   const addSubcontractor = async (data: SubcontractorFormData) => {
     try {
-      const result = await SubcontractorService.create({
+      await SubcontractorService.create({
         name: data.name,
         contact_person: data.contactPerson,
         email: data.email,
@@ -152,7 +154,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         rating: data.rating
       });
       refetchSubcontractors();
-      return result;
     } catch (error) {
       console.error('Error adding subcontractor:', error);
       throw error;
@@ -226,9 +227,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     const newItem: TradeItem = {
       id: Math.random().toString(36).substr(2, 9),
       tradeId: data.tradeId!,
+      tradeName: data.tradeName || '',
       name: data.name!,
-      description: data.description,
-      unit: data.unit,
+      unit: data.unit || '',
+      category: data.category || '',
+      unitPrice: data.unitPrice || 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
