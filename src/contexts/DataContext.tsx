@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ProjectService, SubcontractorService, TradeService, ResponsibilityService } from '@/services/supabaseService';
@@ -92,7 +91,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   // Project operations
   const addProject = async (data: ProjectFormData) => {
     try {
-      await ProjectService.create({
+      const result = await ProjectService.create({
         name: data.name,
         code: data.code,
         location: data.location,
@@ -102,6 +101,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         status: data.status as any
       });
       refetchProjects();
+      return result;
     } catch (error) {
       console.error('Error adding project:', error);
       toast({
@@ -109,6 +109,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         description: "Failed to add project",
         variant: "destructive"
       });
+      throw error;
     }
   };
 
@@ -141,7 +142,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   // Subcontractor operations
   const addSubcontractor = async (data: SubcontractorFormData) => {
     try {
-      await SubcontractorService.create({
+      const result = await SubcontractorService.create({
         name: data.name,
         contact_person: data.contactPerson,
         email: data.email,
@@ -151,8 +152,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         rating: data.rating
       });
       refetchSubcontractors();
+      return result;
     } catch (error) {
       console.error('Error adding subcontractor:', error);
+      throw error;
     }
   };
 

@@ -13,9 +13,11 @@ export interface ResponsibilityFormData {
   name: string;
   description?: string;
   category?: string;
+  isActive: boolean;
 }
 
 export interface ResponsibilitySearchFilters {
   name: string;
   category: string;
+  isActive: string;
 }

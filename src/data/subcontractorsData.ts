@@ -17,7 +17,9 @@ export const mockSubcontractors: Subcontractor[] = [
     currentProjects: 3,
     registrationDate: '2020-01-15',
     taxId: 'TAX-001-2020',
-    bankAccount: 'ACC-123456789'
+    bankAccount: 'ACC-123456789',
+    createdAt: '2020-01-15T00:00:00Z',
+    updatedAt: '2024-01-15T00:00:00Z'
   },
   {
     id: '2',
@@ -34,7 +36,9 @@ export const mockSubcontractors: Subcontractor[] = [
     currentProjects: 2,
     registrationDate: '2019-03-22',
     taxId: 'TAX-002-2019',
-    bankAccount: 'ACC-987654321'
+    bankAccount: 'ACC-987654321',
+    createdAt: '2019-03-22T00:00:00Z',
+    updatedAt: '2024-01-15T00:00:00Z'
   },
   {
     id: '3',
@@ -51,7 +55,9 @@ export const mockSubcontractors: Subcontractor[] = [
     currentProjects: 5,
     registrationDate: '2018-07-10',
     taxId: 'TAX-003-2018',
-    bankAccount: 'ACC-456789123'
+    bankAccount: 'ACC-456789123',
+    createdAt: '2018-07-10T00:00:00Z',
+    updatedAt: '2024-01-15T00:00:00Z'
   },
   {
     id: '4',
@@ -68,7 +74,9 @@ export const mockSubcontractors: Subcontractor[] = [
     currentProjects: 0,
     registrationDate: '2021-05-18',
     taxId: 'TAX-004-2021',
-    bankAccount: 'ACC-789123456'
+    bankAccount: 'ACC-789123456',
+    createdAt: '2021-05-18T00:00:00Z',
+    updatedAt: '2024-01-15T00:00:00Z'
   },
   {
     id: '5',
@@ -85,6 +93,8 @@ export const mockSubcontractors: Subcontractor[] = [
     currentProjects: 0,
     registrationDate: '2020-11-03',
     taxId: 'TAX-005-2020',
-    bankAccount: 'ACC-147258369'
+    bankAccount: 'ACC-147258369',
+    createdAt: '2020-11-03T00:00:00Z',
+    updatedAt: '2024-01-15T00:00:00Z'
   }
 ];

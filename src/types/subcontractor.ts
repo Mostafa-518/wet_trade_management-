@@ -31,4 +31,5 @@ export interface SubcontractorFormData {
   rating: number;
   taxId: string;
   bankAccount: string;
+  trades: string[];
 }

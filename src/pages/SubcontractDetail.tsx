@@ -41,14 +41,16 @@ export function SubcontractDetail() {
   const subcontractForDetailView = {
     id: subcontract.contractId,
     contractId: subcontract.contractId,
-    project: subcontract.projectName,
-    subcontractor: subcontract.subcontractorName,
-    tradeItems: [],
-    responsibilities: [],
-    totalValue: subcontract.value,
+    project: subcontract.project,
+    subcontractor: subcontract.subcontractor,
+    tradeItems: subcontract.tradeItems || [],
+    responsibilities: subcontract.responsibilities || [],
+    totalValue: subcontract.totalValue,
     status: subcontract.status,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    startDate: subcontract.startDate || new Date().toISOString().split('T')[0],
+    endDate: subcontract.endDate || new Date().toISOString().split('T')[0],
+    createdAt: subcontract.createdAt || new Date().toISOString(),
+    updatedAt: subcontract.updatedAt || new Date().toISOString()
   };
 
   return (
