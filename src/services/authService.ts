@@ -22,10 +22,10 @@ class AuthService {
 
   // Login
   static async login(credentials: LoginCredentials): Promise<ApiResponse<AuthResponse>> {
-    const response = await ApiService.post(`${this.endpoint}/login`, credentials);
+    const response = await ApiService.post<ApiResponse<AuthResponse>>(`${this.endpoint}/login`, credentials);
     
     // Store token in localStorage
-    if (response.data?.token) {
+    if (response.success && response.data?.token) {
       localStorage.setItem('authToken', response.data.token);
       localStorage.setItem('refreshToken', response.data.refreshToken);
       localStorage.setItem('user', JSON.stringify(response.data.user));
@@ -51,9 +51,9 @@ class AuthService {
   // Refresh token
   static async refreshToken(): Promise<ApiResponse<{ token: string }>> {
     const refreshToken = localStorage.getItem('refreshToken');
-    const response = await ApiService.post(`${this.endpoint}/refresh`, { refreshToken });
+    const response = await ApiService.post<ApiResponse<{ token: string }>>(`${this.endpoint}/refresh`, { refreshToken });
     
-    if (response.data?.token) {
+    if (response.success && response.data?.token) {
       localStorage.setItem('authToken', response.data.token);
     }
     

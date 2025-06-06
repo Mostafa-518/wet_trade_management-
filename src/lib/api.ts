@@ -1,9 +1,10 @@
+
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
-import { useToast } from '@/hooks/use-toast';
+import { env } from '@/config/env';
 
 // Create the main Axios instance
 const api: AxiosInstance = axios.create({
-  baseURL: process.env.VITE_API_BASE_URL || 'http://localhost:3000/api',
+  baseURL: env.API_BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -21,7 +22,7 @@ api.interceptors.request.use(
     }
     
     // Log request in development
-    if (process.env.NODE_ENV === 'development') {
+    if (env.IS_DEVELOPMENT) {
       console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`);
     }
     
@@ -37,7 +38,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response: AxiosResponse) => {
     // Log successful responses in development
-    if (process.env.NODE_ENV === 'development') {
+    if (env.IS_DEVELOPMENT) {
       console.log(`✅ API Response: ${response.config.method?.toUpperCase()} ${response.config.url}`, response.data);
     }
     
@@ -48,7 +49,8 @@ api.interceptors.response.use(
     if (error.response) {
       // Server responded with error status
       const status = error.response.status;
-      const message = error.response.data?.message || error.message;
+      const responseData = error.response.data as any;
+      const message = responseData?.message || error.message;
       
       switch (status) {
         case 401:
