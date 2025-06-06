@@ -7,24 +7,25 @@ export interface Subcontractor {
   email: string;
   phone: string;
   address: string;
+  licenseNumber?: string;
+  rating: number;
   trades: string[];
   status: 'active' | 'inactive' | 'suspended';
-  rating: number;
   totalProjects: number;
   currentProjects: number;
-  registrationDate: string;
   taxId: string;
   bankAccount: string;
+  registrationDate: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface SubcontractorFormData {
   name: string;
-  companyName: string;
   contactPerson: string;
   email: string;
   phone: string;
   address: string;
-  trades: string[];
-  taxId: string;
-  bankAccount: string;
+  licenseNumber?: string;
+  rating: number;
 }

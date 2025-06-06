@@ -315,13 +315,26 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     updateProject,
     deleteProject,
     
-    // Subcontractors
+    // Subcontractors - Map database fields to frontend types
     subcontractors: subcontractors.map(s => ({
-      ...s,
+      id: s.id,
+      name: s.name,
+      companyName: s.name, // Using name as company name for now
+      contactPerson: s.contact_person || '',
+      email: s.email || '',
+      phone: s.phone || '',
+      address: s.address || '',
+      licenseNumber: s.license_number,
+      rating: s.rating || 0,
+      trades: [], // Empty array for now
+      status: 'active' as const,
+      totalProjects: 0,
+      currentProjects: 0,
+      taxId: '',
+      bankAccount: '',
+      registrationDate: s.created_at,
       createdAt: s.created_at,
-      updatedAt: s.updated_at,
-      contactPerson: s.contact_person,
-      licenseNumber: s.license_number
+      updatedAt: s.updated_at
     })),
     addSubcontractor,
     updateSubcontractor,
@@ -343,9 +356,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     updateTradeItem,
     deleteTradeItem,
     
-    // Responsibilities
+    // Responsibilities - Map database fields and add missing properties
     responsibilities: responsibilities.map(r => ({
-      ...r,
+      id: r.id,
+      name: r.name,
+      description: r.description || '',
+      category: r.category || '',
+      isActive: true, // Default to true
       createdAt: r.created_at,
       updatedAt: r.updated_at
     })),

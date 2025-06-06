@@ -5,7 +5,7 @@ import { ProjectDetailView } from '@/components/ProjectDetailView';
 import { useData } from '@/contexts/DataContext';
 
 export function ProjectDetail() {
-  const { projectId } = useParams<{ projectId: string }>();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { projects } = useData();
 
@@ -17,7 +17,7 @@ export function ProjectDetail() {
     navigate('/projects', { state: { editProject: project } });
   };
 
-  if (!projectId) {
+  if (!id) {
     return (
       <div className="text-center py-12">
         <h2 className="text-2xl font-bold mb-2">Project Not Found</h2>
@@ -26,7 +26,7 @@ export function ProjectDetail() {
     );
   }
 
-  const project = projects.find(p => p.id === projectId);
+  const project = projects.find(p => p.id === id);
 
   if (!project) {
     return (

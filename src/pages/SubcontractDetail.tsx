@@ -5,7 +5,7 @@ import { SubcontractDetailView } from '@/components/SubcontractDetailView';
 import { useData } from '@/contexts/DataContext';
 
 export function SubcontractDetail() {
-  const { contractId } = useParams<{ contractId: string }>();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { subcontracts } = useData();
 
@@ -14,10 +14,10 @@ export function SubcontractDetail() {
   };
 
   const handleEdit = () => {
-    console.log('Edit subcontract:', contractId);
+    console.log('Edit subcontract:', id);
   };
 
-  if (!contractId) {
+  if (!id) {
     return (
       <div className="text-center py-12">
         <h2 className="text-2xl font-bold mb-2">Contract Not Found</h2>
@@ -26,7 +26,7 @@ export function SubcontractDetail() {
     );
   }
 
-  const subcontract = subcontracts.find(s => s.contractId === contractId);
+  const subcontract = subcontracts.find(s => s.contractId === id);
 
   if (!subcontract) {
     return (
@@ -37,9 +37,23 @@ export function SubcontractDetail() {
     );
   }
 
+  // Create a properly typed subcontract object for the detail view
+  const subcontractForDetailView = {
+    id: subcontract.contractId,
+    contractId: subcontract.contractId,
+    project: subcontract.projectName,
+    subcontractor: subcontract.subcontractorName,
+    tradeItems: [],
+    responsibilities: [],
+    totalValue: subcontract.value,
+    status: subcontract.status,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
   return (
     <SubcontractDetailView
-      subcontract={subcontract}
+      subcontract={subcontractForDetailView}
       onBack={handleBack}
       onEdit={handleEdit}
     />

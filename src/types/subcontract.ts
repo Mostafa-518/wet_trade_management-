@@ -39,17 +39,15 @@ export interface SubcontractStepperProps {
   onSave: (data: any) => void;
 }
 
+// Updated Subcontract interface to match database structure
 export interface Subcontract {
-  id: string;
   contractId: string;
-  project: string;
-  subcontractor: string;
-  tradeItems: TradeItem[];
-  responsibilities: string[];
-  totalValue: number;
-  status: 'active' | 'completed' | 'overbudget';
-  createdAt: string;
-  updatedAt: string;
+  projectName: string;
+  subcontractorName: string;
+  value: number;
+  status: 'draft' | 'pending' | 'active' | 'completed' | 'cancelled';
+  startDate: string;
+  endDate: string;
 }
 
 export interface SubcontractFormData {
