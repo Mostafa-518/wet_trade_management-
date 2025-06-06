@@ -1,3 +1,4 @@
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/hooks/useAuth';
@@ -46,134 +47,134 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             
-            {/* Protected routes */}
+            {/* Protected routes with Layout but DataProvider only for page content */}
             <Route path="/" element={
               <AuthGuard>
-                <DataProvider>
-                  <Layout>
+                <Layout>
+                  <DataProvider>
                     <Index />
-                  </Layout>
-                </DataProvider>
+                  </DataProvider>
+                </Layout>
               </AuthGuard>
             } />
             
             <Route path="/dashboard" element={
               <AuthGuard>
-                <DataProvider>
-                  <Layout>
+                <Layout>
+                  <DataProvider>
                     <Dashboard />
-                  </Layout>
-                </DataProvider>
+                  </DataProvider>
+                </Layout>
               </AuthGuard>
             } />
             
             <Route path="/projects" element={
               <AuthGuard>
-                <DataProvider>
-                  <Layout>
+                <Layout>
+                  <DataProvider>
                     <Projects />
-                  </Layout>
-                </DataProvider>
+                  </DataProvider>
+                </Layout>
               </AuthGuard>
             } />
             
             <Route path="/projects/:id" element={
               <AuthGuard>
-                <DataProvider>
-                  <Layout>
+                <Layout>
+                  <DataProvider>
                     <ProjectDetail />
-                  </Layout>
-                </DataProvider>
+                  </DataProvider>
+                </Layout>
               </AuthGuard>
             } />
             
             <Route path="/subcontractors" element={
               <AuthGuard>
-                <DataProvider>
-                  <Layout>
+                <Layout>
+                  <DataProvider>
                     <Subcontractors />
-                  </Layout>
-                </DataProvider>
+                  </DataProvider>
+                </Layout>
               </AuthGuard>
             } />
             
             <Route path="/subcontractors/:id" element={
               <AuthGuard>
-                <DataProvider>
-                  <Layout>
+                <Layout>
+                  <DataProvider>
                     <SubcontractorDetail />
-                  </Layout>
-                </DataProvider>
+                  </DataProvider>
+                </Layout>
               </AuthGuard>
             } />
             
             <Route path="/trades" element={
               <AuthGuard>
-                <DataProvider>
-                  <Layout>
+                <Layout>
+                  <DataProvider>
                     <Trades />
-                  </Layout>
-                </DataProvider>
+                  </DataProvider>
+                </Layout>
               </AuthGuard>
             } />
             
             <Route path="/trades/:id" element={
               <AuthGuard>
-                <DataProvider>
-                  <Layout>
+                <Layout>
+                  <DataProvider>
                     <TradeDetail />
-                  </Layout>
-                </DataProvider>
+                  </DataProvider>
+                </Layout>
               </AuthGuard>
             } />
             
             <Route path="/responsibilities" element={
               <AuthGuard>
-                <DataProvider>
-                  <Layout>
+                <Layout>
+                  <DataProvider>
                     <Responsibilities />
-                  </Layout>
-                </DataProvider>
+                  </DataProvider>
+                </Layout>
               </AuthGuard>
             } />
             
             <Route path="/subcontracts" element={
               <AuthGuard>
-                <DataProvider>
-                  <Layout>
+                <Layout>
+                  <DataProvider>
                     <Subcontracts />
-                  </Layout>
-                </DataProvider>
+                  </DataProvider>
+                </Layout>
               </AuthGuard>
             } />
             
             <Route path="/subcontracts/:id" element={
               <AuthGuard>
-                <DataProvider>
-                  <Layout>
+                <Layout>
+                  <DataProvider>
                     <SubcontractDetail />
-                  </Layout>
-                </DataProvider>
+                  </DataProvider>
+                </Layout>
               </AuthGuard>
             } />
             
             <Route path="/users" element={
               <AuthGuard>
-                <DataProvider>
-                  <Layout>
+                <Layout>
+                  <DataProvider>
                     <Users />
-                  </Layout>
-                </DataProvider>
+                  </DataProvider>
+                </Layout>
               </AuthGuard>
             } />
             
             <Route path="/users/:id" element={
               <AuthGuard>
-                <DataProvider>
-                  <Layout>
+                <Layout>
+                  <DataProvider>
                     <UserDetail />
-                  </Layout>
-                </DataProvider>
+                  </DataProvider>
+                </Layout>
               </AuthGuard>
             } />
             

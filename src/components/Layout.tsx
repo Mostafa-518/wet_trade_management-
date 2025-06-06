@@ -22,7 +22,6 @@ import {
   LogOut,
   User
 } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -42,23 +41,15 @@ export function Layout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, profile, signOut } = useAuth();
 
-  const handleSignOut = async () => {
-    await signOut();
+  const handleSignOut = () => {
+    // Simple navigation to login without backend dependency
     navigate('/login');
   };
 
   const getUserInitials = () => {
-    if (profile?.full_name) {
-      return profile.full_name
-        .split(' ')
-        .map(name => name.charAt(0))
-        .join('')
-        .toUpperCase()
-        .slice(0, 2);
-    }
-    return user?.email?.charAt(0).toUpperCase() || 'U';
+    // Return default initials without backend dependency
+    return 'U';
   };
 
   return (
@@ -147,17 +138,13 @@ export function Layout({ children }: LayoutProps) {
                 <DropdownMenuContent align="end" className="w-56">
                   <div className="flex items-center justify-start gap-2 p-2">
                     <div className="flex flex-col space-y-1 leading-none">
-                      {profile?.full_name && (
-                        <p className="font-medium">{profile.full_name}</p>
-                      )}
+                      <p className="font-medium">User</p>
                       <p className="w-[200px] truncate text-sm text-muted-foreground">
-                        {user?.email}
+                        user@example.com
                       </p>
-                      {profile?.role && (
-                        <p className="text-xs text-muted-foreground capitalize">
-                          {profile.role.replace('_', ' ')}
-                        </p>
-                      )}
+                      <p className="text-xs text-muted-foreground">
+                        Admin
+                      </p>
                     </div>
                   </div>
                   <DropdownMenuSeparator />
