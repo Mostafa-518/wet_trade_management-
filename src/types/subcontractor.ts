@@ -22,10 +22,13 @@ export interface Subcontractor {
 
 export interface SubcontractorFormData {
   name: string;
+  companyName: string;
   contactPerson: string;
   email: string;
   phone: string;
   address: string;
   licenseNumber?: string;
   rating: number;
+  taxId: string;
+  bankAccount: string;
 }

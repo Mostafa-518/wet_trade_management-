@@ -20,28 +20,40 @@ export function CreateProjectModal({ open, onClose, onProjectCreated }: CreatePr
   const [formData, setFormData] = useState<ProjectFormData>({
     name: '',
     code: '',
-    location: ''
+    location: '',
+    description: '',
+    startDate: '',
+    endDate: '',
+    status: 'planning'
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.code || !formData.location) {
       toast({
         title: "Missing Information",
-        description: "Please fill all fields",
+        description: "Please fill all required fields",
         variant: "destructive"
       });
       return;
     }
 
     try {
-      const newProject = addProject(formData);
+      await addProject(formData);
       toast({
         title: "Project Created",
-        description: `${newProject.name} has been created successfully`
+        description: `${formData.name} has been created successfully`
       });
-      onProjectCreated(newProject.name);
-      setFormData({ name: '', code: '', location: '' });
+      onProjectCreated(formData.name);
+      setFormData({ 
+        name: '', 
+        code: '', 
+        location: '', 
+        description: '', 
+        startDate: '', 
+        endDate: '', 
+        status: 'planning' 
+      });
       onClose();
     } catch (error) {
       toast({

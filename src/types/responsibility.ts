@@ -8,3 +8,14 @@ export interface Responsibility {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface ResponsibilityFormData {
+  name: string;
+  description?: string;
+  category?: string;
+}
+
+export interface ResponsibilitySearchFilters {
+  name: string;
+  category: string;
+}

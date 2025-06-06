@@ -6,6 +6,7 @@ import { Project, ProjectFormData } from '@/types/project';
 import { Subcontractor, SubcontractorFormData } from '@/types/subcontractor';
 import { Trade } from '@/types/trade';
 import { Responsibility } from '@/types/responsibility';
+import { Subcontract } from '@/types/subcontract';
 import { useToast } from '@/hooks/use-toast';
 
 // Define TradeItem type
@@ -19,35 +20,24 @@ interface TradeItem {
   updatedAt: string;
 }
 
-// Define Subcontract type
-interface Subcontract {
-  contractId: string;
-  projectName: string;
-  subcontractorName: string;
-  value: number;
-  status: 'draft' | 'pending' | 'active' | 'completed' | 'cancelled';
-  startDate: string;
-  endDate: string;
-}
-
 interface DataContextType {
   // Projects
   projects: Project[];
-  addProject: (data: ProjectFormData) => void;
-  updateProject: (id: string, data: ProjectFormData) => void;
-  deleteProject: (id: string) => void;
+  addProject: (data: ProjectFormData) => Promise<void>;
+  updateProject: (id: string, data: ProjectFormData) => Promise<void>;
+  deleteProject: (id: string) => Promise<void>;
   
   // Subcontractors
   subcontractors: Subcontractor[];
-  addSubcontractor: (data: SubcontractorFormData) => void;
-  updateSubcontractor: (id: string, data: SubcontractorFormData) => void;
-  deleteSubcontractor: (id: string) => void;
+  addSubcontractor: (data: SubcontractorFormData) => Promise<void>;
+  updateSubcontractor: (id: string, data: SubcontractorFormData) => Promise<void>;
+  deleteSubcontractor: (id: string) => Promise<void>;
   
   // Trades
   trades: Trade[];
-  addTrade: (data: Partial<Trade>) => void;
-  updateTrade: (id: string, data: Partial<Trade>) => void;
-  deleteTrade: (id: string) => void;
+  addTrade: (data: Partial<Trade>) => Promise<void>;
+  updateTrade: (id: string, data: Partial<Trade>) => Promise<void>;
+  deleteTrade: (id: string) => Promise<void>;
   
   // Trade Items
   tradeItems: TradeItem[];
@@ -57,9 +47,9 @@ interface DataContextType {
   
   // Responsibilities
   responsibilities: Responsibility[];
-  addResponsibility: (data: Partial<Responsibility>) => void;
-  updateResponsibility: (id: string, data: Partial<Responsibility>) => void;
-  deleteResponsibility: (id: string) => void;
+  addResponsibility: (data: Partial<Responsibility>) => Promise<void>;
+  updateResponsibility: (id: string, data: Partial<Responsibility>) => Promise<void>;
+  deleteResponsibility: (id: string) => Promise<void>;
   
   // Subcontracts
   subcontracts: Subcontract[];
@@ -291,13 +281,18 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   // Subcontract operations (mock for now)
   const addSubcontract = (data: any) => {
     const newSubcontract: Subcontract = {
-      contractId: Math.random().toString(36).substr(2, 9),
-      projectName: data.projectName,
-      subcontractorName: data.subcontractorName,
-      value: data.value,
+      id: Math.random().toString(36).substr(2, 9),
+      contractId: `CONTRACT-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
+      project: data.project || data.projectName || '',
+      subcontractor: data.subcontractor || data.subcontractorName || '',
+      tradeItems: data.tradeItems || [],
+      responsibilities: data.responsibilities || [],
+      totalValue: data.totalValue || data.value || 0,
       status: data.status || 'draft',
-      startDate: data.startDate,
-      endDate: data.endDate
+      startDate: data.startDate || new Date().toISOString().split('T')[0],
+      endDate: data.endDate || new Date().toISOString().split('T')[0],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
     setSubcontracts(prev => [...prev, newSubcontract]);
   };
