@@ -2,8 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useApi } from '@/hooks/useApi';
-import UserService from '@/services/userService';
-import AuthService from '@/services/authService';
+import { UserService } from '@/services/userService';
+import { AuthService } from '@/services/supabaseService';
 import { User } from '@/types/user';
 
 // Example component showing how to use the API services
@@ -16,21 +16,22 @@ export function ApiUsageExample() {
     loading: userLoading,
     error: userError,
     execute: fetchUsers
-  } = useApi(UserService.getUsers, {
+  } = useApi(UserService.getAll, {
     immediate: true, // Fetch immediately on mount
     onSuccess: (response) => {
-      setUsers(response.data);
+      setUsers(response as User[]);
     }
   });
 
   // Manual API call example
   const handleCreateUser = async () => {
     try {
-      const newUser = await UserService.createUser({
-        name: 'John Doe',
+      const newUser = await UserService.create({
+        id: crypto.randomUUID(),
+        full_name: 'John Doe',
         email: 'john@example.com',
-        role: 'user',
-        department: 'Engineering'
+        role: 'viewer',
+        phone: '+1234567890'
       });
       
       console.log('User created:', newUser);
@@ -44,11 +45,7 @@ export function ApiUsageExample() {
   // Authentication example
   const handleLogin = async () => {
     try {
-      const authResponse = await AuthService.login({
-        email: 'user@example.com',
-        password: 'password123'
-      });
-      
+      const authResponse = await AuthService.signIn('user@example.com', 'password123');
       console.log('Login successful:', authResponse);
     } catch (error) {
       console.error('Login failed:', error);

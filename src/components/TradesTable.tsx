@@ -156,7 +156,7 @@ export function TradesTable({
                   <TableCell className="font-medium">{trade.name}</TableCell>
                   <TableCell>{trade.category}</TableCell>
                   <TableCell>{trade.description}</TableCell>
-                  <TableCell>{new Date(trade.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell>{new Date(trade.created_at).toLocaleDateString()}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex gap-2 justify-end">
                       <Button variant="outline" size="sm" onClick={() => onViewDetail(trade.id)}>

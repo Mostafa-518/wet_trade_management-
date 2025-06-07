@@ -19,21 +19,20 @@ export function TradeItemForm({ currentTradeItem, setCurrentTradeItem, onAddItem
 
   // Get available items for selected trade
   const availableItems = currentTradeItem.trade 
-    ? tradeItems.filter(item => item.tradeName === currentTradeItem.trade)
+    ? tradeItems.filter(item => item.trade_id === currentTradeItem.trade)
     : [];
 
-  // Auto-fill unit and unit price when item is selected
+  // Auto-fill unit when item is selected
   useEffect(() => {
     if (currentTradeItem.item && currentTradeItem.trade) {
       const selectedItem = tradeItems.find(
-        item => item.name === currentTradeItem.item && item.tradeName === currentTradeItem.trade
+        item => item.name === currentTradeItem.item && item.trade_id === currentTradeItem.trade
       );
       if (selectedItem) {
         setCurrentTradeItem(prev => ({
           ...prev,
           unit: selectedItem.unit,
-          unitPrice: selectedItem.unitPrice,
-          total: (prev.quantity || 0) * selectedItem.unitPrice
+          total: (prev.quantity || 0) * (prev.unitPrice || 0)
         }));
       }
     }
@@ -72,7 +71,7 @@ export function TradeItemForm({ currentTradeItem, setCurrentTradeItem, onAddItem
             </SelectTrigger>
             <SelectContent>
               {trades.map(trade => (
-                <SelectItem key={trade.id} value={trade.name}>
+                <SelectItem key={trade.id} value={trade.id}>
                   {trade.name}
                 </SelectItem>
               ))}
@@ -127,8 +126,11 @@ export function TradeItemForm({ currentTradeItem, setCurrentTradeItem, onAddItem
           <Input 
             type="number" 
             value={currentTradeItem.unitPrice || ''} 
-            disabled
-            placeholder="Auto-filled"
+            onChange={(e) => setCurrentTradeItem(prev => ({ 
+              ...prev, 
+              unitPrice: parseFloat(e.target.value) || 0 
+            }))}
+            placeholder="Enter unit price"
           />
         </div>
 
