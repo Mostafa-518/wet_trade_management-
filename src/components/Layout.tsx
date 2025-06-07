@@ -43,17 +43,15 @@ export function Layout({ children }: LayoutProps) {
   const navigate = useNavigate();
 
   const handleSignOut = () => {
-    // Simple navigation to login without backend dependency
     navigate('/login');
   };
 
   const getUserInitials = () => {
-    // Return default initials without backend dependency
     return 'U';
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div 
@@ -66,10 +64,10 @@ export function Layout({ children }: LayoutProps) {
 
       {/* Sidebar */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0
+        fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 lg:flex lg:flex-col
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        <div className="flex items-center justify-between h-16 px-6 border-b">
+        <div className="flex items-center justify-between h-16 px-6 border-b flex-shrink-0">
           <h1 className="text-xl font-bold text-gray-900">Construction</h1>
           <Button
             variant="ghost"
@@ -81,7 +79,7 @@ export function Layout({ children }: LayoutProps) {
           </Button>
         </div>
         
-        <nav className="mt-6 px-3">
+        <nav className="flex-1 px-3 py-6 overflow-y-auto">
           <div className="space-y-1">
             {navigationItems.map((item) => {
               const Icon = item.icon;
@@ -110,10 +108,10 @@ export function Layout({ children }: LayoutProps) {
         </nav>
       </div>
 
-      {/* Main content */}
-      <div className="lg:pl-64">
+      {/* Main content area */}
+      <div className="flex-1 flex flex-col min-w-0 lg:ml-0">
         {/* Top bar */}
-        <div className="sticky top-0 z-10 bg-white shadow-sm border-b lg:static">
+        <div className="bg-white shadow-sm border-b flex-shrink-0">
           <div className="flex items-center justify-between h-16 px-6">
             <Button
               variant="ghost"
@@ -135,7 +133,7 @@ export function Layout({ children }: LayoutProps) {
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuContent align="end" className="w-56 bg-white">
                   <div className="flex items-center justify-start gap-2 p-2">
                     <div className="flex flex-col space-y-1 leading-none">
                       <p className="font-medium">User</p>
@@ -159,7 +157,7 @@ export function Layout({ children }: LayoutProps) {
         </div>
 
         {/* Page content */}
-        <main className="p-6">
+        <main className="flex-1 p-6 overflow-auto">
           {children}
         </main>
       </div>

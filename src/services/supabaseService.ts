@@ -30,228 +30,143 @@ export type ResponsibilityInsert = Tables['responsibilities']['Insert'];
 export type ResponsibilityUpdate = Tables['responsibilities']['Update'];
 
 export type UserProfile = Tables['user_profiles']['Row'];
+export type UserProfileInsert = Tables['user_profiles']['Insert'];
+export type UserProfileUpdate = Tables['user_profiles']['Update'];
 
-// Project Service
-export class ProjectService {
-  static async getAll() {
+// Base service class with common CRUD operations
+abstract class BaseService<T, TInsert, TUpdate> {
+  protected tableName: string;
+
+  constructor(tableName: string) {
+    this.tableName = tableName;
+  }
+
+  async getAll() {
     const { data, error } = await supabase
-      .from('projects')
+      .from(this.tableName)
       .select('*')
       .order('created_at', { ascending: false });
     
     if (error) throw error;
-    return data;
+    return data as T[];
   }
 
-  static async getById(id: string) {
+  async getById(id: string) {
     const { data, error } = await supabase
-      .from('projects')
+      .from(this.tableName)
       .select('*')
       .eq('id', id)
       .single();
     
     if (error) throw error;
-    return data;
+    return data as T;
   }
 
-  static async create(project: ProjectInsert) {
+  async create(item: TInsert) {
     const { data, error } = await supabase
-      .from('projects')
-      .insert(project)
+      .from(this.tableName)
+      .insert(item)
       .select()
       .single();
     
     if (error) throw error;
-    return data;
+    return data as T;
   }
 
-  static async update(id: string, project: ProjectUpdate) {
+  async update(id: string, item: TUpdate) {
     const { data, error } = await supabase
-      .from('projects')
-      .update({ ...project, updated_at: new Date().toISOString() })
+      .from(this.tableName)
+      .update({ ...item, updated_at: new Date().toISOString() })
       .eq('id', id)
       .select()
       .single();
     
     if (error) throw error;
-    return data;
+    return data as T;
   }
 
-  static async delete(id: string) {
+  async delete(id: string) {
     const { error } = await supabase
-      .from('projects')
+      .from(this.tableName)
       .delete()
       .eq('id', id);
     
     if (error) throw error;
+  }
+}
+
+// Project Service
+export class ProjectService extends BaseService<Project, ProjectInsert, ProjectUpdate> {
+  constructor() {
+    super('projects');
   }
 }
 
 // Subcontractor Service
-export class SubcontractorService {
-  static async getAll() {
-    const { data, error } = await supabase
-      .from('subcontractors')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    if (error) throw error;
-    return data;
-  }
-
-  static async getById(id: string) {
-    const { data, error } = await supabase
-      .from('subcontractors')
-      .select('*')
-      .eq('id', id)
-      .single();
-    
-    if (error) throw error;
-    return data;
-  }
-
-  static async create(subcontractor: SubcontractorInsert) {
-    const { data, error } = await supabase
-      .from('subcontractors')
-      .insert(subcontractor)
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data;
-  }
-
-  static async update(id: string, subcontractor: SubcontractorUpdate) {
-    const { data, error } = await supabase
-      .from('subcontractors')
-      .update({ ...subcontractor, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data;
-  }
-
-  static async delete(id: string) {
-    const { error } = await supabase
-      .from('subcontractors')
-      .delete()
-      .eq('id', id);
-    
-    if (error) throw error;
+export class SubcontractorService extends BaseService<Subcontractor, SubcontractorInsert, SubcontractorUpdate> {
+  constructor() {
+    super('subcontractors');
   }
 }
 
 // Trade Service
-export class TradeService {
-  static async getAll() {
+export class TradeService extends BaseService<Trade, TradeInsert, TradeUpdate> {
+  constructor() {
+    super('trades');
+  }
+}
+
+// Trade Item Service
+export class TradeItemService extends BaseService<TradeItem, TradeItemInsert, TradeItemUpdate> {
+  constructor() {
+    super('trade_items');
+  }
+
+  async getByTradeId(tradeId: string) {
     const { data, error } = await supabase
-      .from('trades')
+      .from('trade_items')
       .select('*')
+      .eq('trade_id', tradeId)
       .order('created_at', { ascending: false });
     
     if (error) throw error;
-    return data;
-  }
-
-  static async getById(id: string) {
-    const { data, error } = await supabase
-      .from('trades')
-      .select('*')
-      .eq('id', id)
-      .single();
-    
-    if (error) throw error;
-    return data;
-  }
-
-  static async create(trade: TradeInsert) {
-    const { data, error } = await supabase
-      .from('trades')
-      .insert(trade)
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data;
-  }
-
-  static async update(id: string, trade: TradeUpdate) {
-    const { data, error } = await supabase
-      .from('trades')
-      .update({ ...trade, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data;
-  }
-
-  static async delete(id: string) {
-    const { error } = await supabase
-      .from('trades')
-      .delete()
-      .eq('id', id);
-    
-    if (error) throw error;
+    return data as TradeItem[];
   }
 }
 
 // Responsibility Service
-export class ResponsibilityService {
-  static async getAll() {
-    const { data, error } = await supabase
-      .from('responsibilities')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    if (error) throw error;
-    return data;
+export class ResponsibilityService extends BaseService<Responsibility, ResponsibilityInsert, ResponsibilityUpdate> {
+  constructor() {
+    super('responsibilities');
+  }
+}
+
+// Subcontract Service
+export class SubcontractService extends BaseService<Subcontract, SubcontractInsert, SubcontractUpdate> {
+  constructor() {
+    super('subcontracts');
   }
 
-  static async getById(id: string) {
+  async getWithDetails(id: string) {
     const { data, error } = await supabase
-      .from('responsibilities')
-      .select('*')
+      .from('subcontracts')
+      .select(`
+        *,
+        projects(name, code),
+        subcontractors(name, contact_person)
+      `)
       .eq('id', id)
       .single();
     
     if (error) throw error;
     return data;
   }
+}
 
-  static async create(responsibility: ResponsibilityInsert) {
-    const { data, error } = await supabase
-      .from('responsibilities')
-      .insert(responsibility)
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data;
-  }
-
-  static async update(id: string, responsibility: ResponsibilityUpdate) {
-    const { data, error } = await supabase
-      .from('responsibilities')
-      .update({ ...responsibility, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data;
-  }
-
-  static async delete(id: string) {
-    const { error } = await supabase
-      .from('responsibilities')
-      .delete()
-      .eq('id', id);
-    
-    if (error) throw error;
+// User Profile Service
+export class UserProfileService extends BaseService<UserProfile, UserProfileInsert, UserProfileUpdate> {
+  constructor() {
+    super('user_profiles');
   }
 }
 
@@ -328,3 +243,12 @@ export class AuthService {
     });
   }
 }
+
+// Create service instances
+export const projectService = new ProjectService();
+export const subcontractorService = new SubcontractorService();
+export const tradeService = new TradeService();
+export const tradeItemService = new TradeItemService();
+export const responsibilityService = new ResponsibilityService();
+export const subcontractService = new SubcontractService();
+export const userProfileService = new UserProfileService();

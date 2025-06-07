@@ -1,47 +1,62 @@
 
-import ApiService, { ApiResponse } from './apiService';
-import { User } from '@/types/user';
+import { supabase } from '@/integrations/supabase/client';
+import { Database } from '@/integrations/supabase/types';
 
-export interface UserFormData {
-  name: string;
-  email: string;
-  role: 'admin' | 'manager' | 'user';
-  department: string;
-  phone?: string;
+type UserProfile = Database['public']['Tables']['user_profiles']['Row'];
+type UserProfileInsert = Database['public']['Tables']['user_profiles']['Insert'];
+type UserProfileUpdate = Database['public']['Tables']['user_profiles']['Update'];
+
+export class UserService {
+  static async getAll() {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data;
+  }
+
+  static async getById(id: string) {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data;
+  }
+
+  static async create(user: UserProfileInsert) {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .insert(user)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  }
+
+  static async update(id: string, user: UserProfileUpdate) {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .update({ ...user, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  }
+
+  static async delete(id: string) {
+    const { error } = await supabase
+      .from('user_profiles')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  }
 }
-
-class UserService {
-  private static readonly endpoint = '/users';
-
-  // Get all users
-  static async getUsers(params?: { page?: number; limit?: number; search?: string }): Promise<ApiResponse<User[]>> {
-    return ApiService.get(this.endpoint, params);
-  }
-
-  // Get user by ID
-  static async getUser(id: string): Promise<ApiResponse<User>> {
-    return ApiService.get(`${this.endpoint}/${id}`);
-  }
-
-  // Create new user
-  static async createUser(userData: UserFormData): Promise<ApiResponse<User>> {
-    return ApiService.post(this.endpoint, userData);
-  }
-
-  // Update user
-  static async updateUser(id: string, userData: Partial<UserFormData>): Promise<ApiResponse<User>> {
-    return ApiService.put(`${this.endpoint}/${id}`, userData);
-  }
-
-  // Delete user
-  static async deleteUser(id: string): Promise<ApiResponse<void>> {
-    return ApiService.delete(`${this.endpoint}/${id}`);
-  }
-
-  // Update user status
-  static async updateUserStatus(id: string, status: 'active' | 'inactive' | 'suspended'): Promise<ApiResponse<User>> {
-    return ApiService.patch(`${this.endpoint}/${id}/status`, { status });
-  }
-}
-
-export default UserService;

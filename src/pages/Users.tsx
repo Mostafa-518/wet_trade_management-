@@ -1,25 +1,118 @@
 
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { UsersTable } from '@/components/UsersTable';
 import { UserForm } from '@/components/UserForm';
 import { UserDetailView } from '@/components/UserDetailView';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { mockUsers } from '@/data/usersData';
+import { UserService } from '@/services/userService';
 import { User } from '@/types/user';
 
 export function Users() {
   const location = useLocation();
   const { toast } = useToast();
-  const [users, setUsers] = useState<User[]>(mockUsers);
+  const queryClient = useQueryClient();
+  
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+
+  // Fetch users from backend
+  const { data: users = [], isLoading } = useQuery({
+    queryKey: ['users'],
+    queryFn: async () => {
+      const data = await UserService.getAll();
+      return data.map(user => ({
+        id: user.id,
+        name: user.full_name || '',
+        email: user.email || '',
+        role: user.role || 'viewer',
+        phone: user.phone || '',
+        status: 'active' as const,
+        createdAt: user.created_at,
+        updatedAt: user.updated_at
+      }));
+    }
+  });
+
+  // Create user mutation
+  const createUserMutation = useMutation({
+    mutationFn: async (userData: any) => {
+      return await UserService.create({
+        full_name: userData.name,
+        email: userData.email,
+        role: userData.role,
+        phone: userData.phone
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast({
+        title: "User created",
+        description: "The new user has been successfully created.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to create user",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Update user mutation
+  const updateUserMutation = useMutation({
+    mutationFn: async ({ id, userData }: { id: string; userData: any }) => {
+      return await UserService.update(id, {
+        full_name: userData.name,
+        email: userData.email,
+        role: userData.role,
+        phone: userData.phone
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast({
+        title: "User updated",
+        description: "The user has been successfully updated.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update user",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Delete user mutation
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      return await UserService.delete(userId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast({
+        title: "User deleted",
+        description: "The user has been successfully deleted.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete user",
+        variant: "destructive"
+      });
+    }
+  });
 
   React.useEffect(() => {
     if (location.state?.editUser) {
@@ -51,43 +144,24 @@ export function Users() {
 
   const confirmDelete = () => {
     if (userToDelete) {
-      setUsers(users.filter(user => user.id !== userToDelete));
-      toast({
-        title: "User deleted",
-        description: "The user has been successfully deleted.",
-      });
+      deleteUserMutation.mutate(userToDelete);
     }
     setIsDeleteDialogOpen(false);
     setUserToDelete(null);
   };
 
-  const handleFormSubmit = (data: any) => {
-    if (editingUser) {
-      // Update existing user
-      setUsers(users.map(user => 
-        user.id === editingUser.id 
-          ? { ...user, ...data }
-          : user
-      ));
-      toast({
-        title: "User updated",
-        description: "The user has been successfully updated.",
-      });
-    } else {
-      // Add new user
-      const newUser: User = {
-        ...data,
-        id: Math.random().toString(36).substr(2, 9),
-        createdAt: new Date().toISOString().split('T')[0],
-      };
-      setUsers([...users, newUser]);
-      toast({
-        title: "User created",
-        description: "The new user has been successfully created.",
-      });
+  const handleFormSubmit = async (data: any) => {
+    try {
+      if (editingUser) {
+        await updateUserMutation.mutateAsync({ id: editingUser.id, userData: data });
+      } else {
+        await createUserMutation.mutateAsync(data);
+      }
+      setIsFormOpen(false);
+      setEditingUser(null);
+    } catch (error) {
+      // Error handling is done in mutation callbacks
     }
-    setIsFormOpen(false);
-    setEditingUser(null);
   };
 
   const handleFormCancel = () => {
@@ -125,6 +199,7 @@ export function Users() {
         onEdit={handleEditUser}
         onDelete={handleDeleteUser}
         onView={handleViewUser}
+        loading={isLoading}
       />
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
@@ -138,6 +213,7 @@ export function Users() {
             user={editingUser || undefined}
             onSubmit={handleFormSubmit}
             onCancel={handleFormCancel}
+            loading={createUserMutation.isPending || updateUserMutation.isPending}
           />
         </DialogContent>
       </Dialog>
@@ -153,7 +229,12 @@ export function Users() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              disabled={deleteUserMutation.isPending}
+            >
+              Delete
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

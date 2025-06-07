@@ -1,6 +1,13 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+
+import React, { createContext, useContext } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ProjectService, SubcontractorService, TradeService, ResponsibilityService } from '@/services/supabaseService';
+import { 
+  projectService, 
+  subcontractorService, 
+  tradeService, 
+  responsibilityService,
+  tradeItemService
+} from '@/services/supabaseService';
 import { Project, ProjectFormData } from '@/types/project';
 import { Subcontractor, SubcontractorFormData } from '@/types/subcontractor';
 import { Trade } from '@/types/trade';
@@ -8,18 +15,15 @@ import { Responsibility } from '@/types/responsibility';
 import { Subcontract } from '@/types/subcontract';
 import { useToast } from '@/hooks/use-toast';
 
-// Define TradeItem type
+// Define TradeItem type based on database schema
 interface TradeItem {
   id: string;
-  tradeId: string;
-  tradeName: string;
+  trade_id: string;
   name: string;
   description?: string;
   unit?: string;
-  category?: string;
-  unitPrice?: number;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface DataContextType {
@@ -43,9 +47,9 @@ interface DataContextType {
   
   // Trade Items
   tradeItems: TradeItem[];
-  addTradeItem: (data: Partial<TradeItem>) => void;
-  updateTradeItem: (id: string, data: Partial<TradeItem>) => void;
-  deleteTradeItem: (id: string) => void;
+  addTradeItem: (data: Partial<TradeItem>) => Promise<void>;
+  updateTradeItem: (id: string, data: Partial<TradeItem>) => Promise<void>;
+  deleteTradeItem: (id: string) => Promise<void>;
   
   // Responsibilities
   responsibilities: Responsibility[];
@@ -53,7 +57,7 @@ interface DataContextType {
   updateResponsibility: (id: string, data: Partial<Responsibility>) => Promise<void>;
   deleteResponsibility: (id: string) => Promise<void>;
   
-  // Subcontracts
+  // Subcontracts (mock for now - will be implemented when needed)
   subcontracts: Subcontract[];
   addSubcontract: (data: any) => void;
   
@@ -65,36 +69,42 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
-  
-  // State for mock data that doesn't exist in Supabase yet
-  const [tradeItems, setTradeItems] = useState<TradeItem[]>([]);
-  const [subcontracts, setSubcontracts] = useState<Subcontract[]>([]);
 
-  // Fetch data using React Query
-  const { data: projects = [], refetch: refetchProjects } = useQuery({
+  // Fetch data using React Query with proper error handling
+  const { data: projects = [], refetch: refetchProjects, isLoading: projectsLoading } = useQuery({
     queryKey: ['projects'],
-    queryFn: ProjectService.getAll,
+    queryFn: () => projectService.getAll(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  const { data: subcontractors = [], refetch: refetchSubcontractors } = useQuery({
+  const { data: subcontractors = [], refetch: refetchSubcontractors, isLoading: subcontractorsLoading } = useQuery({
     queryKey: ['subcontractors'],
-    queryFn: SubcontractorService.getAll,
+    queryFn: () => subcontractorService.getAll(),
+    staleTime: 5 * 60 * 1000,
   });
 
-  const { data: trades = [], refetch: refetchTrades } = useQuery({
+  const { data: trades = [], refetch: refetchTrades, isLoading: tradesLoading } = useQuery({
     queryKey: ['trades'],
-    queryFn: TradeService.getAll,
+    queryFn: () => tradeService.getAll(),
+    staleTime: 5 * 60 * 1000,
   });
 
-  const { data: responsibilities = [], refetch: refetchResponsibilities } = useQuery({
+  const { data: responsibilities = [], refetch: refetchResponsibilities, isLoading: responsibilitiesLoading } = useQuery({
     queryKey: ['responsibilities'],
-    queryFn: ResponsibilityService.getAll,
+    queryFn: () => responsibilityService.getAll(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: tradeItems = [], refetch: refetchTradeItems, isLoading: tradeItemsLoading } = useQuery({
+    queryKey: ['tradeItems'],
+    queryFn: () => tradeItemService.getAll(),
+    staleTime: 5 * 60 * 1000,
   });
 
   // Project operations
-  const addProject = async (data: ProjectFormData) => {
+  const addProject = async (data: ProjectFormData): Promise<void> => {
     try {
-      await ProjectService.create({
+      await projectService.create({
         name: data.name,
         code: data.code,
         location: data.location,
@@ -104,6 +114,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         status: data.status as any
       });
       refetchProjects();
+      toast({
+        title: "Success",
+        description: "Project created successfully",
+      });
     } catch (error) {
       console.error('Error adding project:', error);
       toast({
@@ -115,9 +129,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const updateProject = async (id: string, data: ProjectFormData) => {
+  const updateProject = async (id: string, data: ProjectFormData): Promise<void> => {
     try {
-      await ProjectService.update(id, {
+      await projectService.update(id, {
         name: data.name,
         code: data.code,
         location: data.location,
@@ -127,42 +141,44 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         status: data.status as any
       });
       refetchProjects();
+      toast({
+        title: "Success",
+        description: "Project updated successfully",
+      });
     } catch (error) {
       console.error('Error updating project:', error);
-    }
-  };
-
-  const deleteProject = async (id: string) => {
-    try {
-      await ProjectService.delete(id);
-      refetchProjects();
-    } catch (error) {
-      console.error('Error deleting project:', error);
-    }
-  };
-
-  // Subcontractor operations
-  const addSubcontractor = async (data: SubcontractorFormData) => {
-    try {
-      await SubcontractorService.create({
-        name: data.name,
-        contact_person: data.contactPerson,
-        email: data.email,
-        phone: data.phone,
-        address: data.address,
-        license_number: data.licenseNumber,
-        rating: data.rating
+      toast({
+        title: "Error",
+        description: "Failed to update project",
+        variant: "destructive"
       });
-      refetchSubcontractors();
-    } catch (error) {
-      console.error('Error adding subcontractor:', error);
       throw error;
     }
   };
 
-  const updateSubcontractor = async (id: string, data: SubcontractorFormData) => {
+  const deleteProject = async (id: string): Promise<void> => {
     try {
-      await SubcontractorService.update(id, {
+      await projectService.delete(id);
+      refetchProjects();
+      toast({
+        title: "Success",
+        description: "Project deleted successfully",
+      });
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete project",
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
+
+  // Subcontractor operations
+  const addSubcontractor = async (data: SubcontractorFormData): Promise<void> => {
+    try {
+      await subcontractorService.create({
         name: data.name,
         contact_person: data.contactPerson,
         email: data.email,
@@ -172,139 +188,276 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         rating: data.rating
       });
       refetchSubcontractors();
+      toast({
+        title: "Success",
+        description: "Subcontractor created successfully",
+      });
     } catch (error) {
-      console.error('Error updating subcontractor:', error);
+      console.error('Error adding subcontractor:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add subcontractor",
+        variant: "destructive"
+      });
+      throw error;
     }
   };
 
-  const deleteSubcontractor = async (id: string) => {
+  const updateSubcontractor = async (id: string, data: SubcontractorFormData): Promise<void> => {
     try {
-      await SubcontractorService.delete(id);
+      await subcontractorService.update(id, {
+        name: data.name,
+        contact_person: data.contactPerson,
+        email: data.email,
+        phone: data.phone,
+        address: data.address,
+        license_number: data.licenseNumber,
+        rating: data.rating
+      });
       refetchSubcontractors();
+      toast({
+        title: "Success",
+        description: "Subcontractor updated successfully",
+      });
+    } catch (error) {
+      console.error('Error updating subcontractor:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update subcontractor",
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
+
+  const deleteSubcontractor = async (id: string): Promise<void> => {
+    try {
+      await subcontractorService.delete(id);
+      refetchSubcontractors();
+      toast({
+        title: "Success",
+        description: "Subcontractor deleted successfully",
+      });
     } catch (error) {
       console.error('Error deleting subcontractor:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete subcontractor",
+        variant: "destructive"
+      });
+      throw error;
     }
   };
 
   // Trade operations
-  const addTrade = async (data: Partial<Trade>) => {
+  const addTrade = async (data: Partial<Trade>): Promise<void> => {
     try {
-      await TradeService.create({
+      await tradeService.create({
         name: data.name!,
         category: data.category!,
         description: data.description
       });
       refetchTrades();
+      toast({
+        title: "Success",
+        description: "Trade created successfully",
+      });
     } catch (error) {
       console.error('Error adding trade:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add trade",
+        variant: "destructive"
+      });
+      throw error;
     }
   };
 
-  const updateTrade = async (id: string, data: Partial<Trade>) => {
+  const updateTrade = async (id: string, data: Partial<Trade>): Promise<void> => {
     try {
-      await TradeService.update(id, {
+      await tradeService.update(id, {
         name: data.name,
         category: data.category,
         description: data.description
       });
       refetchTrades();
+      toast({
+        title: "Success",
+        description: "Trade updated successfully",
+      });
     } catch (error) {
       console.error('Error updating trade:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update trade",
+        variant: "destructive"
+      });
+      throw error;
     }
   };
 
-  const deleteTrade = async (id: string) => {
+  const deleteTrade = async (id: string): Promise<void> => {
     try {
-      await TradeService.delete(id);
+      await tradeService.delete(id);
       refetchTrades();
+      toast({
+        title: "Success",
+        description: "Trade deleted successfully",
+      });
     } catch (error) {
       console.error('Error deleting trade:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete trade",
+        variant: "destructive"
+      });
+      throw error;
     }
   };
 
-  // Trade Item operations (mock for now)
-  const addTradeItem = (data: Partial<TradeItem>) => {
-    const newItem: TradeItem = {
-      id: Math.random().toString(36).substr(2, 9),
-      tradeId: data.tradeId!,
-      tradeName: data.tradeName || '',
-      name: data.name!,
-      unit: data.unit || '',
-      category: data.category || '',
-      unitPrice: data.unitPrice || 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    setTradeItems(prev => [...prev, newItem]);
+  // Trade Item operations
+  const addTradeItem = async (data: Partial<TradeItem>): Promise<void> => {
+    try {
+      await tradeItemService.create({
+        trade_id: data.trade_id!,
+        name: data.name!,
+        description: data.description,
+        unit: data.unit
+      });
+      refetchTradeItems();
+      toast({
+        title: "Success",
+        description: "Trade item created successfully",
+      });
+    } catch (error) {
+      console.error('Error adding trade item:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add trade item",
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
-  const updateTradeItem = (id: string, data: Partial<TradeItem>) => {
-    setTradeItems(prev => prev.map(item => 
-      item.id === id ? { ...item, ...data, updatedAt: new Date().toISOString() } : item
-    ));
+  const updateTradeItem = async (id: string, data: Partial<TradeItem>): Promise<void> => {
+    try {
+      await tradeItemService.update(id, {
+        name: data.name,
+        description: data.description,
+        unit: data.unit
+      });
+      refetchTradeItems();
+      toast({
+        title: "Success",
+        description: "Trade item updated successfully",
+      });
+    } catch (error) {
+      console.error('Error updating trade item:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update trade item",
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
-  const deleteTradeItem = (id: string) => {
-    setTradeItems(prev => prev.filter(item => item.id !== id));
+  const deleteTradeItem = async (id: string): Promise<void> => {
+    try {
+      await tradeItemService.delete(id);
+      refetchTradeItems();
+      toast({
+        title: "Success",
+        description: "Trade item deleted successfully",
+      });
+    } catch (error) {
+      console.error('Error deleting trade item:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete trade item",
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
   // Responsibility operations
-  const addResponsibility = async (data: Partial<Responsibility>) => {
+  const addResponsibility = async (data: Partial<Responsibility>): Promise<void> => {
     try {
-      await ResponsibilityService.create({
+      await responsibilityService.create({
         name: data.name!,
         description: data.description,
         category: data.category
       });
       refetchResponsibilities();
+      toast({
+        title: "Success",
+        description: "Responsibility created successfully",
+      });
     } catch (error) {
       console.error('Error adding responsibility:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add responsibility",
+        variant: "destructive"
+      });
+      throw error;
     }
   };
 
-  const updateResponsibility = async (id: string, data: Partial<Responsibility>) => {
+  const updateResponsibility = async (id: string, data: Partial<Responsibility>): Promise<void> => {
     try {
-      await ResponsibilityService.update(id, {
+      await responsibilityService.update(id, {
         name: data.name,
         description: data.description,
         category: data.category
       });
       refetchResponsibilities();
+      toast({
+        title: "Success",
+        description: "Responsibility updated successfully",
+      });
     } catch (error) {
       console.error('Error updating responsibility:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update responsibility",
+        variant: "destructive"
+      });
+      throw error;
     }
   };
 
-  const deleteResponsibility = async (id: string) => {
+  const deleteResponsibility = async (id: string): Promise<void> => {
     try {
-      await ResponsibilityService.delete(id);
+      await responsibilityService.delete(id);
       refetchResponsibilities();
+      toast({
+        title: "Success",
+        description: "Responsibility deleted successfully",
+      });
     } catch (error) {
       console.error('Error deleting responsibility:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete responsibility",
+        variant: "destructive"
+      });
+      throw error;
     }
   };
 
   // Subcontract operations (mock for now)
   const addSubcontract = (data: any) => {
-    const newSubcontract: Subcontract = {
-      id: Math.random().toString(36).substr(2, 9),
-      contractId: `CONTRACT-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
-      project: data.project || data.projectName || '',
-      subcontractor: data.subcontractor || data.subcontractorName || '',
-      tradeItems: data.tradeItems || [],
-      responsibilities: data.responsibilities || [],
-      totalValue: data.totalValue || data.value || 0,
-      status: data.status || 'draft',
-      startDate: data.startDate || new Date().toISOString().split('T')[0],
-      endDate: data.endDate || new Date().toISOString().split('T')[0],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    setSubcontracts(prev => [...prev, newSubcontract]);
+    // This will be implemented when subcontract functionality is needed
+    console.log('Adding subcontract:', data);
   };
 
+  const isLoading = projectsLoading || subcontractorsLoading || tradesLoading || responsibilitiesLoading || tradeItemsLoading;
+
   const value: DataContextType = {
-    // Projects
+    // Projects - Map database fields to frontend types
     projects: projects.map(p => ({
       ...p,
       createdAt: p.created_at,
@@ -371,12 +524,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     updateResponsibility,
     deleteResponsibility,
     
-    // Subcontracts
-    subcontracts,
+    // Subcontracts (mock for now)
+    subcontracts: [], // Empty for now
     addSubcontract,
     
     // Loading states
-    isLoading: false
+    isLoading
   };
 
   return (
