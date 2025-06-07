@@ -4,8 +4,8 @@ export interface Trade {
   name: string;
   category: string;
   description: string;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface TradeFormData {
@@ -22,27 +22,23 @@ export interface TradeSearchFilters {
 
 export interface TradeItem {
   id: string;
-  tradeId: string;
-  tradeName: string;
+  trade_id: string;
   name: string;
   unit: string;
-  category: string;
-  unitPrice: number;
-  createdAt: string;
-  updatedAt: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface TradeItemFormData {
-  tradeId: string;
+  trade_id: string;
   name: string;
   unit: string;
-  category: string;
-  unitPrice: number;
+  description: string;
 }
 
 export interface TradeItemSearchFilters {
   name: string;
-  tradeName: string;
-  category: string;
+  trade_id: string;
   unit: string;
 }

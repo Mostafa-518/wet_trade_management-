@@ -34,6 +34,7 @@ export function Users() {
         email: user.email || '',
         role: user.role || 'viewer',
         phone: user.phone || '',
+        department: 'General', // Default department since it's not in the database
         status: 'active' as const,
         createdAt: user.created_at,
         updatedAt: user.updated_at
@@ -45,6 +46,7 @@ export function Users() {
   const createUserMutation = useMutation({
     mutationFn: async (userData: any) => {
       return await UserService.create({
+        id: crypto.randomUUID(),
         full_name: userData.name,
         email: userData.email,
         role: userData.role,
@@ -213,7 +215,6 @@ export function Users() {
             user={editingUser || undefined}
             onSubmit={handleFormSubmit}
             onCancel={handleFormCancel}
-            loading={createUserMutation.isPending || updateUserMutation.isPending}
           />
         </DialogContent>
       </Dialog>

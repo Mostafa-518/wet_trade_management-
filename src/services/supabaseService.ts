@@ -35,9 +35,9 @@ export type UserProfileUpdate = Tables['user_profiles']['Update'];
 
 // Base service class with common CRUD operations
 abstract class BaseService<T, TInsert, TUpdate> {
-  protected tableName: string;
+  protected tableName: keyof Tables;
 
-  constructor(tableName: string) {
+  constructor(tableName: keyof Tables) {
     this.tableName = tableName;
   }
 

@@ -19,11 +19,10 @@ interface TradeItemFormProps {
 export function TradeItemForm({ item, tradeId, onSubmit, onCancel }: TradeItemFormProps) {
   const form = useForm<TradeItemFormData>({
     defaultValues: {
-      tradeId: item?.tradeId || tradeId || '',
+      trade_id: item?.trade_id || tradeId || '',
       name: item?.name || '',
       unit: item?.unit || '',
-      category: item?.category || '',
-      unitPrice: item?.unitPrice || 0
+      description: item?.description || ''
     }
   });
 
@@ -58,7 +57,7 @@ export function TradeItemForm({ item, tradeId, onSubmit, onCancel }: TradeItemFo
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
-                  name="tradeId"
+                  name="trade_id"
                   rules={{ required: 'Trade is required' }}
                   render={({ field }) => (
                     <FormItem>
@@ -108,27 +107,12 @@ export function TradeItemForm({ item, tradeId, onSubmit, onCancel }: TradeItemFo
 
                 <FormField
                   control={form.control}
-                  name="category"
+                  name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Category</FormLabel>
+                      <FormLabel>Description</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter category" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="unitPrice"
-                  rules={{ required: 'Unit price is required', min: { value: 0, message: 'Price must be positive' } }}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Unit Price *</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="Enter unit price" {...field} onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)} />
+                        <Input placeholder="Enter description" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

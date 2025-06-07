@@ -19,7 +19,7 @@ export function TradeDetailView({ tradeId, onBack, onEdit, onAddItem, onEditItem
   const { trades, tradeItems, deleteTradeItem } = useData();
   
   const trade = trades.find(t => t.id === tradeId);
-  const items = tradeItems.filter(item => item.tradeId === tradeId);
+  const items = tradeItems.filter(item => item.trade_id === tradeId);
 
   const handleDeleteItem = (itemId: string) => {
     deleteTradeItem(itemId);
@@ -83,7 +83,7 @@ export function TradeDetailView({ tradeId, onBack, onEdit, onAddItem, onEditItem
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Created Date</label>
-                  <p className="text-lg font-semibold">{new Date(trade.createdAt).toLocaleDateString()}</p>
+                  <p className="text-lg font-semibold">{new Date(trade.created_at).toLocaleDateString()}</p>
                 </div>
               </div>
             </CardContent>
@@ -111,8 +111,7 @@ export function TradeDetailView({ tradeId, onBack, onEdit, onAddItem, onEditItem
                     <TableRow>
                       <TableHead>Item Name</TableHead>
                       <TableHead>Unit</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Unit Price</TableHead>
+                      <TableHead>Description</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -121,8 +120,7 @@ export function TradeDetailView({ tradeId, onBack, onEdit, onAddItem, onEditItem
                       <TableRow key={item.id}>
                         <TableCell className="font-medium">{item.name}</TableCell>
                         <TableCell>{item.unit}</TableCell>
-                        <TableCell>{item.category}</TableCell>
-                        <TableCell>${item.unitPrice.toLocaleString()}</TableCell>
+                        <TableCell>{item.description}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex gap-2 justify-end">
                             <Button variant="outline" size="sm" onClick={() => onEditItem(item)}>

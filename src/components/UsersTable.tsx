@@ -22,9 +22,10 @@ interface UsersTableProps {
   onEdit: (user: User) => void;
   onDelete: (userId: string) => void;
   onView: (user: User) => void;
+  loading?: boolean;
 }
 
-export function UsersTable({ users, onAdd, onEdit, onDelete, onView }: UsersTableProps) {
+export function UsersTable({ users, onAdd, onEdit, onDelete, onView, loading = false }: UsersTableProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredUsers = users.filter(user =>
@@ -51,14 +52,31 @@ export function UsersTable({ users, onAdd, onEdit, onDelete, onView }: UsersTabl
     switch (role) {
       case 'admin':
         return 'bg-purple-100 text-purple-800';
-      case 'manager':
+      case 'project_manager':
         return 'bg-blue-100 text-blue-800';
-      case 'user':
+      case 'supervisor':
         return 'bg-green-100 text-green-800';
+      case 'viewer':
+        return 'bg-gray-100 text-gray-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
+
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Users Management</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">Loading users...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -110,7 +128,7 @@ export function UsersTable({ users, onAdd, onEdit, onDelete, onView }: UsersTabl
                 </TableCell>
                 <TableCell>
                   <Badge variant="secondary" className={getRoleColor(user.role)}>
-                    {user.role}
+                    {user.role.replace('_', ' ')}
                   </Badge>
                 </TableCell>
                 <TableCell>{user.department}</TableCell>
