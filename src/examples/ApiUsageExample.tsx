@@ -19,7 +19,19 @@ export function ApiUsageExample() {
   } = useApi(UserService.getAll, {
     immediate: true, // Fetch immediately on mount
     onSuccess: (response) => {
-      setUsers(response as User[]);
+      // Transform the backend data to match the frontend User type
+      const transformedUsers = (response as any[]).map(user => ({
+        id: user.id,
+        name: user.full_name || '',
+        email: user.email || '',
+        role: user.role || 'viewer',
+        phone: user.phone || '',
+        department: 'General', // Default department since it's not in the database
+        status: 'active' as const,
+        createdAt: user.created_at,
+        lastLogin: user.updated_at
+      }));
+      setUsers(transformedUsers);
     }
   });
 
