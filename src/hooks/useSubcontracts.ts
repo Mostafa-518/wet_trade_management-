@@ -3,11 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { subcontractService, subcontractTradeItemService } from '@/services';
 import { Subcontract } from '@/types/subcontract';
 import { useToast } from '@/hooks/use-toast';
-import { useData } from '@/contexts/DataContext';
 
-export function useSubcontracts() {
+export function useSubcontracts(trades: any[] = [], tradeItems: any[] = []) {
   const { toast } = useToast();
-  const { trades, tradeItems } = useData();
 
   const { data: subcontractsRaw = [], refetch: refetchSubcontracts, isLoading: subcontractsLoading } = useQuery({
     queryKey: ['subcontracts'],

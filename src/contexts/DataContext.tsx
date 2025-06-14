@@ -58,7 +58,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     deleteSubcontract,
     deleteManySubcontracts,
     isLoading: subcontractsLoading
-  } = useSubcontracts();
+  } = useSubcontracts(trades, tradeItems);
 
   const isLoading = projectsLoading || subcontractorsLoading || responsibilitiesLoading || tradesLoading || tradeItemsLoading || subcontractsLoading;
 
