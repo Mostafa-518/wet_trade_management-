@@ -41,7 +41,12 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
     }
   };
 
-  const filteredProjects = projects.filter(project => {
+  const filteredProjects = projects.map(project => ({
+    id: project.id,
+    name: project.name,
+    code: project.code,
+    location: project.location,
+  })).filter(project => {
     return (
       project.name.toLowerCase().includes(searchFilters.name.toLowerCase()) &&
       project.code.toLowerCase().includes(searchFilters.code.toLowerCase()) &&
@@ -51,33 +56,26 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
 
   const [importedData, setImportedData] = useState<any[] | null>(null); // Hold imported rows
 
+  // Only show preview columns for the four fields
   const previewColumns = [
+    { key: "id", label: "ID" },
     { key: "name", label: "Name" },
     { key: "code", label: "Code" },
     { key: "location", label: "Location" },
-    { key: "description", label: "Description" },
-    { key: "startDate", label: "Start Date" },
-    { key: "endDate", label: "End Date" },
-    { key: "status", label: "Status" },
   ];
 
   function normalizeHeader(header: string) {
     const key = header.trim().toLowerCase().replace(/[\s_]+/g, '');
-    // Map variations to expected camelCase keys
-    if (key === "startdate") return "startDate";
-    if (key === "enddate") return "endDate";
     if (key === "projectname") return "name";
     if (key === "projectcode") return "code";
     if (key === "projectlocation") return "location";
+    if (key === "projectid") return "id";
     return (
       {
+        id: "id",
         name: "name",
         code: "code",
         location: "location",
-        description: "description",
-        status: "status",
-        startdate: "startDate",
-        enddate: "endDate",
       }[key] || key
     );
   }
@@ -95,37 +93,27 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
       const jsonData: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
       if (!jsonData || jsonData.length < 2) {
-        // No data or just headers
         setImportedData([]);
-        console.warn("No data rows found in Excel file.");
         return;
       }
 
       let [rawHeaders, ...rows] = jsonData;
 
-      // Clean up headers
+      // Only keep the four fields in the headers and mapped data
       const headers = rawHeaders.map((h: string) => normalizeHeader(h));
-      console.log("Parsed headers:", headers);
-      console.log("First row sample:", rows[0]);
+      const allowedKeys = ['id', 'name', 'code', 'location'];
 
-      // Build array of objects using normalized headers
       const mapped = rows
-        .filter((row) => row.some((cell) => cell !== undefined && cell !== "")) // skip totally empty rows
+        .filter((row) => row.some((cell) => cell !== undefined && cell !== "")) // skip empty rows
         .map((row) => {
           const out: any = {};
           headers.forEach((header: string, idx: number) => {
-            out[header] = row[idx] ?? "";
+            if (allowedKeys.includes(header)) {
+              out[header] = row[idx] ?? "";
+            }
           });
-          if (!out.status) out.status = "planning";
           return out;
         });
-
-      console.log("Imported data preview:", mapped);
-
-      if (mapped.length === 0) {
-        setImportedData([]);
-        return;
-      }
 
       setImportedData(mapped);
     };
@@ -134,14 +122,13 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
 
   const handleImport = async (rows: any[]) => {
     for (const row of rows) {
+      // Only send allowed fields to addProject
       await addProject({
         name: row.name,
         code: row.code,
         location: row.location,
-        description: row.description,
-        startDate: row.startDate,
-        endDate: row.endDate,
-        status: row.status || "planning",
+        // Provide minimal defaults for required fields
+        status: 'planning', // although will be ignored
       });
     }
     setImportedData(null);
@@ -180,7 +167,6 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
           </Button>
         </div>
       </div>
-
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -222,7 +208,6 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
           </div>
         </CardContent>
       </Card>
-
       <Card>
         <CardHeader>
           <CardTitle>Projects ({filteredProjects.length})</CardTitle>
@@ -231,20 +216,20 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>ID</TableHead>
                 <TableHead>Project Name</TableHead>
                 <TableHead>Project Code</TableHead>
                 <TableHead>Location</TableHead>
-                <TableHead>Created Date</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredProjects.map((project) => (
                 <TableRow key={project.id}>
-                  <TableCell className="font-medium">{project.name}</TableCell>
+                  <TableCell className="font-medium">{project.id}</TableCell>
+                  <TableCell>{project.name}</TableCell>
                   <TableCell>{project.code}</TableCell>
                   <TableCell>{project.location}</TableCell>
-                  <TableCell>{new Date(project.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button
@@ -257,14 +242,16 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => onEdit(project)}
+                        onClick={() => onEdit && onEdit(project)}
+                        disabled={!onEdit}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => onDelete(project.id)}
+                        onClick={() => onDelete && onDelete(project.id)}
+                        disabled={!onDelete}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
