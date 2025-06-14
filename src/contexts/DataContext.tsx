@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
@@ -6,7 +5,8 @@ import {
   subcontractorService, 
   tradeService, 
   responsibilityService,
-  tradeItemService
+  tradeItemService,
+  subcontractService
 } from '@/services/supabaseService';
 import { Project, ProjectFormData } from '@/types/project';
 import { Subcontractor, SubcontractorFormData } from '@/types/subcontractor';
@@ -57,9 +57,12 @@ interface DataContextType {
   updateResponsibility: (id: string, data: Partial<Responsibility>) => Promise<void>;
   deleteResponsibility: (id: string) => Promise<void>;
   
-  // Subcontracts (mock for now - will be implemented when needed)
+  // Subcontracts
   subcontracts: Subcontract[];
-  addSubcontract: (data: any) => void;
+  addSubcontract: (data: Partial<Subcontract>) => Promise<void>;
+  updateSubcontract: (id: string, data: Partial<Subcontract>) => Promise<void>;
+  deleteSubcontract: (id: string) => Promise<void>;
+  deleteManySubcontracts: (ids: string[]) => Promise<void>;
   
   // Loading states
   isLoading: boolean;
@@ -77,27 +80,38 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
+  // Subcontractors
   const { data: subcontractors = [], refetch: refetchSubcontractors, isLoading: subcontractorsLoading } = useQuery({
     queryKey: ['subcontractors'],
     queryFn: () => subcontractorService.getAll(),
     staleTime: 5 * 60 * 1000,
   });
 
+  // Trades
   const { data: trades = [], refetch: refetchTrades, isLoading: tradesLoading } = useQuery({
     queryKey: ['trades'],
     queryFn: () => tradeService.getAll(),
     staleTime: 5 * 60 * 1000,
   });
 
+  // Trade Items
+  const { data: tradeItems = [], refetch: refetchTradeItems, isLoading: tradeItemsLoading } = useQuery({
+    queryKey: ['tradeItems'],
+    queryFn: () => tradeItemService.getAll(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Responsibilities
   const { data: responsibilities = [], refetch: refetchResponsibilities, isLoading: responsibilitiesLoading } = useQuery({
     queryKey: ['responsibilities'],
     queryFn: () => responsibilityService.getAll(),
     staleTime: 5 * 60 * 1000,
   });
 
-  const { data: tradeItems = [], refetch: refetchTradeItems, isLoading: tradeItemsLoading } = useQuery({
-    queryKey: ['tradeItems'],
-    queryFn: () => tradeItemService.getAll(),
+  // Subcontracts
+  const { data: subcontractsRaw = [], refetch: refetchSubcontracts, isLoading: subcontractsLoading } = useQuery({
+    queryKey: ['subcontracts'],
+    queryFn: () => subcontractService.getAll(),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -449,10 +463,90 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Subcontract operations (mock for now)
-  const addSubcontract = (data: any) => {
-    // This will be implemented when subcontract functionality is needed
-    console.log('Adding subcontract:', data);
+  const addSubcontract = async (data: Partial<Subcontract>) => {
+    try {
+      await subcontractService.create({
+        contract_number: data.contractId,
+        project_id: data.project,
+        subcontractor_id: data.subcontractor,
+        status: data.status,
+        total_value: data.totalValue,
+        start_date: data.startDate,
+        end_date: data.endDate,
+        description: data.description,
+      });
+      await refetchSubcontracts();
+      toast({ title: "Success", description: "Subcontract created successfully" });
+    } catch (error) {
+      console.error('Error adding subcontract:', error);
+      toast({ title: "Error", description: "Failed to add subcontract", variant: "destructive" });
+      throw error;
+    }
   };
+
+  const updateSubcontract = async (id: string, data: Partial<Subcontract>) => {
+    try {
+      await subcontractService.update(id, {
+        contract_number: data.contractId,
+        project_id: data.project,
+        subcontractor_id: data.subcontractor,
+        status: data.status,
+        total_value: data.totalValue,
+        start_date: data.startDate,
+        end_date: data.endDate,
+        description: data.description,
+      });
+      await refetchSubcontracts();
+      toast({ title: "Success", description: "Subcontract updated successfully" });
+    } catch (error) {
+      console.error('Error updating subcontract:', error);
+      toast({ title: "Error", description: "Failed to update subcontract", variant: "destructive" });
+      throw error;
+    }
+  };
+
+  const deleteSubcontract = async (id: string) => {
+    try {
+      await subcontractService.delete(id);
+      await refetchSubcontracts();
+      toast({ title: "Success", description: "Subcontract deleted successfully" });
+    } catch (error) {
+      console.error('Error deleting subcontract:', error);
+      toast({ title: "Error", description: "Failed to delete subcontract", variant: "destructive" });
+      throw error;
+    }
+  };
+
+  const deleteManySubcontracts = async (ids: string[]) => {
+    try {
+      for (const id of ids) {
+        await subcontractService.delete(id);
+      }
+      await refetchSubcontracts();
+      toast({ title: "Deleted", description: "Subcontracts deleted successfully" });
+    } catch (error) {
+      console.error('Error bulk deleting subcontracts:', error);
+      toast({ title: "Error", description: "Failed to delete selected subcontracts", variant: "destructive" });
+      throw error;
+    }
+  };
+
+  // Map DB subcontracts to frontend Subcontract type
+  const subcontracts = subcontractsRaw.map((s: any) => ({
+    id: s.id,
+    contractId: s.contract_number,
+    project: s.project_id,
+    subcontractor: s.subcontractor_id,
+    tradeItems: [],
+    responsibilities: [],
+    totalValue: s.total_value,
+    status: s.status,
+    startDate: s.start_date,
+    endDate: s.end_date,
+    description: s.description,
+    createdAt: s.created_at,
+    updatedAt: s.updated_at,
+  }));
 
   const isLoading = projectsLoading || subcontractorsLoading || tradesLoading || responsibilitiesLoading || tradeItemsLoading;
 
@@ -525,7 +619,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     deleteResponsibility,
     
     // Subcontracts (mock for now)
-    subcontracts: [], // Empty for now
+    subcontracts,
     addSubcontract,
     
     // Loading states

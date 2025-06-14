@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -27,7 +26,7 @@ interface SearchCondition {
 }
 
 export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTableProps) {
-  const { subcontracts } = useData();
+  const { subcontracts, deleteSubcontract, deleteManySubcontracts } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredData, setFilteredData] = useState(subcontracts);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
@@ -108,9 +107,12 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
 
   // Dummy bulk delete - currently just clears the selected in the UI since there is no `deleteSubcontract` method
   const handleBulkDelete = async () => {
-    // In a real implementation, would call deleteSubcontract(id) for each id.
-    setSelectedIds(new Set());
-    // Optionally add a toast/feedback here.
+    try {
+      await deleteManySubcontracts(Array.from(selectedIds));
+      setSelectedIds(new Set());
+    } catch (error) {
+      // errors are already handled via toast
+    }
   };
 
   return (
@@ -215,7 +217,17 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
                     <Button variant="ghost" size="sm">
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={async () => {
+                        try {
+                          await deleteSubcontract(contract.id);
+                        } catch {
+                          // toast already handled
+                        }
+                      }}
+                    >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
