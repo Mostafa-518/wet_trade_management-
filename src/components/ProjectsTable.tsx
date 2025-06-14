@@ -8,6 +8,7 @@ import { Project, ProjectSearchFilters } from '@/types/project';
 import { useData } from '@/contexts/DataContext';
 import * as XLSX from 'xlsx';
 import { ImportPreviewDialog } from './ImportPreviewDialog';
+import { TableSelectionCheckbox } from "./TableSelectionCheckbox";
 
 interface ProjectsTableProps {
   onCreateNew: () => void;
@@ -17,7 +18,7 @@ interface ProjectsTableProps {
 }
 
 export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: ProjectsTableProps) {
-  const { projects, addProject } = useData();
+  const { projects, addProject, deleteProject } = useData();
   const [searchFilters, setSearchFilters] = useState<ProjectSearchFilters>({
     name: '',
     code: '',
@@ -129,6 +130,36 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
     setImportedData(null);
   };
 
+  // Bulk select state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // Select all toggle
+  const allSelected = filteredProjects.length > 0 && filteredProjects.every(p => selectedIds.has(p.id));
+
+  const toggleAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredProjects.map(p => p.id)));
+    }
+  };
+
+  const toggleOne = (id: string) => {
+    setSelectedIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) newSet.delete(id);
+      else newSet.add(id);
+      return newSet;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    for (const id of selectedIds) {
+      await deleteProject(id);
+    }
+    setSelectedIds(new Set());
+  };
+
   return (
     <div className="space-y-6">
       <input
@@ -208,9 +239,25 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
           <CardTitle>Projects ({filteredProjects.length})</CardTitle>
         </CardHeader>
         <CardContent>
+          {selectedIds.size > 0 && (
+            <div className="mb-2 flex items-center gap-2">
+              <span>{selectedIds.size} selected</span>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleBulkDelete}
+                className="ml-2"
+              >
+                Delete Selected
+              </Button>
+            </div>
+          )}
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>
+                  <TableSelectionCheckbox checked={allSelected} onCheckedChange={toggleAll} ariaLabel="Select all projects"/>
+                </TableHead>
                 <TableHead>ID</TableHead>
                 <TableHead>Project Name</TableHead>
                 <TableHead>Project Code</TableHead>
@@ -221,6 +268,13 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
             <TableBody>
               {filteredProjects.map((project) => (
                 <TableRow key={project.id}>
+                  <TableCell>
+                    <TableSelectionCheckbox
+                      checked={selectedIds.has(project.id)}
+                      onCheckedChange={() => toggleOne(project.id)}
+                      ariaLabel={`Select project ${project.name}`}
+                    />
+                  </TableCell>
                   <TableCell className="font-medium">{project.id}</TableCell>
                   <TableCell>{project.name}</TableCell>
                   <TableCell>{project.code}</TableCell>
