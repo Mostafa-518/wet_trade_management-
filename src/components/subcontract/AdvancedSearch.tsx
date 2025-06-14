@@ -24,6 +24,7 @@ export function AdvancedSearch({ onSearch }: AdvancedSearchProps) {
     { value: 'project', label: 'Project' },
     { value: 'subcontractor', label: 'Subcontractor' },
     { value: 'trade', label: 'Trade' },
+    { value: 'item', label: 'Trade Item' },
     { value: 'status', label: 'Status' },
   ];
 

@@ -151,12 +151,21 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
 
   const handleSave = () => {
     if (validateStep()) {
-      onSave(formData);
-      toast({
-        title: "Subcontract Created",
-        description: "New subcontract has been saved successfully"
-      });
-      onClose();
+      // Create proper subcontract data structure that matches the expected format
+      const subcontractData = {
+        contractId: `SC-${Date.now()}`,
+        project: formData.project,
+        subcontractor: formData.subcontractor,
+        tradeItems: formData.tradeItems,
+        responsibilities: formData.responsibilities,
+        totalValue: getTotalAmount(),
+        status: 'draft' as const,
+        startDate: new Date().toISOString().split('T')[0],
+        endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
+        description: `Subcontract for ${formData.project} with ${formData.subcontractor}`,
+      };
+
+      onSave(subcontractData);
     }
   };
 

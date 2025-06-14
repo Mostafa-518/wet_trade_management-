@@ -1,15 +1,16 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SubcontractTable } from '@/components/SubcontractTable';
 import { SubcontractStepper } from '@/components/SubcontractStepper';
-import { useData } from '@/contexts/DataContext';
+import { useSubcontracts } from '@/hooks/useSubcontracts';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 
 export function Subcontracts() {
   const navigate = useNavigate();
   const [showStepper, setShowStepper] = useState(false);
-  const { addSubcontract } = useData();
+  const { addSubcontract } = useSubcontracts();
   const { toast } = useToast();
   const { profile } = useAuth();
   const canModify = profile?.role !== 'viewer';
@@ -23,20 +24,12 @@ export function Subcontracts() {
     navigate(`/subcontracts/${contractId}`);
   };
 
-  const handleSaveSubcontract = (data: any) => {
+  const handleSaveSubcontract = async (data: any) => {
     try {
-      addSubcontract(data);
-      toast({
-        title: "Subcontract Created",
-        description: "New subcontract has been saved successfully"
-      });
+      await addSubcontract(data);
       setShowStepper(false);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save subcontract",
-        variant: "destructive"
-      });
+      // Error handling is already done in the hook
     }
   };
 
