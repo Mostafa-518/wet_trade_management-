@@ -1,7 +1,15 @@
+
 import { useQuery } from '@tanstack/react-query';
-import { subcontractService, subcontractTradeItemService } from '@/services';
+import { subcontractService } from '@/services';
 import { Subcontract } from '@/types/subcontract';
 import { useToast } from '@/hooks/use-toast';
+import { mapSubcontractToFrontend } from '@/utils/subcontractMapping';
+import {
+  createSubcontractWithTradeItems,
+  updateSubcontractWithTradeItems,
+  deleteSubcontractWithTradeItems,
+  deleteManySubcontractsWithTradeItems
+} from '@/services/subcontractOperations';
 
 export function useSubcontracts(trades: any[] = [], tradeItems: any[] = []) {
   const { toast } = useToast();
@@ -16,111 +24,9 @@ export function useSubcontracts(trades: any[] = [], tradeItems: any[] = []) {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Helper function to map trade items from database to frontend format
-  const mapTradeItemsToFrontend = (dbTradeItems: any[]) => {
-    console.log('Mapping trade items:', dbTradeItems);
-    
-    return dbTradeItems.map((dbItem: any) => {
-      const tradeItem = dbItem.trade_items;
-      const trade = tradeItem?.trades;
-      
-      console.log('Processing db item:', {
-        dbItem,
-        tradeItem,
-        trade,
-        tradeName: trade?.name,
-        itemName: tradeItem?.name
-      });
-      
-      return {
-        id: dbItem.id,
-        trade: trade?.name || 'Unknown Trade',
-        item: tradeItem?.name || 'Unknown Item',
-        unit: tradeItem?.unit || '',
-        quantity: dbItem.quantity || 0,
-        unitPrice: dbItem.unit_price || 0,
-        total: dbItem.total_price || 0,
-      };
-    });
-  };
-
-  // Helper function to find trade item ID by trade ID and item name
-  const findTradeItemId = (tradeId: string, itemName: string) => {
-    const tradeItem = tradeItems.find(item => 
-      item.trade_id === tradeId && item.name === itemName
-    );
-    return tradeItem?.id;
-  };
-
   const addSubcontract = async (data: Partial<Subcontract>) => {
     try {
-      console.log('Adding subcontract with data:', data);
-      
-      if (!data.project || !data.subcontractor) {
-        throw new Error('Project and subcontractor are required');
-      }
-
-      const subcontractPayload = {
-        contract_number: data.contractId,
-        project_id: data.project,
-        subcontractor_id: data.subcontractor,
-        status: data.status || 'draft',
-        total_value: data.totalValue || 0,
-        start_date: data.startDate,
-        end_date: data.endDate,
-        description: data.description || '',
-      };
-
-      console.log('Supabase payload:', subcontractPayload);
-      
-      const createdSubcontract = await subcontractService.create(subcontractPayload);
-      
-      // Save trade items if any
-      if (data.tradeItems && data.tradeItems.length > 0) {
-        console.log('Processing trade items:', data.tradeItems);
-        
-        const tradeItemsPayload = data.tradeItems.map((item, index) => {
-          const tradeId = trades.find(t => t.name === item.trade)?.id;
-          const tradeItemId = findTradeItemId(tradeId || '', item.item);
-          
-          console.log(`Trade item ${index}:`, {
-            tradeName: item.trade,
-            tradeId,
-            itemName: item.item,
-            tradeItemId,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            total: item.total
-          });
-          
-          return {
-            subcontract_id: createdSubcontract.id,
-            trade_item_id: tradeItemId || '',
-            quantity: item.quantity,
-            unit_price: item.unitPrice,
-            total_price: item.total,
-          };
-        }).filter(item => item.trade_item_id); // Only include items with valid trade_item_id
-
-        console.log('Final trade items payload:', tradeItemsPayload);
-
-        if (tradeItemsPayload.length > 0) {
-          try {
-            await subcontractTradeItemService.createMany(tradeItemsPayload);
-            console.log('Trade items saved successfully');
-          } catch (tradeItemError) {
-            console.error('Error saving trade items:', tradeItemError);
-            // If trade items fail, we should still show success for the subcontract
-            // but inform user about trade items issue
-            toast({
-              title: "Partial Success",
-              description: "Subcontract created but some trade items could not be saved. Please edit the subcontract to add them.",
-              variant: "destructive"
-            });
-          }
-        }
-      }
-
+      await createSubcontractWithTradeItems(data, trades, tradeItems, toast);
       await refetchSubcontracts();
       toast({ title: "Success", description: "Subcontract created successfully" });
     } catch (error) {
@@ -136,47 +42,7 @@ export function useSubcontracts(trades: any[] = [], tradeItems: any[] = []) {
 
   const updateSubcontract = async (id: string, data: Partial<Subcontract>) => {
     try {
-      console.log('Updating subcontract:', id, data);
-      
-      const updatePayload = {
-        contract_number: data.contractId,
-        project_id: data.project,
-        subcontractor_id: data.subcontractor,
-        status: data.status,
-        total_value: data.totalValue,
-        start_date: data.startDate,
-        end_date: data.endDate,
-        description: data.description || '',
-      };
-
-      await subcontractService.update(id, updatePayload);
-
-      // Update trade items if provided
-      if (data.tradeItems) {
-        // Delete existing trade items
-        await subcontractTradeItemService.deleteBySubcontractId(id);
-        
-        // Add new trade items
-        if (data.tradeItems.length > 0) {
-          const tradeItemsPayload = data.tradeItems.map(item => {
-            const tradeId = trades.find(t => t.name === item.trade)?.id;
-            const tradeItemId = findTradeItemId(tradeId || '', item.item);
-            
-            return {
-              subcontract_id: id,
-              trade_item_id: tradeItemId || '',
-              quantity: item.quantity,
-              unit_price: item.unitPrice,
-              total_price: item.total,
-            };
-          }).filter(item => item.trade_item_id);
-
-          if (tradeItemsPayload.length > 0) {
-            await subcontractTradeItemService.createMany(tradeItemsPayload);
-          }
-        }
-      }
-
+      await updateSubcontractWithTradeItems(id, data, trades, tradeItems);
       await refetchSubcontracts();
       toast({ title: "Success", description: "Subcontract updated successfully" });
     } catch (error) {
@@ -188,10 +54,7 @@ export function useSubcontracts(trades: any[] = [], tradeItems: any[] = []) {
 
   const deleteSubcontract = async (id: string) => {
     try {
-      // Delete trade items first (due to foreign key constraints)
-      await subcontractTradeItemService.deleteBySubcontractId(id);
-      // Delete the subcontract
-      await subcontractService.delete(id);
+      await deleteSubcontractWithTradeItems(id);
       await refetchSubcontracts();
       toast({ title: "Success", description: "Subcontract deleted successfully" });
     } catch (error) {
@@ -203,10 +66,7 @@ export function useSubcontracts(trades: any[] = [], tradeItems: any[] = []) {
 
   const deleteManySubcontracts = async (ids: string[]) => {
     try {
-      for (const id of ids) {
-        await subcontractTradeItemService.deleteBySubcontractId(id);
-        await subcontractService.delete(id);
-      }
+      await deleteManySubcontractsWithTradeItems(ids);
       await refetchSubcontracts();
       toast({ title: "Deleted", description: "Subcontracts deleted successfully" });
     } catch (error) {
@@ -217,31 +77,7 @@ export function useSubcontracts(trades: any[] = [], tradeItems: any[] = []) {
   };
 
   // Map database fields to frontend expected format
-  const subcontracts = subcontractsRaw.map((s: any) => {
-    console.log('Processing subcontract:', s.id, 'with tradeItems:', s.tradeItems);
-    
-    const mappedTradeItems = s.tradeItems && s.tradeItems.length > 0 
-      ? mapTradeItemsToFrontend(s.tradeItems) 
-      : [];
-    
-    console.log('Mapped trade items for subcontract', s.id, ':', mappedTradeItems);
-    
-    return {
-      id: s.id,
-      contractId: s.contract_number || `SC-${s.id.slice(0, 8)}`,
-      project: s.project_id,
-      subcontractor: s.subcontractor_id,
-      tradeItems: mappedTradeItems,
-      responsibilities: [],
-      totalValue: s.total_value || 0,
-      status: s.status || 'draft',
-      startDate: s.start_date,
-      endDate: s.end_date,
-      description: s.description || '',
-      createdAt: s.created_at,
-      updatedAt: s.updated_at,
-    };
-  });
+  const subcontracts = subcontractsRaw.map(mapSubcontractToFrontend);
 
   console.log('Final mapped subcontracts:', subcontracts);
 
