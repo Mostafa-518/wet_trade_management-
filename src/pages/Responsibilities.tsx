@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ResponsibilitiesTable } from '@/components/ResponsibilitiesTable';
@@ -7,6 +6,7 @@ import { ResponsibilityDetailView } from '@/components/ResponsibilityDetailView'
 import { Responsibility, ResponsibilityFormData } from '@/types/responsibility';
 import { useData } from '@/contexts/DataContext';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 export function Responsibilities() {
   const navigate = useNavigate();
@@ -16,18 +16,23 @@ export function Responsibilities() {
   
   const { responsibilities, addResponsibility, updateResponsibility, deleteResponsibility } = useData();
   const { toast } = useToast();
+  const { profile } = useAuth();
+  const canModify = profile?.role !== 'viewer';
 
   const handleCreateNew = () => {
+    if (!canModify) return;
     setEditingResponsibility(null);
     setView('form');
   };
 
   const handleEdit = (responsibility: Responsibility) => {
+    if (!canModify) return;
     setEditingResponsibility(responsibility);
     setView('form');
   };
 
   const handleDelete = (responsibilityId: string) => {
+    if (!canModify) return;
     deleteResponsibility(responsibilityId);
     toast({
       title: "Responsibility deleted",
@@ -84,16 +89,16 @@ export function Responsibilities() {
       <ResponsibilityDetailView
         responsibilityId={viewingResponsibilityId}
         onBack={handleBack}
-        onEdit={handleEdit}
+        onEdit={canModify ? handleEdit : undefined}
       />
     );
   }
 
   return (
     <ResponsibilitiesTable
-      onCreateNew={handleCreateNew}
-      onEdit={handleEdit}
-      onDelete={handleDelete}
+      onCreateNew={canModify ? handleCreateNew : undefined}
+      onEdit={canModify ? handleEdit : undefined}
+      onDelete={canModify ? handleDelete : undefined}
       onViewDetail={handleViewDetail}
     />
   );

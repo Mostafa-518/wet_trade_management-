@@ -1,18 +1,21 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SubcontractTable } from '@/components/SubcontractTable';
 import { SubcontractStepper } from '@/components/SubcontractStepper';
 import { useData } from '@/contexts/DataContext';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 export function Subcontracts() {
   const navigate = useNavigate();
   const [showStepper, setShowStepper] = useState(false);
   const { addSubcontract } = useData();
   const { toast } = useToast();
+  const { profile } = useAuth();
+  const canModify = profile?.role !== 'viewer';
 
   const handleCreateNew = () => {
+    if (!canModify) return;
     setShowStepper(true);
   };
 
@@ -48,7 +51,7 @@ export function Subcontracts() {
 
   return (
     <SubcontractTable 
-      onCreateNew={handleCreateNew}
+      onCreateNew={canModify ? handleCreateNew : undefined}
       onViewDetail={handleViewDetail}
     />
   );

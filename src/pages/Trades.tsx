@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TradesTable } from '@/components/TradesTable';
@@ -7,6 +6,7 @@ import { TradeItemForm } from '@/components/TradeItemForm';
 import { Trade, TradeFormData, TradeItem, TradeItemFormData } from '@/types/trade';
 import { useData } from '@/contexts/DataContext';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 export function Trades() {
   const navigate = useNavigate();
@@ -18,8 +18,11 @@ export function Trades() {
   
   const { addTrade, updateTrade, deleteTrade, addTradeItem, updateTradeItem, deleteTradeItem } = useData();
   const { toast } = useToast();
+  const { profile } = useAuth();
+  const canModify = profile?.role !== 'viewer';
 
   const handleCreateNewTrade = () => {
+    if (!canModify) return;
     setEditingTrade(null);
     setShowTradeForm(true);
   };
@@ -29,11 +32,13 @@ export function Trades() {
   };
 
   const handleEditTrade = (trade: Trade) => {
+    if (!canModify) return;
     setEditingTrade(trade);
     setShowTradeForm(true);
   };
 
   const handleDeleteTrade = (tradeId: string) => {
+    if (!canModify) return;
     deleteTrade(tradeId);
     toast({
       title: "Trade deleted",
@@ -65,17 +70,20 @@ export function Trades() {
   };
 
   const handleAddItem = (tradeId: string) => {
+    if (!canModify) return;
     setSelectedTradeId(tradeId);
     setEditingItem(null);
     setShowItemForm(true);
   };
 
   const handleEditItem = (item: TradeItem) => {
+    if (!canModify) return;
     setEditingItem(item);
     setShowItemForm(true);
   };
 
   const handleDeleteItem = (itemId: string) => {
+    if (!canModify) return;
     deleteTradeItem(itemId);
     toast({
       title: "Trade item deleted",
@@ -131,13 +139,13 @@ export function Trades() {
 
   return (
     <TradesTable 
-      onCreateNew={handleCreateNewTrade}
+      onCreateNew={canModify ? handleCreateNewTrade : undefined}
       onViewDetail={handleViewDetail}
-      onEdit={handleEditTrade}
-      onDelete={handleDeleteTrade}
-      onAddItem={handleAddItem}
-      onEditItem={handleEditItem}
-      onDeleteItem={handleDeleteItem}
+      onEdit={canModify ? handleEditTrade : undefined}
+      onDelete={canModify ? handleDeleteTrade : undefined}
+      onAddItem={canModify ? handleAddItem : undefined}
+      onEditItem={canModify ? handleEditItem : undefined}
+      onDeleteItem={canModify ? handleDeleteItem : undefined}
     />
   );
 }

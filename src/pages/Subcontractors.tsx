@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SubcontractorsTable } from '@/components/SubcontractorsTable';
@@ -6,6 +5,7 @@ import { SubcontractorForm } from '@/components/SubcontractorForm';
 import { Subcontractor, SubcontractorFormData } from '@/types/subcontractor';
 import { useData } from '@/contexts/DataContext';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 export function Subcontractors() {
   const navigate = useNavigate();
@@ -14,8 +14,11 @@ export function Subcontractors() {
   
   const { addSubcontractor, updateSubcontractor, deleteSubcontractor } = useData();
   const { toast } = useToast();
+  const { profile } = useAuth();
+  const canModify = profile?.role !== 'viewer';
 
   const handleCreateNew = () => {
+    if (!canModify) return;
     setEditingSubcontractor(null);
     setShowForm(true);
   };
@@ -25,11 +28,13 @@ export function Subcontractors() {
   };
 
   const handleEdit = (subcontractor: Subcontractor) => {
+    if (!canModify) return;
     setEditingSubcontractor(subcontractor);
     setShowForm(true);
   };
 
   const handleDelete = (subcontractorId: string) => {
+    if (!canModify) return;
     deleteSubcontractor(subcontractorId);
     toast({
       title: "Subcontractor deleted",
@@ -72,10 +77,10 @@ export function Subcontractors() {
 
   return (
     <SubcontractorsTable 
-      onCreateNew={handleCreateNew}
+      onCreateNew={canModify ? handleCreateNew : undefined}
       onViewDetail={handleViewDetail}
-      onEdit={handleEdit}
-      onDelete={handleDelete}
+      onEdit={canModify ? handleEdit : undefined}
+      onDelete={canModify ? handleDelete : undefined}
     />
   );
 }

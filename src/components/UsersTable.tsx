@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,14 +18,15 @@ import { User } from '@/types/user';
 
 interface UsersTableProps {
   users: User[];
-  onAdd: () => void;
-  onEdit: (user: User) => void;
-  onDelete: (userId: string) => void;
+  onAdd?: () => void;
+  onEdit?: (user: User) => void;
+  onDelete?: (userId: string) => void;
   onView: (user: User) => void;
   loading?: boolean;
+  canModify?: boolean;
 }
 
-export function UsersTable({ users, onAdd, onEdit, onDelete, onView, loading = false }: UsersTableProps) {
+export function UsersTable({ users, onAdd, onEdit, onDelete, onView, loading = false, canModify = true }: UsersTableProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredUsers = users.filter(user =>
@@ -80,10 +82,12 @@ export function UsersTable({ users, onAdd, onEdit, onDelete, onView, loading = f
       <CardHeader>
         <div className="flex justify-between items-center">
           <CardTitle>Users Management</CardTitle>
-          <Button onClick={onAdd}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add User
-          </Button>
+          {canModify && onAdd && (
+            <Button onClick={onAdd}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add User
+            </Button>
+          )}
         </div>
         <div className="flex items-center space-x-2">
           <Search className="h-4 w-4 text-muted-foreground" />
@@ -146,21 +150,25 @@ export function UsersTable({ users, onAdd, onEdit, onDelete, onView, loading = f
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onEdit(user)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onDelete(user.id)}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {canModify && onEdit && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onEdit(user)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {canModify && onDelete && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onDelete(user.id)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>

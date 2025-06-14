@@ -9,11 +9,13 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from '@/hooks/use-toast';
 import { UserService } from '@/services/userService';
 import { User } from '@/types/user';
+import { useAuth } from '@/hooks/useAuth';
 
 export function Users() {
   const location = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { profile } = useAuth();
   
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -182,12 +184,14 @@ export function Users() {
     setSelectedUser(null);
   };
 
+  const canModify = profile?.role !== 'viewer';
+
   if (isDetailOpen && selectedUser) {
     return (
       <UserDetailView
         user={selectedUser}
         onBack={handleDetailBack}
-        onEdit={handleEditUser}
+        onEdit={canModify ? handleEditUser : undefined}
       />
     );
   }
@@ -203,27 +207,30 @@ export function Users() {
 
       <UsersTable
         users={users}
-        onAdd={handleAddUser}
-        onEdit={handleEditUser}
-        onDelete={handleDeleteUser}
+        onAdd={canModify ? handleAddUser : undefined}
+        onEdit={canModify ? handleEditUser : undefined}
+        onDelete={canModify ? handleDeleteUser : undefined}
         onView={handleViewUser}
         loading={isLoading}
+        canModify={canModify}
       />
 
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>
-              {editingUser ? 'Edit User' : 'Add New User'}
-            </DialogTitle>
-          </DialogHeader>
-          <UserForm
-            user={editingUser || undefined}
-            onSubmit={handleFormSubmit}
-            onCancel={handleFormCancel}
-          />
-        </DialogContent>
-      </Dialog>
+      {canModify && (
+        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>
+                {editingUser ? 'Edit User' : 'Add New User'}
+              </DialogTitle>
+            </DialogHeader>
+            <UserForm
+              user={editingUser || undefined}
+              onSubmit={handleFormSubmit}
+              onCancel={handleFormCancel}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
 
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
@@ -236,12 +243,14 @@ export function Users() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmDelete}
-              disabled={deleteUserMutation.isPending}
-            >
-              Delete
-            </AlertDialogAction>
+            {canModify && (
+              <AlertDialogAction 
+                onClick={confirmDelete}
+                disabled={deleteUserMutation.isPending}
+              >
+                Delete
+              </AlertDialogAction>
+            )}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

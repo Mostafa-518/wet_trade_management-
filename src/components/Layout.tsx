@@ -42,8 +42,6 @@ export function Layout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-
-  // Get authentication context
   const { profile, signOut, user } = useAuth();
 
   const handleSignOut = async () => {
@@ -64,6 +62,12 @@ export function Layout({ children }: LayoutProps) {
     }
     return 'U';
   };
+
+  // Filter Users menu if viewer
+  const filteredNavigation =
+    profile?.role === 'viewer'
+      ? navigationItems.filter(item => item.name !== 'Users')
+      : navigationItems;
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -98,7 +102,7 @@ export function Layout({ children }: LayoutProps) {
 
         <nav className="flex-1 px-3 py-6 overflow-y-auto">
           <div className="space-y-1">
-            {navigationItems.map((item) => {
+            {filteredNavigation.map((item) => {
               const Icon = item.icon;
               const isActive =
                 location.pathname === item.href ||
