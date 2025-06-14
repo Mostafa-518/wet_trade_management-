@@ -17,7 +17,7 @@ export const mockUsers: User[] = [
     id: '2',
     name: 'Sarah Johnson',
     email: 'sarah.johnson@company.com',
-    role: 'project_manager',
+    role: 'manager', // was 'project_manager'
     department: 'Project Management',
     status: 'active',
     createdAt: '2024-02-10',
@@ -28,7 +28,7 @@ export const mockUsers: User[] = [
     id: '3',
     name: 'Omar Hassan',
     email: 'omar.hassan@company.com',
-    role: 'supervisor',
+    role: 'manager', // was 'supervisor'
     department: 'Engineering',
     status: 'active',
     createdAt: '2024-03-05',
@@ -39,7 +39,7 @@ export const mockUsers: User[] = [
     id: '4',
     name: 'Lisa Chen',
     email: 'lisa.chen@company.com',
-    role: 'project_manager',
+    role: 'manager', // was 'project_manager'
     department: 'Finance',
     status: 'inactive',
     createdAt: '2024-01-20',

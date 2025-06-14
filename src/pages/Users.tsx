@@ -27,17 +27,24 @@ export function Users() {
     queryKey: ['users'],
     queryFn: async () => {
       const data = await UserService.getAll();
-      return data.map(user => ({
-        id: user.id,
-        name: user.full_name || '',
-        email: user.email || '',
-        role: user.role || 'viewer', // role now uses new enum values enforced by DB
-        phone: user.phone || '',
-        department: 'General', // Default department since it's not in the database
-        status: 'active' as const,
-        createdAt: user.created_at,
-        lastLogin: user.updated_at
-      }));
+      // Normalize roles to new enum
+      return data.map(user => {
+        let normalizedRole: 'admin' | 'manager' | 'viewer';
+        if (user.role === 'admin') normalizedRole = 'admin';
+        else if (user.role === 'viewer') normalizedRole = 'viewer';
+        else normalizedRole = 'manager'; // catch 'project_manager' and 'supervisor'
+        return {
+          id: user.id,
+          name: user.full_name || '',
+          email: user.email || '',
+          role: normalizedRole, // role now uses the correct values
+          phone: user.phone || '',
+          department: 'General', // Default department since it's not in the database
+          status: 'active' as const,
+          createdAt: user.created_at,
+          lastLogin: user.updated_at
+        };
+      });
     }
   });
 
