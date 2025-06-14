@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -52,10 +51,8 @@ export function UsersTable({ users, onAdd, onEdit, onDelete, onView, loading = f
     switch (role) {
       case 'admin':
         return 'bg-purple-100 text-purple-800';
-      case 'project_manager':
+      case 'manager':
         return 'bg-blue-100 text-blue-800';
-      case 'supervisor':
-        return 'bg-green-100 text-green-800';
       case 'viewer':
         return 'bg-gray-100 text-gray-800';
       default:

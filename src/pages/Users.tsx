@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -32,12 +31,12 @@ export function Users() {
         id: user.id,
         name: user.full_name || '',
         email: user.email || '',
-        role: user.role || 'viewer',
+        role: user.role || 'viewer', // role now uses new enum values enforced by DB
         phone: user.phone || '',
         department: 'General', // Default department since it's not in the database
         status: 'active' as const,
         createdAt: user.created_at,
-        updatedAt: user.updated_at
+        lastLogin: user.updated_at
       }));
     }
   });

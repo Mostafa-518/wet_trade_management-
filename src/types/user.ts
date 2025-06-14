@@ -3,7 +3,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'project_manager' | 'supervisor' | 'viewer';
+  role: 'admin' | 'manager' | 'viewer'; // updated to match new enum
   department: string;
   status: 'active' | 'inactive' | 'suspended';
   createdAt: string;

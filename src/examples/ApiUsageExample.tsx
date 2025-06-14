@@ -19,17 +19,17 @@ export function ApiUsageExample() {
   } = useApi(UserService.getAll, {
     immediate: true, // Fetch immediately on mount
     onSuccess: (response) => {
-      // Transform the backend data to match the frontend User type
+      // Transform backend data to match User type - enforce new role values
       const transformedUsers = (response as any[]).map(user => ({
         id: user.id,
         name: user.full_name || '',
         email: user.email || '',
-        role: user.role || 'viewer',
+        role: user.role || 'viewer', // new enum: 'admin', 'manager', 'viewer'
         phone: user.phone || '',
-        department: 'General', // Default department since it's not in the database
+        department: 'General',
         status: 'active' as const,
         createdAt: user.created_at,
-        lastLogin: user.updated_at
+        lastLogin: user.updated_at,
       }));
       setUsers(transformedUsers);
     }
