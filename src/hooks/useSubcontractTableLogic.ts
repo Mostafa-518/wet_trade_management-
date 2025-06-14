@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useSubcontracts } from '@/hooks/useSubcontracts';
 import { useData } from '@/contexts/DataContext';
@@ -19,8 +18,12 @@ export function useSubcontractTableLogic() {
 
   // Update filtered data when subcontracts change
   useEffect(() => {
-    setFilteredData(subcontracts);
-  }, [subcontracts]);
+    if (!searchTerm.trim()) {
+      setFilteredData(subcontracts);
+    } else {
+      handleSimpleSearch(searchTerm);
+    }
+  }, [subcontracts, searchTerm]);
 
   // Helper functions to resolve names from IDs
   const getProjectName = (projectId: string) => {
@@ -39,21 +42,16 @@ export function useSubcontractTableLogic() {
   };
 
   const handleSimpleSearch = (value: string) => {
-    console.log('Simple search triggered with:', value);
     setSearchTerm(value);
     
     if (!value.trim()) {
-      console.log('Empty search, showing all subcontracts:', subcontracts.length);
       setFilteredData(subcontracts);
       return;
     }
 
     const searchLower = value.toLowerCase();
-    console.log('Searching for:', searchLower);
     
     const filtered = subcontracts.filter(item => {
-      console.log('Checking item:', item.contractId, 'with tradeItems:', item.tradeItems);
-      
       const projectName = getProjectName(item.project);
       const projectCode = getProjectCode(item.project);
       const subcontractorName = getSubcontractorName(item.subcontractor);
@@ -65,36 +63,24 @@ export function useSubcontractTableLogic() {
         projectCode.toLowerCase().includes(searchLower) ||
         subcontractorName.toLowerCase().includes(searchLower);
 
-      console.log('Basic fields match for', item.contractId, ':', basicFieldsMatch);
-
       // Check trade items
       const tradeItemsMatch = item.tradeItems && item.tradeItems.length > 0 && 
         item.tradeItems.some(tradeItem => {
           const tradeMatch = tradeItem.trade && tradeItem.trade.toLowerCase().includes(searchLower);
           const itemMatch = tradeItem.item && tradeItem.item.toLowerCase().includes(searchLower);
-          console.log('Trade item check:', tradeItem.trade, tradeItem.item, 'matches:', tradeMatch || itemMatch);
           return tradeMatch || itemMatch;
         });
-
-      console.log('Trade items match for', item.contractId, ':', tradeItemsMatch);
 
       // Check responsibilities
       const responsibilitiesMatch = item.responsibilities && item.responsibilities.length > 0 &&
         item.responsibilities.some(resp => {
           const match = resp && resp.toLowerCase().includes(searchLower);
-          console.log('Responsibility check:', resp, 'matches:', match);
           return match;
         });
 
-      console.log('Responsibilities match for', item.contractId, ':', responsibilitiesMatch);
-
-      const finalMatch = basicFieldsMatch || tradeItemsMatch || responsibilitiesMatch;
-      console.log('Final match for', item.contractId, ':', finalMatch);
-      
-      return finalMatch;
+      return basicFieldsMatch || tradeItemsMatch || responsibilitiesMatch;
     });
     
-    console.log('Filtered results:', filtered.length, 'items');
     setFilteredData(filtered);
   };
 
