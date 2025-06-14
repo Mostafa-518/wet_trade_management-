@@ -4,7 +4,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Edit, Wrench, Package, Plus } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, Edit, Wrench, Package, Plus, Calendar, Tag, FileText, Trash2 } from 'lucide-react';
 import { useData } from '@/contexts/DataContext';
 
 interface TradeDetailViewProps {
@@ -27,63 +28,157 @@ export function TradeDetailView({ tradeId, onBack, onEdit, onAddItem, onEditItem
 
   if (!trade) {
     return (
-      <div className="text-center py-12">
-        <h2 className="text-2xl font-bold mb-2">Trade Not Found</h2>
-        <p className="text-muted-foreground">The requested trade could not be found.</p>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <Package className="h-16 w-16 mx-auto text-muted-foreground" />
+          <h2 className="text-2xl font-bold text-muted-foreground">Trade Not Found</h2>
+          <p className="text-muted-foreground">The requested trade could not be found.</p>
+          <Button onClick={onBack} variant="outline">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Trades
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={onBack}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">{trade.name}</h1>
-            <p className="text-muted-foreground">{trade.category}</p>
+    <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Enhanced Header Section */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="outline" onClick={onBack} className="shadow-sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Trades
+            </Button>
+            <div className="flex items-center gap-3">
+              <div className="bg-blue-100 p-3 rounded-full">
+                <Wrench className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">{trade.name}</h1>
+                <div className="flex items-center gap-2 mt-1">
+                  <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                    <Tag className="h-3 w-3 mr-1" />
+                    {trade.category}
+                  </Badge>
+                  <span className="text-sm text-muted-foreground">•</span>
+                  <span className="text-sm text-muted-foreground flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    Created {new Date(trade.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
+          <Button onClick={() => onEdit(trade)} className="shadow-sm">
+            <Edit className="h-4 w-4 mr-2" />
+            Edit Trade
+          </Button>
         </div>
-        <Button onClick={() => onEdit(trade)}>
-          <Edit className="h-4 w-4 mr-2" />
-          Edit Trade
-        </Button>
+      </div>
+
+      {/* Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="border-l-4 border-l-blue-500 shadow-sm">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3">
+              <div className="bg-blue-50 p-3 rounded-full">
+                <Package className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-blue-600">{items.length}</div>
+                <div className="text-sm font-medium text-muted-foreground">Total Items</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="border-l-4 border-l-green-500 shadow-sm">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3">
+              <div className="bg-green-50 p-3 rounded-full">
+                <Tag className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-green-600">{trade.category}</div>
+                <div className="text-sm font-medium text-muted-foreground">Category</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="border-l-4 border-l-purple-500 shadow-sm">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3">
+              <div className="bg-purple-50 p-3 rounded-full">
+                <Calendar className="h-6 w-6 text-purple-600" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-purple-600">
+                  {new Date(trade.created_at).toLocaleDateString('en', { month: 'short', year: 'numeric' })}
+                </div>
+                <div className="text-sm font-medium text-muted-foreground">Created</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <Tabs defaultValue="info" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="info">Trade Info</TabsTrigger>
-          <TabsTrigger value="items">Items ({items.length})</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 bg-gray-100">
+          <TabsTrigger value="info" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Trade Information
+          </TabsTrigger>
+          <TabsTrigger value="items" className="flex items-center gap-2">
+            <Package className="h-4 w-4" />
+            Items ({items.length})
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="info">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Wrench className="h-5 w-5" />
-                Trade Information
+          <Card className="shadow-sm">
+            <CardHeader className="bg-gray-50">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Wrench className="h-5 w-5 text-blue-600" />
+                Trade Details
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Trade Name</label>
-                  <p className="text-lg font-semibold">{trade.name}</p>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-6">
+                  <div>
+                    <label className="text-sm font-semibold text-gray-600 uppercase tracking-wider">Trade Name</label>
+                    <p className="text-xl font-semibold text-gray-900 mt-1">{trade.name}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-semibold text-gray-600 uppercase tracking-wider">Category</label>
+                    <div className="mt-1">
+                      <Badge variant="outline" className="text-sm px-3 py-1">
+                        {trade.category}
+                      </Badge>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Category</label>
-                  <p className="text-lg font-semibold">{trade.category}</p>
-                </div>
-                <div className="md:col-span-2">
-                  <label className="text-sm font-medium text-muted-foreground">Description</label>
-                  <p className="text-lg font-semibold">{trade.description}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Created Date</label>
-                  <p className="text-lg font-semibold">{new Date(trade.created_at).toLocaleDateString()}</p>
+                <div className="space-y-6">
+                  <div>
+                    <label className="text-sm font-semibold text-gray-600 uppercase tracking-wider">Description</label>
+                    <p className="text-lg text-gray-900 mt-1">{trade.description || 'No description provided'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-semibold text-gray-600 uppercase tracking-wider">Created Date</label>
+                    <p className="text-lg text-gray-900 mt-1 flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-gray-500" />
+                      {new Date(trade.created_at).toLocaleDateString('en', { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                      })}
+                    </p>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -91,55 +186,70 @@ export function TradeDetailView({ tradeId, onBack, onEdit, onAddItem, onEditItem
         </TabsContent>
 
         <TabsContent value="items">
-          <Card>
-            <CardHeader>
+          <Card className="shadow-sm">
+            <CardHeader className="bg-gray-50">
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Package className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Package className="h-5 w-5 text-blue-600" />
                   Trade Items
                 </CardTitle>
-                <Button onClick={() => onAddItem(tradeId)}>
+                <Button onClick={() => onAddItem(tradeId)} className="shadow-sm">
                   <Plus className="h-4 w-4 mr-2" />
-                  Add Item
+                  Add New Item
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               {items.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Item Name</TableHead>
-                      <TableHead>Unit</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {items.map(item => (
-                      <TableRow key={item.id}>
-                        <TableCell className="font-medium">{item.name}</TableCell>
-                        <TableCell>{item.unit}</TableCell>
-                        <TableCell>{item.description}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex gap-2 justify-end">
-                            <Button variant="outline" size="sm" onClick={() => onEditItem(item)}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="outline" size="sm" onClick={() => handleDeleteItem(item.id)}>
-                              Delete
-                            </Button>
-                          </div>
-                        </TableCell>
+                <div className="overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-gray-50">
+                        <TableHead className="font-semibold">Item Name</TableHead>
+                        <TableHead className="font-semibold">Unit</TableHead>
+                        <TableHead className="font-semibold">Description</TableHead>
+                        <TableHead className="font-semibold">Created Date</TableHead>
+                        <TableHead className="text-right font-semibold">Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {items.map((item, index) => (
+                        <TableRow key={item.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                          <TableCell className="font-medium text-gray-900">{item.name}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="text-xs">
+                              {item.unit}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-gray-600 max-w-xs truncate">
+                            {item.description || 'No description'}
+                          </TableCell>
+                          <TableCell className="text-sm text-gray-500">
+                            {new Date(item.created_at).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex gap-1 justify-end">
+                              <Button variant="ghost" size="sm" onClick={() => onEditItem(item)} className="h-8 w-8 p-0">
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => handleDeleteItem(item.id)} className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               ) : (
-                <div className="text-center py-8">
-                  <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">No items found for this trade.</p>
-                  <Button className="mt-4" onClick={() => onAddItem(tradeId)}>
+                <div className="text-center py-12">
+                  <div className="bg-gray-50 rounded-full p-4 w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+                    <Package className="h-10 w-10 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No Items Found</h3>
+                  <p className="text-gray-500 mb-6">This trade doesn't have any items yet.</p>
+                  <Button onClick={() => onAddItem(tradeId)} className="shadow-sm">
                     <Plus className="h-4 w-4 mr-2" />
                     Add First Item
                   </Button>
