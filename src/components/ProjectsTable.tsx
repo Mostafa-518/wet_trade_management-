@@ -1,4 +1,3 @@
-
 import React, { useRef, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,7 @@ import { Search, FileText, Edit, Trash2, Eye, FileDown } from 'lucide-react';
 import { Project, ProjectSearchFilters } from '@/types/project';
 import { useData } from '@/contexts/DataContext';
 import * as XLSX from 'xlsx';
+import { ImportPreviewDialog } from './ImportPreviewDialog';
 
 interface ProjectsTableProps {
   onCreateNew: () => void;
@@ -17,7 +17,7 @@ interface ProjectsTableProps {
 }
 
 export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: ProjectsTableProps) {
-  const { projects } = useData();
+  const { projects, addProject } = useData();
   const [searchFilters, setSearchFilters] = useState<ProjectSearchFilters>({
     name: '',
     code: '',
@@ -49,6 +49,19 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
     }
   };
 
+  const [importedData, setImportedData] = useState<any[] | null>(null); // Hold imported rows (original Excel)
+
+  // Columns for the preview dialog
+  const previewColumns = [
+    { key: "name", label: "Name" },
+    { key: "code", label: "Code" },
+    { key: "location", label: "Location" },
+    { key: "description", label: "Description" },
+    { key: "startDate", label: "Start Date" },
+    { key: "endDate", label: "End Date" },
+    { key: "status", label: "Status" },
+  ];
+
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -59,11 +72,47 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
       const workbook = XLSX.read(data, { type: 'array' });
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-      console.log('Imported Project Excel Data:', jsonData);
-      // TODO: map jsonData to your Project model and insert to data context!
+      const jsonData: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+      // Assume first row is headers, rest are data.
+      const [headers, ...rows] = jsonData;
+      const mapped = rows
+        .filter((row) => row.length > 1) // skip empty rows
+        .map((row) => {
+          // Map headers from excel to project fields
+          // e.g., headers: ["name","code","location","description","startDate","endDate","status"]
+          const out: any = {};
+          headers.forEach((header: string, idx: number) => {
+            // Optionally map excel headers to internal keys
+            let key = header;
+            if (key.toLowerCase() === "start_date") key = "startDate";
+            if (key.toLowerCase() === "end_date") key = "endDate";
+            out[key] = row[idx] ?? "";
+          });
+          // Provide default status if missing
+          if (!out.status) out.status = "planning";
+          return out;
+        });
+      setImportedData(mapped);
     };
     reader.readAsArrayBuffer(file);
+  };
+
+  const handleImport = async (rows: any[]) => {
+    // For each row, call addProject (serially to avoid supabase upsert errors)
+    for (const row of rows) {
+      // 'addProject' expects ProjectFormData
+      await addProject({
+        name: row.name,
+        code: row.code,
+        location: row.location,
+        description: row.description,
+        startDate: row.startDate,
+        endDate: row.endDate,
+        status: row.status || "planning",
+      });
+    }
+    setImportedData(null);
   };
 
   return (
@@ -76,6 +125,16 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
         onChange={handleFileChange}
         data-testid="import-excel-input"
       />
+      {/* Import Preview Dialog */}
+      {importedData && (
+        <ImportPreviewDialog
+          open={!!importedData}
+          data={importedData}
+          columns={previewColumns}
+          onImport={handleImport}
+          onClose={() => setImportedData(null)}
+        />
+      )}
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Projects</h1>
         <div className="flex gap-2">
@@ -188,4 +247,3 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
     </div>
   );
 }
-
