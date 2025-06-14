@@ -78,7 +78,7 @@ export function SubcontractSidebar({ subcontract }: SubcontractSidebarProps) {
             <div className="space-y-1 text-sm">
               <div className="flex items-center gap-2">
                 <User className="h-4 w-4 text-muted-foreground" />
-                <span>{subcontractorData.contact_person}</span>
+                <span>{subcontractorData.contactPerson}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground">📞</span>
