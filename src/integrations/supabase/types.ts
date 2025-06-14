@@ -75,6 +75,42 @@ export type Database = {
         }
         Relationships: []
       }
+      subcontract_responsibilities: {
+        Row: {
+          created_at: string
+          id: string
+          responsibility_id: string | null
+          subcontract_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          responsibility_id?: string | null
+          subcontract_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          responsibility_id?: string | null
+          subcontract_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subcontract_responsibilities_responsibility_id_fkey"
+            columns: ["responsibility_id"]
+            isOneToOne: false
+            referencedRelation: "responsibilities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontract_responsibilities_subcontract_id_fkey"
+            columns: ["subcontract_id"]
+            isOneToOne: false
+            referencedRelation: "subcontracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subcontract_trade_items: {
         Row: {
           created_at: string

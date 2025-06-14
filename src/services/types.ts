@@ -28,6 +28,10 @@ export type SubcontractTradeItem = Tables['subcontract_trade_items']['Row'];
 export type SubcontractTradeItemInsert = Tables['subcontract_trade_items']['Insert'];
 export type SubcontractTradeItemUpdate = Tables['subcontract_trade_items']['Update'];
 
+export type SubcontractResponsibility = Tables['subcontract_responsibilities']['Row'];
+export type SubcontractResponsibilityInsert = Tables['subcontract_responsibilities']['Insert'];
+export type SubcontractResponsibilityUpdate = Tables['subcontract_responsibilities']['Update'];
+
 export type Responsibility = Tables['responsibilities']['Row'];
 export type ResponsibilityInsert = Tables['responsibilities']['Insert'];
 export type ResponsibilityUpdate = Tables['responsibilities']['Update'];
