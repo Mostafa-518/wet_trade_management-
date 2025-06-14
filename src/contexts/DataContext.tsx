@@ -1,11 +1,12 @@
-
 import React, { createContext, useContext } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
   projectService, 
   subcontractorService, 
   responsibilityService,
-  subcontractService
+  subcontractService,
+  tradeService,
+  tradeItemService
 } from '@/services/supabaseService';
 import { Project, ProjectFormData } from '@/types/project';
 import { Subcontractor, SubcontractorFormData } from '@/types/subcontractor';
@@ -13,7 +14,6 @@ import { Trade, TradeFormData, TradeItem, TradeItemFormData } from '@/types/trad
 import { Responsibility } from '@/types/responsibility';
 import { Subcontract } from '@/types/subcontract';
 import { useToast } from '@/hooks/use-toast';
-import { mockTrades, mockTradeItems } from '@/data/tradesData';
 
 interface DataContextType {
   // Projects
@@ -73,6 +73,20 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const { data: subcontractors = [], refetch: refetchSubcontractors, isLoading: subcontractorsLoading } = useQuery({
     queryKey: ['subcontractors'],
     queryFn: () => subcontractorService.getAll(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Trades
+  const { data: tradesRaw = [], refetch: refetchTrades, isLoading: tradesLoading } = useQuery({
+    queryKey: ['trades'],
+    queryFn: () => tradeService.getAll(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Trade Items
+  const { data: tradeItemsRaw = [], refetch: refetchTradeItems, isLoading: tradeItemsLoading } = useQuery({
+    queryKey: ['tradeItems'],
+    queryFn: () => tradeItemService.getAll(),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -238,54 +252,138 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Trade operations (using mock data)
+  // Trade operations
   const addTrade = async (data: TradeFormData): Promise<void> => {
-    // Mock implementation - just show success toast
-    toast({
-      title: "Success",
-      description: "Trade created successfully",
-    });
+    try {
+      await tradeService.create({
+        name: data.name,
+        category: data.category,
+        description: data.description
+      });
+      refetchTrades();
+      toast({
+        title: "Success",
+        description: "Trade created successfully",
+      });
+    } catch (error) {
+      console.error('Error adding trade:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add trade",
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
   const updateTrade = async (id: string, data: TradeFormData): Promise<void> => {
-    // Mock implementation - just show success toast
-    toast({
-      title: "Success",
-      description: "Trade updated successfully",
-    });
+    try {
+      await tradeService.update(id, {
+        name: data.name,
+        category: data.category,
+        description: data.description
+      });
+      refetchTrades();
+      toast({
+        title: "Success",
+        description: "Trade updated successfully",
+      });
+    } catch (error) {
+      console.error('Error updating trade:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update trade",
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
   const deleteTrade = async (id: string): Promise<void> => {
-    // Mock implementation - just show success toast
-    toast({
-      title: "Success",
-      description: "Trade deleted successfully",
-    });
+    try {
+      await tradeService.delete(id);
+      refetchTrades();
+      toast({
+        title: "Success",
+        description: "Trade deleted successfully",
+      });
+    } catch (error) {
+      console.error('Error deleting trade:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete trade",
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
-  // Trade Item operations (using mock data)
+  // Trade Item operations
   const addTradeItem = async (data: TradeItemFormData): Promise<void> => {
-    // Mock implementation - just show success toast
-    toast({
-      title: "Success",
-      description: "Trade item created successfully",
-    });
+    try {
+      await tradeItemService.create({
+        trade_id: data.trade_id,
+        name: data.name,
+        unit: data.unit,
+        description: data.description
+      });
+      refetchTradeItems();
+      toast({
+        title: "Success",
+        description: "Trade item created successfully",
+      });
+    } catch (error) {
+      console.error('Error adding trade item:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add trade item",
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
   const updateTradeItem = async (id: string, data: TradeItemFormData): Promise<void> => {
-    // Mock implementation - just show success toast
-    toast({
-      title: "Success",
-      description: "Trade item updated successfully",
-    });
+    try {
+      await tradeItemService.update(id, {
+        trade_id: data.trade_id,
+        name: data.name,
+        unit: data.unit,
+        description: data.description
+      });
+      refetchTradeItems();
+      toast({
+        title: "Success",
+        description: "Trade item updated successfully",
+      });
+    } catch (error) {
+      console.error('Error updating trade item:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update trade item",
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
   const deleteTradeItem = async (id: string): Promise<void> => {
-    // Mock implementation - just show success toast
-    toast({
-      title: "Success",
-      description: "Trade item deleted successfully",
-    });
+    try {
+      await tradeItemService.delete(id);
+      refetchTradeItems();
+      toast({
+        title: "Success",
+        description: "Trade item deleted successfully",
+      });
+    } catch (error) {
+      console.error('Error deleting trade item:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete trade item",
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
   // Responsibility operations
@@ -440,7 +538,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     updatedAt: s.updated_at,
   }));
 
-  const isLoading = projectsLoading || subcontractorsLoading || responsibilitiesLoading;
+  const isLoading = projectsLoading || subcontractorsLoading || responsibilitiesLoading || tradesLoading || tradeItemsLoading;
 
   const value: DataContextType = {
     // Projects - Map database fields to frontend types
@@ -480,18 +578,26 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     updateSubcontractor,
     deleteSubcontractor,
     
-    // Trades (using mock data)
-    trades: mockTrades.map(t => ({
+    // Trades - Map database fields to frontend types
+    trades: tradesRaw.map(t => ({
       ...t,
       createdAt: t.created_at,
-      updatedAt: t.updated_at
+      updatedAt: t.updated_at,
+      created_at: t.created_at,
+      updated_at: t.updated_at
     })),
     addTrade,
     updateTrade,
     deleteTrade,
     
-    // Trade Items (using mock data)
-    tradeItems: mockTradeItems,
+    // Trade Items - Map database fields to frontend types
+    tradeItems: tradeItemsRaw.map(ti => ({
+      ...ti,
+      createdAt: ti.created_at,
+      updatedAt: ti.updated_at,
+      created_at: ti.created_at,
+      updated_at: ti.updated_at
+    })),
     addTradeItem,
     updateTradeItem,
     deleteTradeItem,
