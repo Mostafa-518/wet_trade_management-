@@ -39,15 +39,21 @@ export function useSubcontractTableLogic() {
   };
 
   const handleSimpleSearch = (value: string) => {
+    console.log('Simple search triggered with:', value);
     setSearchTerm(value);
     
     if (!value.trim()) {
+      console.log('Empty search, showing all subcontracts:', subcontracts.length);
       setFilteredData(subcontracts);
       return;
     }
 
     const searchLower = value.toLowerCase();
+    console.log('Searching for:', searchLower);
+    
     const filtered = subcontracts.filter(item => {
+      console.log('Checking item:', item.contractId, 'with tradeItems:', item.tradeItems);
+      
       const projectName = getProjectName(item.project);
       const projectCode = getProjectCode(item.project);
       const subcontractorName = getSubcontractorName(item.subcontractor);
@@ -59,27 +65,42 @@ export function useSubcontractTableLogic() {
         projectCode.toLowerCase().includes(searchLower) ||
         subcontractorName.toLowerCase().includes(searchLower);
 
-      // Check trade items - fix the search to use the correct mapped properties
+      console.log('Basic fields match for', item.contractId, ':', basicFieldsMatch);
+
+      // Check trade items
       const tradeItemsMatch = item.tradeItems && item.tradeItems.length > 0 && 
-        item.tradeItems.some(tradeItem => 
-          // tradeItem.trade and tradeItem.item are already mapped strings
-          (tradeItem.trade && tradeItem.trade.toLowerCase().includes(searchLower)) ||
-          (tradeItem.item && tradeItem.item.toLowerCase().includes(searchLower))
-        );
+        item.tradeItems.some(tradeItem => {
+          const tradeMatch = tradeItem.trade && tradeItem.trade.toLowerCase().includes(searchLower);
+          const itemMatch = tradeItem.item && tradeItem.item.toLowerCase().includes(searchLower);
+          console.log('Trade item check:', tradeItem.trade, tradeItem.item, 'matches:', tradeMatch || itemMatch);
+          return tradeMatch || itemMatch;
+        });
 
-      // Check responsibilities - these are already mapped to strings
+      console.log('Trade items match for', item.contractId, ':', tradeItemsMatch);
+
+      // Check responsibilities
       const responsibilitiesMatch = item.responsibilities && item.responsibilities.length > 0 &&
-        item.responsibilities.some(resp => 
-          resp && resp.toLowerCase().includes(searchLower)
-        );
+        item.responsibilities.some(resp => {
+          const match = resp && resp.toLowerCase().includes(searchLower);
+          console.log('Responsibility check:', resp, 'matches:', match);
+          return match;
+        });
 
-      return basicFieldsMatch || tradeItemsMatch || responsibilitiesMatch;
+      console.log('Responsibilities match for', item.contractId, ':', responsibilitiesMatch);
+
+      const finalMatch = basicFieldsMatch || tradeItemsMatch || responsibilitiesMatch;
+      console.log('Final match for', item.contractId, ':', finalMatch);
+      
+      return finalMatch;
     });
     
+    console.log('Filtered results:', filtered.length, 'items');
     setFilteredData(filtered);
   };
 
   const handleAdvancedSearch = (conditions: SearchCondition[]) => {
+    console.log('Advanced search triggered with conditions:', conditions);
+    
     if (conditions.length === 0) {
       setFilteredData(subcontracts);
       return;
@@ -103,13 +124,11 @@ export function useSubcontractTableLogic() {
           case 'subcontractor':
             return subcontractorName.toLowerCase().includes(conditionLower);
           case 'trade':
-            // Fix the trade search to use the correct mapped properties
             return item.tradeItems && item.tradeItems.length > 0 && 
               item.tradeItems.some(tradeItem => 
                 tradeItem.trade && tradeItem.trade.toLowerCase().includes(conditionLower)
               );
           case 'item':
-            // Fix the item search to use the correct mapped properties
             return item.tradeItems && item.tradeItems.length > 0 && 
               item.tradeItems.some(tradeItem => 
                 tradeItem.item && tradeItem.item.toLowerCase().includes(conditionLower)
