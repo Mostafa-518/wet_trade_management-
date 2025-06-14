@@ -39,7 +39,7 @@ export interface SubcontractStepperProps {
   onSave: (data: any) => void;
 }
 
-// Updated Subcontract interface to match what components expect
+// Updated Subcontract interface to match what components expect and database schema
 export interface Subcontract {
   id: string;
   contractId: string;
@@ -51,6 +51,7 @@ export interface Subcontract {
   status: 'draft' | 'pending' | 'active' | 'completed' | 'cancelled';
   startDate: string;
   endDate: string;
+  description: string; // Added missing description field
   createdAt: string;
   updatedAt: string;
 }
