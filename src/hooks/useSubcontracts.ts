@@ -11,7 +11,7 @@ import {
   deleteManySubcontractsWithTradeItems
 } from '@/services/subcontractOperations';
 
-export function useSubcontracts(trades: any[] = [], tradeItems: any[] = []) {
+export function useSubcontracts(trades: any[] = [], tradeItems: any[] = [], responsibilities: any[] = []) {
   const { toast } = useToast();
 
   const { data: subcontractsRaw = [], refetch: refetchSubcontracts, isLoading: subcontractsLoading } = useQuery({
@@ -26,7 +26,7 @@ export function useSubcontracts(trades: any[] = [], tradeItems: any[] = []) {
 
   const addSubcontract = async (data: Partial<Subcontract>) => {
     try {
-      await createSubcontractWithTradeItems(data, trades, tradeItems, toast);
+      await createSubcontractWithTradeItems(data, trades, tradeItems, toast, responsibilities);
       await refetchSubcontracts();
       toast({ title: "Success", description: "Subcontract created successfully" });
     } catch (error) {
@@ -42,7 +42,7 @@ export function useSubcontracts(trades: any[] = [], tradeItems: any[] = []) {
 
   const updateSubcontract = async (id: string, data: Partial<Subcontract>) => {
     try {
-      await updateSubcontractWithTradeItems(id, data, trades, tradeItems);
+      await updateSubcontractWithTradeItems(id, data, trades, tradeItems, responsibilities);
       await refetchSubcontracts();
       toast({ title: "Success", description: "Subcontract updated successfully" });
     } catch (error) {

@@ -2,7 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { BaseService } from './base/BaseService';
 import { Subcontract, SubcontractInsert, SubcontractUpdate } from './types';
-import { subcontractTradeItemService } from './subcontractTradeItemService';
+import { subcontractTradeItemService, subcontractResponsibilityService } from './';
 
 export class SubcontractService extends BaseService<Subcontract, SubcontractInsert, SubcontractUpdate> {
   constructor() {
@@ -32,11 +32,12 @@ export class SubcontractService extends BaseService<Subcontract, SubcontractInse
     
     if (error) throw error;
 
-    // Get trade items for each subcontract
+    // Get trade items and responsibilities for each subcontract
     const subcontractsWithItems = await Promise.all(
       subcontracts.map(async (subcontract) => {
         const tradeItems = await subcontractTradeItemService.getBySubcontractId(subcontract.id);
-        return { ...subcontract, tradeItems };
+        const responsibilities = await subcontractResponsibilityService.getBySubcontractId(subcontract.id);
+        return { ...subcontract, tradeItems, responsibilities };
       })
     );
 

@@ -9,8 +9,8 @@ interface SearchCondition {
 }
 
 export function useSubcontractTableLogic() {
-  const { projects, subcontractors, trades, tradeItems } = useData();
-  const { subcontracts, updateSubcontract, deleteSubcontract, deleteManySubcontracts, isLoading } = useSubcontracts(trades, tradeItems);
+  const { projects, subcontractors, trades, tradeItems, responsibilities } = useData();
+  const { subcontracts, updateSubcontract, deleteSubcontract, deleteManySubcontracts, isLoading } = useSubcontracts(trades, tradeItems, responsibilities);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredData, setFilteredData] = useState(subcontracts);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);

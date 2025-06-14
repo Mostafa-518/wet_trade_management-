@@ -9,8 +9,8 @@ import { useData } from '@/contexts/DataContext';
 export function SubcontractDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { trades, tradeItems } = useData();
-  const { subcontracts, updateSubcontract } = useSubcontracts(trades, tradeItems);
+  const { trades, tradeItems, responsibilities } = useData();
+  const { subcontracts, updateSubcontract } = useSubcontracts(trades, tradeItems, responsibilities);
   const [showEditModal, setShowEditModal] = useState(false);
 
   const handleBack = () => {

@@ -1,14 +1,15 @@
 
-import { subcontractService, subcontractTradeItemService } from '@/services';
+import { subcontractService, subcontractTradeItemService, subcontractResponsibilityService } from '@/services';
 import { Subcontract } from '@/types/subcontract';
-import { findTradeItemId } from '@/utils/subcontractMapping';
+import { findTradeItemId, findResponsibilityId } from '@/utils/subcontractMapping';
 import { useToast } from '@/hooks/use-toast';
 
 export const createSubcontractWithTradeItems = async (
   data: Partial<Subcontract>,
   trades: any[],
   tradeItems: any[],
-  toast: ReturnType<typeof useToast>['toast']
+  toast: ReturnType<typeof useToast>['toast'],
+  responsibilities: any[] = []
 ) => {
   console.log('Adding subcontract with data:', data);
   
@@ -25,7 +26,6 @@ export const createSubcontractWithTradeItems = async (
     start_date: data.startDate,
     end_date: data.endDate,
     description: data.description || '',
-    responsibilities: data.responsibilities ? JSON.stringify(data.responsibilities) : null,
   };
 
   console.log('Supabase payload:', subcontractPayload);
@@ -57,7 +57,7 @@ export const createSubcontractWithTradeItems = async (
         unit_price: item.unitPrice,
         total_price: item.total,
       };
-    }).filter(item => item.trade_item_id); // Only include items with valid trade_item_id
+    }).filter(item => item.trade_item_id);
 
     console.log('Final trade items payload:', tradeItemsPayload);
 
@@ -67,11 +67,44 @@ export const createSubcontractWithTradeItems = async (
         console.log('Trade items saved successfully');
       } catch (tradeItemError) {
         console.error('Error saving trade items:', tradeItemError);
-        // If trade items fail, we should still show success for the subcontract
-        // but inform user about trade items issue
         toast({
           title: "Partial Success",
           description: "Subcontract created but some trade items could not be saved. Please edit the subcontract to add them.",
+          variant: "destructive"
+        });
+      }
+    }
+  }
+
+  // Save responsibilities if any
+  if (data.responsibilities && data.responsibilities.length > 0) {
+    console.log('Processing responsibilities:', data.responsibilities);
+    
+    const responsibilityPayload = data.responsibilities.map((responsibilityName) => {
+      const responsibilityId = findResponsibilityId(responsibilities, responsibilityName);
+      
+      console.log('Responsibility mapping:', {
+        responsibilityName,
+        responsibilityId
+      });
+      
+      return {
+        subcontract_id: createdSubcontract.id,
+        responsibility_id: responsibilityId || '',
+      };
+    }).filter(item => item.responsibility_id);
+
+    console.log('Final responsibilities payload:', responsibilityPayload);
+
+    if (responsibilityPayload.length > 0) {
+      try {
+        await subcontractResponsibilityService.createMany(responsibilityPayload);
+        console.log('Responsibilities saved successfully');
+      } catch (responsibilityError) {
+        console.error('Error saving responsibilities:', responsibilityError);
+        toast({
+          title: "Partial Success",
+          description: "Subcontract created but some responsibilities could not be saved. Please edit the subcontract to add them.",
           variant: "destructive"
         });
       }
@@ -85,7 +118,8 @@ export const updateSubcontractWithTradeItems = async (
   id: string,
   data: Partial<Subcontract>,
   trades: any[],
-  tradeItems: any[]
+  tradeItems: any[],
+  responsibilities: any[] = []
 ) => {
   console.log('Updating subcontract:', id, data);
   
@@ -98,7 +132,6 @@ export const updateSubcontractWithTradeItems = async (
     start_date: data.startDate,
     end_date: data.endDate,
     description: data.description || '',
-    responsibilities: data.responsibilities ? JSON.stringify(data.responsibilities) : null,
   };
 
   await subcontractService.update(id, updatePayload);
@@ -128,10 +161,34 @@ export const updateSubcontractWithTradeItems = async (
       }
     }
   }
+
+  // Update responsibilities if provided
+  if (data.responsibilities) {
+    // Delete existing responsibilities
+    await subcontractResponsibilityService.deleteBySubcontractId(id);
+    
+    // Add new responsibilities
+    if (data.responsibilities.length > 0) {
+      const responsibilityPayload = data.responsibilities.map(responsibilityName => {
+        const responsibilityId = findResponsibilityId(responsibilities, responsibilityName);
+        
+        return {
+          subcontract_id: id,
+          responsibility_id: responsibilityId || '',
+        };
+      }).filter(item => item.responsibility_id);
+
+      if (responsibilityPayload.length > 0) {
+        await subcontractResponsibilityService.createMany(responsibilityPayload);
+      }
+    }
+  }
 };
 
 export const deleteSubcontractWithTradeItems = async (id: string) => {
-  // Delete trade items first (due to foreign key constraints)
+  // Delete responsibilities first
+  await subcontractResponsibilityService.deleteBySubcontractId(id);
+  // Delete trade items
   await subcontractTradeItemService.deleteBySubcontractId(id);
   // Delete the subcontract
   await subcontractService.delete(id);
@@ -139,6 +196,7 @@ export const deleteSubcontractWithTradeItems = async (id: string) => {
 
 export const deleteManySubcontractsWithTradeItems = async (ids: string[]) => {
   for (const id of ids) {
+    await subcontractResponsibilityService.deleteBySubcontractId(id);
     await subcontractTradeItemService.deleteBySubcontractId(id);
     await subcontractService.delete(id);
   }

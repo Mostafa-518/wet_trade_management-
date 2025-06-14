@@ -29,6 +29,16 @@ export const mapTradeItemsToFrontend = (dbTradeItems: any[]): TradeItem[] => {
   });
 };
 
+// Helper function to map responsibilities from database to frontend format
+export const mapResponsibilitiesToFrontend = (dbResponsibilities: any[]): string[] => {
+  console.log('Mapping responsibilities:', dbResponsibilities);
+  
+  return dbResponsibilities.map((dbItem: any) => {
+    const responsibility = dbItem.responsibilities;
+    return responsibility?.name || 'Unknown Responsibility';
+  });
+};
+
 // Helper function to find trade item ID by trade ID and item name
 export const findTradeItemId = (tradeItems: any[], tradeId: string, itemName: string): string | undefined => {
   const tradeItem = tradeItems.find(item => 
@@ -37,28 +47,28 @@ export const findTradeItemId = (tradeItems: any[], tradeId: string, itemName: st
   return tradeItem?.id;
 };
 
+// Helper function to find responsibility ID by name
+export const findResponsibilityId = (responsibilities: any[], responsibilityName: string): string | undefined => {
+  const responsibility = responsibilities.find(item => 
+    item.name === responsibilityName
+  );
+  return responsibility?.id;
+};
+
 // Map database subcontract to frontend format
 export const mapSubcontractToFrontend = (s: any) => {
-  console.log('Processing subcontract:', s.id, 'with tradeItems:', s.tradeItems);
+  console.log('Processing subcontract:', s.id, 'with tradeItems:', s.tradeItems, 'and responsibilities:', s.responsibilities);
   
   const mappedTradeItems = s.tradeItems && s.tradeItems.length > 0 
     ? mapTradeItemsToFrontend(s.tradeItems) 
     : [];
   
-  console.log('Mapped trade items for subcontract', s.id, ':', mappedTradeItems);
+  const mappedResponsibilities = s.responsibilities && s.responsibilities.length > 0 
+    ? mapResponsibilitiesToFrontend(s.responsibilities) 
+    : [];
   
-  // Parse responsibilities from JSON string if it exists, otherwise use empty array
-  let responsibilities = [];
-  if (s.responsibilities) {
-    try {
-      responsibilities = typeof s.responsibilities === 'string' 
-        ? JSON.parse(s.responsibilities) 
-        : s.responsibilities;
-    } catch (error) {
-      console.warn('Failed to parse responsibilities for subcontract', s.id, ':', error);
-      responsibilities = [];
-    }
-  }
+  console.log('Mapped trade items for subcontract', s.id, ':', mappedTradeItems);
+  console.log('Mapped responsibilities for subcontract', s.id, ':', mappedResponsibilities);
   
   return {
     id: s.id,
@@ -66,7 +76,7 @@ export const mapSubcontractToFrontend = (s: any) => {
     project: s.project_id,
     subcontractor: s.subcontractor_id,
     tradeItems: mappedTradeItems,
-    responsibilities: responsibilities,
+    responsibilities: mappedResponsibilities,
     totalValue: s.total_value || 0,
     status: s.status || 'draft',
     startDate: s.start_date,
