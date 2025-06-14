@@ -462,7 +462,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Subcontract operations (mock for now)
+  // Subcontract operations (now not mock)
   const addSubcontract = async (data: Partial<Subcontract>) => {
     try {
       await subcontractService.create({
@@ -473,7 +473,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         total_value: data.totalValue,
         start_date: data.startDate,
         end_date: data.endDate,
-        description: data.description,
+        description: data.description || '', // Ensure field is present (string)
       });
       await refetchSubcontracts();
       toast({ title: "Success", description: "Subcontract created successfully" });
@@ -494,7 +494,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         total_value: data.totalValue,
         start_date: data.startDate,
         end_date: data.endDate,
-        description: data.description,
+        description: data.description || '', // Ensure field is present
       });
       await refetchSubcontracts();
       toast({ title: "Success", description: "Subcontract updated successfully" });
@@ -543,7 +543,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     status: s.status,
     startDate: s.start_date,
     endDate: s.end_date,
-    description: s.description,
+    description: s.description || '',
     createdAt: s.created_at,
     updatedAt: s.updated_at,
   }));
@@ -618,11 +618,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     updateResponsibility,
     deleteResponsibility,
     
-    // Subcontracts (mock for now)
+    // Subcontracts
     subcontracts,
     addSubcontract,
+    updateSubcontract,
+    deleteSubcontract,
+    deleteManySubcontracts,
     
-    // Loading states
+    // Loading state
     isLoading
   };
 
