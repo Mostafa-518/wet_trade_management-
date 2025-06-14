@@ -20,26 +20,45 @@ export function ProjectSubcontractorStep({ formData, setFormData }: ProjectSubco
   const [showSubcontractorModal, setShowSubcontractorModal] = useState(false);
 
   const handleProjectCreated = (projectName: string) => {
-    setFormData(prev => ({ ...prev, project: projectName }));
+    // Find the project by name to get its ID
+    const project = projects.find(p => p.name === projectName);
+    if (project) {
+      setFormData(prev => ({ ...prev, project: project.id }));
+    }
   };
 
   const handleSubcontractorCreated = (subcontractorName: string) => {
-    setFormData(prev => ({ ...prev, subcontractor: subcontractorName }));
+    // Find the subcontractor by name to get its ID
+    const subcontractor = subcontractors.find(s => s.name === subcontractorName);
+    if (subcontractor) {
+      setFormData(prev => ({ ...prev, subcontractor: subcontractor.id }));
+    }
   };
+
+  const selectedProject = projects.find(p => p.id === formData.project);
+  const selectedSubcontractor = subcontractors.find(s => s.id === formData.subcontractor);
 
   return (
     <div className="space-y-6">
       <div>
         <Label htmlFor="project">Select Project</Label>
         <div className="space-y-2">
-          <Select value={formData.project} onValueChange={(value) => setFormData(prev => ({ ...prev, project: value }))}>
+          <Select 
+            value={formData.project} 
+            onValueChange={(value) => setFormData(prev => ({ ...prev, project: value }))}
+          >
             <SelectTrigger>
-              <SelectValue placeholder="Choose a project..." />
+              <SelectValue placeholder="Choose a project...">
+                {selectedProject ? selectedProject.name : "Choose a project..."}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {projects.map(project => (
-                <SelectItem key={project.id} value={project.name}>
-                  {project.name}
+                <SelectItem key={project.id} value={project.id}>
+                  <div>
+                    <div className="font-medium">{project.name}</div>
+                    <div className="text-sm text-muted-foreground">{project.code} • {project.location}</div>
+                  </div>
                 </SelectItem>
               ))}
             </SelectContent>
@@ -60,13 +79,18 @@ export function ProjectSubcontractorStep({ formData, setFormData }: ProjectSubco
       <div>
         <Label htmlFor="subcontractor">Select Subcontractor</Label>
         <div className="space-y-2">
-          <Select value={formData.subcontractor} onValueChange={(value) => setFormData(prev => ({ ...prev, subcontractor: value }))}>
+          <Select 
+            value={formData.subcontractor} 
+            onValueChange={(value) => setFormData(prev => ({ ...prev, subcontractor: value }))}
+          >
             <SelectTrigger>
-              <SelectValue placeholder="Choose a subcontractor..." />
+              <SelectValue placeholder="Choose a subcontractor...">
+                {selectedSubcontractor ? selectedSubcontractor.name : "Choose a subcontractor..."}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {subcontractors.map(sub => (
-                <SelectItem key={sub.id} value={sub.name}>
+                <SelectItem key={sub.id} value={sub.id}>
                   <div>
                     <div className="font-medium">{sub.name}</div>
                     <div className="text-sm text-muted-foreground">{sub.contactPerson} • {sub.phone}</div>

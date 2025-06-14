@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,6 +38,7 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
   ];
 
   const handleNext = () => {
+    console.log('Current step validation:', currentStep, formData);
     if (validateStep()) {
       setCurrentStep(prev => Math.min(prev + 1, steps.length));
     }
@@ -51,6 +51,7 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
   const validateStep = () => {
     switch (currentStep) {
       case 1:
+        console.log('Validating step 1:', { project: formData.project, subcontractor: formData.subcontractor });
         if (!formData.project || !formData.subcontractor) {
           toast({
             title: "Missing Information",
@@ -150,23 +151,38 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
   };
 
   const handleSave = () => {
-    if (validateStep()) {
-      // Create proper subcontract data structure that matches the expected format
-      const subcontractData = {
-        contractId: `SC-${Date.now()}`,
-        project: formData.project,
-        subcontractor: formData.subcontractor,
-        tradeItems: formData.tradeItems,
-        responsibilities: formData.responsibilities,
-        totalValue: getTotalAmount(),
-        status: 'draft' as const,
-        startDate: new Date().toISOString().split('T')[0],
-        endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
-        description: `Subcontract for ${formData.project} with ${formData.subcontractor}`,
-      };
-
-      onSave(subcontractData);
+    console.log('Saving subcontract with data:', formData);
+    
+    if (!validateStep()) {
+      return;
     }
+
+    // Ensure we have valid UUIDs for project and subcontractor
+    if (!formData.project || !formData.subcontractor) {
+      toast({
+        title: "Invalid Data",
+        description: "Project and subcontractor must be selected",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Create proper subcontract data structure that matches the expected format
+    const subcontractData = {
+      contractId: `SC-${Date.now()}`,
+      project: formData.project, // This should now be a UUID
+      subcontractor: formData.subcontractor, // This should now be a UUID
+      tradeItems: formData.tradeItems,
+      responsibilities: formData.responsibilities,
+      totalValue: getTotalAmount(),
+      status: 'draft' as const,
+      startDate: new Date().toISOString().split('T')[0],
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
+      description: `Subcontract for ${formData.project} with ${formData.subcontractor}`,
+    };
+
+    console.log('Final subcontract data being sent:', subcontractData);
+    onSave(subcontractData);
   };
 
   const getTotalAmount = () => {

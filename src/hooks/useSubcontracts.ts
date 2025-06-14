@@ -15,28 +15,43 @@ export function useSubcontracts() {
 
   const addSubcontract = async (data: Partial<Subcontract>) => {
     try {
-      await subcontractService.create({
+      console.log('Adding subcontract with data:', data);
+      
+      // Validate that project and subcontractor are UUIDs
+      if (!data.project || !data.subcontractor) {
+        throw new Error('Project and subcontractor are required');
+      }
+
+      const subcontractPayload = {
         contract_number: data.contractId,
-        project_id: data.project,
-        subcontractor_id: data.subcontractor,
-        status: data.status,
-        total_value: data.totalValue,
+        project_id: data.project, // Should be UUID
+        subcontractor_id: data.subcontractor, // Should be UUID
+        status: data.status || 'draft',
+        total_value: data.totalValue || 0,
         start_date: data.startDate,
         end_date: data.endDate,
         description: data.description || '',
-      });
+      };
+
+      console.log('Supabase payload:', subcontractPayload);
+      
+      await subcontractService.create(subcontractPayload);
       await refetchSubcontracts();
       toast({ title: "Success", description: "Subcontract created successfully" });
     } catch (error) {
       console.error('Error adding subcontract:', error);
-      toast({ title: "Error", description: "Failed to add subcontract", variant: "destructive" });
+      toast({ 
+        title: "Error", 
+        description: `Failed to add subcontract: ${error instanceof Error ? error.message : 'Unknown error'}`, 
+        variant: "destructive" 
+      });
       throw error;
     }
   };
 
   const updateSubcontract = async (id: string, data: Partial<Subcontract>) => {
     try {
-      await subcontractService.update(id, {
+      const updatePayload = {
         contract_number: data.contractId,
         project_id: data.project,
         subcontractor_id: data.subcontractor,
@@ -45,7 +60,9 @@ export function useSubcontracts() {
         start_date: data.startDate,
         end_date: data.endDate,
         description: data.description || '',
-      });
+      };
+
+      await subcontractService.update(id, updatePayload);
       await refetchSubcontracts();
       toast({ title: "Success", description: "Subcontract updated successfully" });
     } catch (error) {
