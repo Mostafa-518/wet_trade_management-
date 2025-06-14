@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Search, FileText, Edit, Trash2, Eye, FileDown } from 'lucide-react';
 import { Project, ProjectSearchFilters } from '@/types/project';
 import { useData } from '@/contexts/DataContext';
+import * as XLSX from 'xlsx';
 
 interface ProjectsTableProps {
   onCreateNew: () => void;
@@ -22,6 +23,8 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
     code: '',
     location: ''
   });
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const filteredProjects = projects.filter(project => {
     return (
@@ -39,16 +42,44 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
     setSearchFilters({ name: '', code: '', location: '' });
   };
 
-  const handleImportExcel = () => {
-    console.log('Import from Excel clicked');
+  const handleImportClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const data = new Uint8Array(e.target?.result as ArrayBuffer);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      console.log('Imported Project Excel Data:', jsonData);
+      // TODO: map jsonData to your Project model and insert to data context!
+    };
+    reader.readAsArrayBuffer(file);
   };
 
   return (
     <div className="space-y-6">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".xlsx, .xls"
+        className="hidden"
+        onChange={handleFileChange}
+        data-testid="import-excel-input"
+      />
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Projects</h1>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleImportExcel}>
+          <Button variant="outline" onClick={handleImportClick}>
             <FileDown className="h-4 w-4 mr-2" />
             Import Excel
           </Button>
@@ -157,3 +188,4 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
     </div>
   );
 }
+

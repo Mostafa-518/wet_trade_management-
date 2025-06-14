@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Plus, Search, Eye, Edit, Trash2, FileDown } from 'lucide-react';
 import { Trade, TradeSearchFilters, TradeItem } from '@/types/trade';
 import { useData } from '@/contexts/DataContext';
+import * as XLSX from 'xlsx';
 
 interface TradesTableProps {
   onCreateNew: () => void;
@@ -34,6 +35,7 @@ export function TradesTable({
     description: ''
   });
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
 
   const filteredTrades = trades.filter(trade => {
@@ -59,15 +61,47 @@ export function TradesTable({
     });
   };
 
+  const handleImportClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const data = new Uint8Array(e.target?.result as ArrayBuffer);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      console.log('Imported Trade Excel Data:', jsonData);
+      // TODO: map jsonData to your Trade model and insert into data context!
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
   return (
     <div className="space-y-6">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".xlsx, .xls"
+        className="hidden"
+        onChange={handleFileChange}
+        data-testid="import-excel-input"
+      />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Trades & Items</h1>
           <p className="text-muted-foreground">Manage trades and their associated items</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleImportClick}>
             <FileDown className="h-4 w-4 mr-2" />
             Import Excel
           </Button>
@@ -179,3 +213,4 @@ export function TradesTable({
     </div>
   );
 }
+
