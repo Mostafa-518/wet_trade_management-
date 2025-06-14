@@ -60,3 +60,6 @@ export class UserService {
     if (error) throw error;
   }
 }
+
+// Export an instance as well for consistency
+export const userService = UserService;

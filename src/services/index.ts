@@ -8,6 +8,9 @@ export { subcontractTradeItemService } from './subcontractTradeItemService';
 export { subcontractResponsibilityService } from './subcontractResponsibilityService';
 export { responsibilityService } from './responsibilityService';
 export { userProfileService } from './userProfileService';
-export { userService } from './userService';
-export { authService } from './authService';
-export { apiService } from './apiService';
+export { UserService } from './userService';
+export { AuthService } from './authService';
+export default from './apiService';
+
+// Export types
+export type { UserProfile } from './types';

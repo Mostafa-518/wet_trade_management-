@@ -1,6 +1,5 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { BaseService } from './base/BaseService';
 
 interface SubcontractResponsibility {
   id: string;
@@ -19,14 +18,63 @@ interface SubcontractResponsibilityUpdate {
   responsibility_id?: string;
 }
 
-export class SubcontractResponsibilityService extends BaseService<SubcontractResponsibility, SubcontractResponsibilityInsert, SubcontractResponsibilityUpdate> {
-  constructor() {
-    super('subcontract_responsibilities');
+export class SubcontractResponsibilityService {
+  async getAll() {
+    const { data, error } = await supabase
+      .from('subcontract_responsibilities' as any)
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data as SubcontractResponsibility[];
+  }
+
+  async getById(id: string) {
+    const { data, error } = await supabase
+      .from('subcontract_responsibilities' as any)
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data as SubcontractResponsibility;
+  }
+
+  async create(item: SubcontractResponsibilityInsert) {
+    const { data, error } = await supabase
+      .from('subcontract_responsibilities' as any)
+      .insert(item)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data as SubcontractResponsibility;
+  }
+
+  async update(id: string, item: SubcontractResponsibilityUpdate) {
+    const { data, error } = await supabase
+      .from('subcontract_responsibilities' as any)
+      .update({ ...item, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data as SubcontractResponsibility;
+  }
+
+  async delete(id: string) {
+    const { error } = await supabase
+      .from('subcontract_responsibilities' as any)
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
   }
 
   async getBySubcontractId(subcontractId: string) {
     const { data, error } = await supabase
-      .from('subcontract_responsibilities')
+      .from('subcontract_responsibilities' as any)
       .select(`
         *,
         responsibilities(*)
@@ -39,7 +87,7 @@ export class SubcontractResponsibilityService extends BaseService<SubcontractRes
 
   async deleteBySubcontractId(subcontractId: string) {
     const { error } = await supabase
-      .from('subcontract_responsibilities')
+      .from('subcontract_responsibilities' as any)
       .delete()
       .eq('subcontract_id', subcontractId);
     
@@ -48,7 +96,7 @@ export class SubcontractResponsibilityService extends BaseService<SubcontractRes
 
   async createMany(responsibilities: SubcontractResponsibilityInsert[]) {
     const { data, error } = await supabase
-      .from('subcontract_responsibilities')
+      .from('subcontract_responsibilities' as any)
       .insert(responsibilities)
       .select();
     

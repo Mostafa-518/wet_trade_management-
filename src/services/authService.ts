@@ -74,3 +74,6 @@ export class AuthService {
     });
   }
 }
+
+// Export an instance as well for consistency
+export const authService = AuthService;

@@ -68,3 +68,4 @@ class ApiService {
 }
 
 export default ApiService;
+export const apiService = ApiService;
