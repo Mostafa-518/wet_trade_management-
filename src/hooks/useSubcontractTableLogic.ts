@@ -59,14 +59,15 @@ export function useSubcontractTableLogic() {
         projectCode.toLowerCase().includes(searchLower) ||
         subcontractorName.toLowerCase().includes(searchLower);
 
-      // Check trade items
+      // Check trade items - fix the search to use the correct mapped properties
       const tradeItemsMatch = item.tradeItems && item.tradeItems.length > 0 && 
         item.tradeItems.some(tradeItem => 
+          // tradeItem.trade and tradeItem.item are already mapped strings
           (tradeItem.trade && tradeItem.trade.toLowerCase().includes(searchLower)) ||
           (tradeItem.item && tradeItem.item.toLowerCase().includes(searchLower))
         );
 
-      // Check responsibilities
+      // Check responsibilities - these are already mapped to strings
       const responsibilitiesMatch = item.responsibilities && item.responsibilities.length > 0 &&
         item.responsibilities.some(resp => 
           resp && resp.toLowerCase().includes(searchLower)
@@ -102,11 +103,13 @@ export function useSubcontractTableLogic() {
           case 'subcontractor':
             return subcontractorName.toLowerCase().includes(conditionLower);
           case 'trade':
+            // Fix the trade search to use the correct mapped properties
             return item.tradeItems && item.tradeItems.length > 0 && 
               item.tradeItems.some(tradeItem => 
                 tradeItem.trade && tradeItem.trade.toLowerCase().includes(conditionLower)
               );
           case 'item':
+            // Fix the item search to use the correct mapped properties
             return item.tradeItems && item.tradeItems.length > 0 && 
               item.tradeItems.some(tradeItem => 
                 tradeItem.item && tradeItem.item.toLowerCase().includes(conditionLower)
