@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { ArrowLeft } from 'lucide-react';
 import { TradeItem, TradeItemFormData } from '@/types/trade';
-import { mockTrades } from '@/data/tradesData';
+import { useData } from '@/contexts/DataContext';
 
 interface TradeItemFormProps {
   item?: TradeItem | null;
@@ -17,6 +17,8 @@ interface TradeItemFormProps {
 }
 
 export function TradeItemForm({ item, tradeId, onSubmit, onCancel }: TradeItemFormProps) {
+  const { trades } = useData();
+  
   const form = useForm<TradeItemFormData>({
     defaultValues: {
       trade_id: item?.trade_id || tradeId || '',
@@ -65,7 +67,7 @@ export function TradeItemForm({ item, tradeId, onSubmit, onCancel }: TradeItemFo
                       <FormControl>
                         <select {...field} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
                           <option value="">Select Trade</option>
-                          {mockTrades.map(trade => (
+                          {trades.map(trade => (
                             <option key={trade.id} value={trade.id}>{trade.name}</option>
                           ))}
                         </select>
@@ -98,7 +100,7 @@ export function TradeItemForm({ item, tradeId, onSubmit, onCancel }: TradeItemFo
                     <FormItem>
                       <FormLabel>Unit *</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., Each, Sqm, Set" {...field} />
+                        <Input placeholder="e.g., Each, Sqm, Set, Linear Meter" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
