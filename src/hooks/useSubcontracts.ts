@@ -68,9 +68,21 @@ export function useSubcontracts(trades: any[] = [], tradeItems: any[] = []) {
       
       // Save trade items if any
       if (data.tradeItems && data.tradeItems.length > 0) {
-        const tradeItemsPayload = data.tradeItems.map(item => {
+        console.log('Processing trade items:', data.tradeItems);
+        
+        const tradeItemsPayload = data.tradeItems.map((item, index) => {
           const tradeId = trades.find(t => t.name === item.trade)?.id;
           const tradeItemId = findTradeItemId(tradeId || '', item.item);
+          
+          console.log(`Trade item ${index}:`, {
+            tradeName: item.trade,
+            tradeId,
+            itemName: item.item,
+            tradeItemId,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            total: item.total
+          });
           
           return {
             subcontract_id: createdSubcontract.id,
@@ -81,8 +93,22 @@ export function useSubcontracts(trades: any[] = [], tradeItems: any[] = []) {
           };
         }).filter(item => item.trade_item_id); // Only include items with valid trade_item_id
 
+        console.log('Final trade items payload:', tradeItemsPayload);
+
         if (tradeItemsPayload.length > 0) {
-          await subcontractTradeItemService.createMany(tradeItemsPayload);
+          try {
+            await subcontractTradeItemService.createMany(tradeItemsPayload);
+            console.log('Trade items saved successfully');
+          } catch (tradeItemError) {
+            console.error('Error saving trade items:', tradeItemError);
+            // If trade items fail, we should still show success for the subcontract
+            // but inform user about trade items issue
+            toast({
+              title: "Partial Success",
+              description: "Subcontract created but some trade items could not be saved. Please edit the subcontract to add them.",
+              variant: "destructive"
+            });
+          }
         }
       }
 

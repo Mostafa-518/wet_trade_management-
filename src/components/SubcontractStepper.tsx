@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -96,8 +97,10 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
       return;
     }
 
+    // Create a unique ID using timestamp and random number to ensure uniqueness
+    // even for the same trade item with different quantities/prices
     const newItem: TradeItem = {
-      id: Date.now().toString(),
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       trade: currentTradeItem.trade!,
       item: currentTradeItem.item!,
       unit: currentTradeItem.unit!,
@@ -105,6 +108,8 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
       unitPrice: currentTradeItem.unitPrice!,
       total: currentTradeItem.total!
     };
+
+    console.log('Adding new trade item:', newItem);
 
     setFormData(prev => ({
       ...prev,
