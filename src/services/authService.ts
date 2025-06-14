@@ -1,80 +1,76 @@
 
-import ApiService, { ApiResponse } from './apiService';
+import { supabase } from '@/integrations/supabase/client';
+import { UserProfile } from './types';
 
-export interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-export interface AuthResponse {
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-  };
-  token: string;
-  refreshToken: string;
-}
-
-class AuthService {
-  private static readonly endpoint = '/auth';
-
-  // Login
-  static async login(credentials: LoginCredentials): Promise<ApiResponse<AuthResponse>> {
-    const response = await ApiService.post<ApiResponse<AuthResponse>>(`${this.endpoint}/login`, credentials);
+export class AuthService {
+  static async signUp(email: string, password: string, fullName?: string) {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName || ''
+        }
+      }
+    });
     
-    // Store token in localStorage
-    if (response.success && response.data?.token) {
-      localStorage.setItem('authToken', response.data.token);
-      localStorage.setItem('refreshToken', response.data.refreshToken);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-    }
+    if (error) throw error;
+    return data;
+  }
+
+  static async signIn(email: string, password: string) {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
     
-    return response;
+    if (error) throw error;
+    return data;
   }
 
-  // Logout
-  static async logout(): Promise<void> {
-    try {
-      await ApiService.post(`${this.endpoint}/logout`);
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      // Clear local storage regardless of API call success
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
-    }
+  static async signOut() {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
   }
 
-  // Refresh token
-  static async refreshToken(): Promise<ApiResponse<{ token: string }>> {
-    const refreshToken = localStorage.getItem('refreshToken');
-    const response = await ApiService.post<ApiResponse<{ token: string }>>(`${this.endpoint}/refresh`, { refreshToken });
+  static async getCurrentUser() {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) throw error;
+    return user;
+  }
+
+  static async getUserProfile() {
+    const user = await this.getCurrentUser();
+    if (!user) return null;
+
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
     
-    if (response.success && response.data?.token) {
-      localStorage.setItem('authToken', response.data.token);
-    }
+    if (error) throw error;
+    return data;
+  }
+
+  static async updateProfile(updates: Partial<UserProfile>) {
+    const user = await this.getCurrentUser();
+    if (!user) throw new Error('No authenticated user');
+
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', user.id)
+      .select()
+      .single();
     
-    return response;
+    if (error) throw error;
+    return data;
   }
 
-  // Get current user
-  static async getCurrentUser(): Promise<ApiResponse<any>> {
-    return ApiService.get(`${this.endpoint}/me`);
-  }
-
-  // Check if user is authenticated
-  static isAuthenticated(): boolean {
-    return !!localStorage.getItem('authToken');
-  }
-
-  // Get stored user data
-  static getStoredUser(): any {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
+  static onAuthStateChange(callback: (user: any) => void) {
+    return supabase.auth.onAuthStateChange((event, session) => {
+      callback(session?.user || null);
+    });
   }
 }
-
-export default AuthService;
