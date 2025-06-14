@@ -3,25 +3,26 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { 
-  Building2, 
-  Users, 
-  Briefcase, 
-  FileText, 
-  UserCheck, 
-  BarChart3, 
-  Menu, 
+import {
+  Building2,
+  Users,
+  Briefcase,
+  FileText,
+  UserCheck,
+  BarChart3,
+  Menu,
   X,
   LogOut,
-  User
+  User as UserIcon
 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -34,7 +35,7 @@ const navigationItems = [
   { name: 'Trades', href: '/trades', icon: Briefcase },
   { name: 'Subcontracts', href: '/subcontracts', icon: FileText },
   { name: 'Responsibilities', href: '/responsibilities', icon: UserCheck },
-  { name: 'Users', href: '/users', icon: User },
+  { name: 'Users', href: '/users', icon: UserIcon },
 ];
 
 export function Layout({ children }: LayoutProps) {
@@ -42,11 +43,25 @@ export function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const handleSignOut = () => {
+  // Get authentication context
+  const { profile, signOut, user } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
     navigate('/login');
   };
 
   const getUserInitials = () => {
+    if (profile?.full_name) {
+      return profile.full_name
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase();
+    }
+    if (user?.email) {
+      return user.email[0]?.toUpperCase() || 'U';
+    }
     return 'U';
   };
 
@@ -54,8 +69,8 @@ export function Layout({ children }: LayoutProps) {
     <div className="min-h-screen bg-gray-50 flex">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
-        <div 
-          className="fixed inset-0 z-40 lg:hidden" 
+        <div
+          className="fixed inset-0 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         >
           <div className="absolute inset-0 bg-black opacity-50" />
@@ -63,10 +78,12 @@ export function Layout({ children }: LayoutProps) {
       )}
 
       {/* Sidebar */}
-      <div className={`
+      <div
+        className={`
         fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 lg:flex lg:flex-col
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
+      `}
+      >
         <div className="flex items-center justify-between h-16 px-6 border-b flex-shrink-0">
           <h1 className="text-xl font-bold text-gray-900">Construction</h1>
           <Button
@@ -78,23 +95,25 @@ export function Layout({ children }: LayoutProps) {
             <X className="h-4 w-4" />
           </Button>
         </div>
-        
+
         <nav className="flex-1 px-3 py-6 overflow-y-auto">
           <div className="space-y-1">
             {navigationItems.map((item) => {
               const Icon = item.icon;
-              const isActive = location.pathname === item.href || 
-                             (item.href !== '/dashboard' && location.pathname.startsWith(item.href));
-              
+              const isActive =
+                location.pathname === item.href ||
+                (item.href !== '/dashboard' && location.pathname.startsWith(item.href));
+
               return (
                 <Link
                   key={item.name}
                   to={item.href}
                   className={`
                     flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors
-                    ${isActive 
-                      ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700' 
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    ${
+                      isActive
+                        ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                     }
                   `}
                   onClick={() => setSidebarOpen(false)}
@@ -121,7 +140,7 @@ export function Layout({ children }: LayoutProps) {
             >
               <Menu className="h-4 w-4" />
             </Button>
-            
+
             <div className="flex items-center space-x-4 ml-auto">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -136,13 +155,17 @@ export function Layout({ children }: LayoutProps) {
                 <DropdownMenuContent align="end" className="w-56 bg-white">
                   <div className="flex items-center justify-start gap-2 p-2">
                     <div className="flex flex-col space-y-1 leading-none">
-                      <p className="font-medium">User</p>
+                      <p className="font-medium">
+                        {profile?.full_name || user?.email || 'User'}
+                      </p>
                       <p className="w-[200px] truncate text-sm text-muted-foreground">
-                        user@example.com
+                        {profile?.email || user?.email || 'No email'}
                       </p>
-                      <p className="text-xs text-muted-foreground">
-                        Admin
-                      </p>
+                      {profile?.role && (
+                        <p className="text-xs text-muted-foreground capitalize">
+                          {profile.role}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <DropdownMenuSeparator />
@@ -157,9 +180,7 @@ export function Layout({ children }: LayoutProps) {
         </div>
 
         {/* Page content */}
-        <main className="flex-1 p-6 overflow-auto">
-          {children}
-        </main>
+        <main className="flex-1 p-6 overflow-auto">{children}</main>
       </div>
     </div>
   );
