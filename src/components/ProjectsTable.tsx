@@ -41,12 +41,8 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
     }
   };
 
-  const filteredProjects = projects.map(project => ({
-    id: project.id,
-    name: project.name,
-    code: project.code,
-    location: project.location,
-  })).filter(project => {
+  // Filter using the full Project type objects, not just the four fields
+  const filteredProjects = projects.filter(project => {
     return (
       project.name.toLowerCase().includes(searchFilters.name.toLowerCase()) &&
       project.code.toLowerCase().includes(searchFilters.code.toLowerCase()) &&
@@ -126,8 +122,8 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
         name: row.name || '',
         code: row.code || '',
         location: row.location || '',
-        // ProjectFormData expects only these fields for now;
-        // remove status, createdAt, updatedAt, etc.
+        // Provide the required status field
+        status: 'planning'
       });
     }
     setImportedData(null);
