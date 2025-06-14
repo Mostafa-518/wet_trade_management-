@@ -29,7 +29,7 @@ export function SubcontractTableSearch({
         <div className="relative max-w-md flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
-            placeholder="Search by Contract ID, Project, Subcontractor, Trade, or Trade Item..."
+            placeholder="Search by Contract ID, Project, Project Code, Trade, Item, or Subcontractor..."
             value={searchTerm}
             onChange={(e) => onSimpleSearch(e.target.value)}
             className="pl-10"

@@ -37,6 +37,11 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
     return project ? project.name : projectId;
   };
 
+  const getProjectCode = (projectId: string) => {
+    const project = projects.find(p => p.id === projectId);
+    return project ? project.code : '';
+  };
+
   const getSubcontractorName = (subcontractorId: string) => {
     const subcontractor = subcontractors.find(s => s.id === subcontractorId);
     return subcontractor ? subcontractor.name : subcontractorId;
@@ -46,10 +51,12 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
     setSearchTerm(value);
     const filtered = subcontracts.filter(item => {
       const projectName = getProjectName(item.project);
+      const projectCode = getProjectCode(item.project);
       const subcontractorName = getSubcontractorName(item.subcontractor);
       
       return item.contractId.toLowerCase().includes(value.toLowerCase()) ||
         projectName.toLowerCase().includes(value.toLowerCase()) ||
+        projectCode.toLowerCase().includes(value.toLowerCase()) ||
         subcontractorName.toLowerCase().includes(value.toLowerCase()) ||
         item.tradeItems.some(tradeItem => 
           tradeItem.trade.toLowerCase().includes(value.toLowerCase()) ||
@@ -67,6 +74,7 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
 
     const filtered = subcontracts.filter(item => {
       const projectName = getProjectName(item.project);
+      const projectCode = getProjectCode(item.project);
       const subcontractorName = getSubcontractorName(item.subcontractor);
       
       return conditions.every(condition => {
@@ -75,6 +83,8 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
             return item.contractId.toLowerCase().includes(condition.value.toLowerCase());
           case 'project':
             return projectName.toLowerCase().includes(condition.value.toLowerCase());
+          case 'projectCode':
+            return projectCode.toLowerCase().includes(condition.value.toLowerCase());
           case 'subcontractor':
             return subcontractorName.toLowerCase().includes(condition.value.toLowerCase());
           case 'trade':
@@ -164,6 +174,7 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
         showAdvancedSearch={showAdvancedSearch}
         allSelected={allSelected}
         getProjectName={getProjectName}
+        getProjectCode={getProjectCode}
         getSubcontractorName={getSubcontractorName}
         onToggleAll={toggleAll}
         onToggleOne={toggleOne}
