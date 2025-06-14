@@ -25,6 +25,10 @@ export type Subcontract = Tables['subcontracts']['Row'];
 export type SubcontractInsert = Tables['subcontracts']['Insert'];
 export type SubcontractUpdate = Tables['subcontracts']['Update'];
 
+export type SubcontractTradeItem = Tables['subcontract_trade_items']['Row'];
+export type SubcontractTradeItemInsert = Tables['subcontract_trade_items']['Insert'];
+export type SubcontractTradeItemUpdate = Tables['subcontract_trade_items']['Update'];
+
 export type Responsibility = Tables['responsibilities']['Row'];
 export type ResponsibilityInsert = Tables['responsibilities']['Insert'];
 export type ResponsibilityUpdate = Tables['responsibilities']['Update'];
@@ -134,6 +138,45 @@ export class TradeItemService extends BaseService<TradeItem, TradeItemInsert, Tr
   }
 }
 
+// Subcontract Trade Items Service
+export class SubcontractTradeItemService extends BaseService<SubcontractTradeItem, SubcontractTradeItemInsert, SubcontractTradeItemUpdate> {
+  constructor() {
+    super('subcontract_trade_items');
+  }
+
+  async getBySubcontractId(subcontractId: string) {
+    const { data, error } = await supabase
+      .from('subcontract_trade_items')
+      .select(`
+        *,
+        trade_items(*, trades(*))
+      `)
+      .eq('subcontract_id', subcontractId);
+    
+    if (error) throw error;
+    return data;
+  }
+
+  async createMany(items: SubcontractTradeItemInsert[]) {
+    const { data, error } = await supabase
+      .from('subcontract_trade_items')
+      .insert(items)
+      .select();
+    
+    if (error) throw error;
+    return data;
+  }
+
+  async deleteBySubcontractId(subcontractId: string) {
+    const { error } = await supabase
+      .from('subcontract_trade_items')
+      .delete()
+      .eq('subcontract_id', subcontractId);
+    
+    if (error) throw error;
+  }
+}
+
 // Responsibility Service
 export class ResponsibilityService extends BaseService<Responsibility, ResponsibilityInsert, ResponsibilityUpdate> {
   constructor() {
@@ -160,6 +203,25 @@ export class SubcontractService extends BaseService<Subcontract, SubcontractInse
     
     if (error) throw error;
     return data;
+  }
+
+  async getWithTradeItems() {
+    const { data: subcontracts, error } = await supabase
+      .from('subcontracts')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+
+    // Get trade items for each subcontract
+    const subcontractsWithItems = await Promise.all(
+      subcontracts.map(async (subcontract) => {
+        const tradeItems = await subcontractTradeItemService.getBySubcontractId(subcontract.id);
+        return { ...subcontract, tradeItems };
+      })
+    );
+
+    return subcontractsWithItems;
   }
 }
 
@@ -249,6 +311,7 @@ export const projectService = new ProjectService();
 export const subcontractorService = new SubcontractorService();
 export const tradeService = new TradeService();
 export const tradeItemService = new TradeItemService();
+export const subcontractTradeItemService = new SubcontractTradeItemService();
 export const responsibilityService = new ResponsibilityService();
 export const subcontractService = new SubcontractService();
 export const userProfileService = new UserProfileService();

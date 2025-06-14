@@ -1,27 +1,54 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { subcontractService } from '@/services/supabaseService';
+import { subcontractService, subcontractTradeItemService } from '@/services/supabaseService';
 import { Subcontract } from '@/types/subcontract';
 import { useToast } from '@/hooks/use-toast';
+import { useData } from '@/contexts/DataContext';
 
 export function useSubcontracts() {
   const { toast } = useToast();
+  const { trades, tradeItems } = useData();
 
   const { data: subcontractsRaw = [], refetch: refetchSubcontracts, isLoading: subcontractsLoading } = useQuery({
     queryKey: ['subcontracts'],
     queryFn: async () => {
-      const data = await subcontractService.getAll();
+      const data = await subcontractService.getWithTradeItems();
       console.log('Raw subcontracts from database:', data);
       return data;
     },
     staleTime: 5 * 60 * 1000,
   });
 
+  // Helper function to map trade items from database to frontend format
+  const mapTradeItemsToFrontend = (dbTradeItems: any[]) => {
+    return dbTradeItems.map((dbItem: any) => {
+      const tradeItem = dbItem.trade_items;
+      const trade = tradeItem?.trades;
+      
+      return {
+        id: dbItem.id,
+        trade: trade?.name || tradeItem?.trade_id || '',
+        item: tradeItem?.name || '',
+        unit: tradeItem?.unit || '',
+        quantity: dbItem.quantity || 0,
+        unitPrice: dbItem.unit_price || 0,
+        total: dbItem.total_price || 0,
+      };
+    });
+  };
+
+  // Helper function to find trade item ID by trade ID and item name
+  const findTradeItemId = (tradeId: string, itemName: string) => {
+    const tradeItem = tradeItems.find(item => 
+      item.trade_id === tradeId && item.name === itemName
+    );
+    return tradeItem?.id;
+  };
+
   const addSubcontract = async (data: Partial<Subcontract>) => {
     try {
       console.log('Adding subcontract with data:', data);
       
-      // Validate that project and subcontractor are UUIDs
       if (!data.project || !data.subcontractor) {
         throw new Error('Project and subcontractor are required');
       }
@@ -39,7 +66,28 @@ export function useSubcontracts() {
 
       console.log('Supabase payload:', subcontractPayload);
       
-      await subcontractService.create(subcontractPayload);
+      const createdSubcontract = await subcontractService.create(subcontractPayload);
+      
+      // Save trade items if any
+      if (data.tradeItems && data.tradeItems.length > 0) {
+        const tradeItemsPayload = data.tradeItems.map(item => {
+          const tradeId = trades.find(t => t.name === item.trade)?.id;
+          const tradeItemId = findTradeItemId(tradeId || '', item.item);
+          
+          return {
+            subcontract_id: createdSubcontract.id,
+            trade_item_id: tradeItemId || '',
+            quantity: item.quantity,
+            unit_price: item.unitPrice,
+            total_price: item.total,
+          };
+        }).filter(item => item.trade_item_id); // Only include items with valid trade_item_id
+
+        if (tradeItemsPayload.length > 0) {
+          await subcontractTradeItemService.createMany(tradeItemsPayload);
+        }
+      }
+
       await refetchSubcontracts();
       toast({ title: "Success", description: "Subcontract created successfully" });
     } catch (error) {
@@ -69,6 +117,33 @@ export function useSubcontracts() {
       };
 
       await subcontractService.update(id, updatePayload);
+
+      // Update trade items if provided
+      if (data.tradeItems) {
+        // Delete existing trade items
+        await subcontractTradeItemService.deleteBySubcontractId(id);
+        
+        // Add new trade items
+        if (data.tradeItems.length > 0) {
+          const tradeItemsPayload = data.tradeItems.map(item => {
+            const tradeId = trades.find(t => t.name === item.trade)?.id;
+            const tradeItemId = findTradeItemId(tradeId || '', item.item);
+            
+            return {
+              subcontract_id: id,
+              trade_item_id: tradeItemId || '',
+              quantity: item.quantity,
+              unit_price: item.unitPrice,
+              total_price: item.total,
+            };
+          }).filter(item => item.trade_item_id);
+
+          if (tradeItemsPayload.length > 0) {
+            await subcontractTradeItemService.createMany(tradeItemsPayload);
+          }
+        }
+      }
+
       await refetchSubcontracts();
       toast({ title: "Success", description: "Subcontract updated successfully" });
     } catch (error) {
@@ -80,6 +155,9 @@ export function useSubcontracts() {
 
   const deleteSubcontract = async (id: string) => {
     try {
+      // Delete trade items first (due to foreign key constraints)
+      await subcontractTradeItemService.deleteBySubcontractId(id);
+      // Delete the subcontract
       await subcontractService.delete(id);
       await refetchSubcontracts();
       toast({ title: "Success", description: "Subcontract deleted successfully" });
@@ -93,6 +171,7 @@ export function useSubcontracts() {
   const deleteManySubcontracts = async (ids: string[]) => {
     try {
       for (const id of ids) {
+        await subcontractTradeItemService.deleteBySubcontractId(id);
         await subcontractService.delete(id);
       }
       await refetchSubcontracts();
@@ -110,7 +189,7 @@ export function useSubcontracts() {
     contractId: s.contract_number || `SC-${s.id.slice(0, 8)}`,
     project: s.project_id,
     subcontractor: s.subcontractor_id,
-    tradeItems: [],
+    tradeItems: s.tradeItems ? mapTradeItemsToFrontend(s.tradeItems) : [],
     responsibilities: [],
     totalValue: s.total_value || 0,
     status: s.status || 'draft',

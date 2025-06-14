@@ -19,14 +19,19 @@ export function TradeItemForm({ currentTradeItem, setCurrentTradeItem, onAddItem
 
   // Get available items for selected trade
   const availableItems = currentTradeItem.trade 
-    ? tradeItems.filter(item => item.trade_id === currentTradeItem.trade)
+    ? tradeItems.filter(item => {
+        const selectedTrade = trades.find(t => t.name === currentTradeItem.trade);
+        return selectedTrade && item.trade_id === selectedTrade.id;
+      })
     : [];
 
   // Auto-fill unit when item is selected
   useEffect(() => {
     if (currentTradeItem.item && currentTradeItem.trade) {
+      const selectedTrade = trades.find(t => t.name === currentTradeItem.trade);
       const selectedItem = tradeItems.find(
-        item => item.name === currentTradeItem.item && item.trade_id === currentTradeItem.trade
+        item => item.name === currentTradeItem.item && 
+                selectedTrade && item.trade_id === selectedTrade.id
       );
       if (selectedItem) {
         setCurrentTradeItem(prev => ({
@@ -36,7 +41,7 @@ export function TradeItemForm({ currentTradeItem, setCurrentTradeItem, onAddItem
         }));
       }
     }
-  }, [currentTradeItem.item, currentTradeItem.trade, tradeItems, setCurrentTradeItem]);
+  }, [currentTradeItem.item, currentTradeItem.trade, tradeItems, trades, setCurrentTradeItem]);
 
   // Calculate total when quantity or unit price changes
   useEffect(() => {
@@ -71,7 +76,7 @@ export function TradeItemForm({ currentTradeItem, setCurrentTradeItem, onAddItem
             </SelectTrigger>
             <SelectContent>
               {trades.map(trade => (
-                <SelectItem key={trade.id} value={trade.id}>
+                <SelectItem key={trade.id} value={trade.name}>
                   {trade.name}
                 </SelectItem>
               ))}

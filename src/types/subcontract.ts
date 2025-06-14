@@ -39,6 +39,18 @@ export interface SubcontractStepperProps {
   onSave: (data: any) => void;
 }
 
+// Database trade item structure
+export interface SubcontractTradeItemDB {
+  id: string;
+  subcontract_id: string;
+  trade_item_id: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+  created_at: string;
+  updated_at: string;
+}
+
 // Updated Subcontract interface to match what components expect and database schema
 export interface Subcontract {
   id: string;
@@ -51,7 +63,7 @@ export interface Subcontract {
   status: 'draft' | 'pending' | 'active' | 'completed' | 'cancelled';
   startDate: string;
   endDate: string;
-  description: string; // Added missing description field
+  description: string;
   createdAt: string;
   updatedAt: string;
 }
