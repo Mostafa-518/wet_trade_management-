@@ -1,22 +1,12 @@
 
 import React, { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Search, Plus, Eye, Edit, Trash2 } from 'lucide-react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { AdvancedSearch } from './subcontract/AdvancedSearch';
 import { SubcontractEditModal } from './subcontract/SubcontractEditModal';
+import { SubcontractTableHeader } from './subcontract/SubcontractTableHeader';
+import { SubcontractTableSearch } from './subcontract/SubcontractTableSearch';
+import { SubcontractTableContent } from './subcontract/SubcontractTableContent';
+import { SubcontractTableSummary } from './subcontract/SubcontractTableSummary';
 import { useSubcontracts } from '@/hooks/useSubcontracts';
 import { useData } from '@/contexts/DataContext';
-import { TableSelectionCheckbox } from './TableSelectionCheckbox';
 
 interface SubcontractTableProps {
   onCreateNew?: () => void;
@@ -105,30 +95,6 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
     setFilteredData(filtered);
   };
 
-  const getStatusBadge = (status: string) => {
-    if (status === 'overbudget') {
-      return <Badge variant="destructive">Over Budget</Badge>;
-    }
-    if (status === 'completed') {
-      return <Badge className="bg-green-100 text-green-800">Completed</Badge>;
-    }
-    if (status === 'active') {
-      return <Badge className="bg-blue-100 text-blue-800">Active</Badge>;
-    }
-    if (status === 'pending') {
-      return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
-    }
-    return <Badge variant="outline">{status}</Badge>;
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'EGP',
-      minimumFractionDigits: 0
-    }).format(amount);
-  };
-
   const handleEdit = (subcontract: any) => {
     setEditingSubcontract(subcontract);
   };
@@ -183,157 +149,32 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Subcontract Management</h2>
-          <p className="text-muted-foreground">Manage all subcontracts and track budget performance</p>
-        </div>
-        {onCreateNew && (
-          <Button onClick={onCreateNew} className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            New Subcontract
-          </Button>
-        )}
-      </div>
+      <SubcontractTableHeader onCreateNew={onCreateNew} />
 
-      {/* Search Section */}
-      <div className="space-y-4">
-        <div className="flex gap-2 items-center">
-          <div className="relative max-w-md flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input
-              placeholder="Search by Contract ID, Project, Subcontractor, Trade, or Trade Item..."
-              value={searchTerm}
-              onChange={(e) => handleSimpleSearch(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Button
-            variant="outline"
-            onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
-          >
-            Advanced Search
-          </Button>
-        </div>
+      <SubcontractTableSearch
+        searchTerm={searchTerm}
+        onSimpleSearch={handleSimpleSearch}
+        onAdvancedSearch={handleAdvancedSearch}
+      />
 
-        {showAdvancedSearch && (
-          <AdvancedSearch onSearch={handleAdvancedSearch} />
-        )}
-      </div>
+      <SubcontractTableContent
+        filteredData={filteredData}
+        selectedIds={selectedIds}
+        searchTerm={searchTerm}
+        showAdvancedSearch={showAdvancedSearch}
+        allSelected={allSelected}
+        getProjectName={getProjectName}
+        getSubcontractorName={getSubcontractorName}
+        onToggleAll={toggleAll}
+        onToggleOne={toggleOne}
+        onViewDetail={onViewDetail}
+        onEdit={handleEdit}
+        onDelete={deleteSubcontract}
+        onBulkDelete={handleBulkDelete}
+      />
 
-      {/* Table */}
-      <div className="border rounded-lg overflow-hidden">
-        {selectedIds.size > 0 && (
-          <div className="p-2 bg-red-50 border-b flex items-center gap-2">
-            <span className="font-medium">{selectedIds.size} selected</span>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleBulkDelete}
-              className="ml-2"
-            >
-              Delete Selected
-            </Button>
-          </div>
-        )}
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>
-                <TableSelectionCheckbox checked={allSelected} onCheckedChange={toggleAll} ariaLabel="Select all subcontracts"/>
-              </TableHead>
-              <TableHead>Contract ID</TableHead>
-              <TableHead>Project</TableHead>
-              <TableHead>Subcontractor</TableHead>
-              <TableHead>Items Count</TableHead>
-              <TableHead className="text-right">Total Value</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Created Date</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredData.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={9} className="text-center py-8">
-                  <div className="text-muted-foreground">
-                    {searchTerm || showAdvancedSearch ? 'No subcontracts found matching your search.' : 'No subcontracts found.'}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredData.map((contract) => (
-                <TableRow 
-                  key={contract.id}
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => onViewDetail(contract.contractId)}
-                >
-                  <TableCell onClick={e => e.stopPropagation()}>
-                    <TableSelectionCheckbox
-                      checked={selectedIds.has(contract.id)}
-                      onCheckedChange={() => toggleOne(contract.id)}
-                      ariaLabel={`Select contract ${contract.contractId}`}
-                    />
-                  </TableCell>
-                  <TableCell className="font-medium text-blue-600">{contract.contractId}</TableCell>
-                  <TableCell>{getProjectName(contract.project)}</TableCell>
-                  <TableCell>{getSubcontractorName(contract.subcontractor)}</TableCell>
-                  <TableCell>{contract.tradeItems.length}</TableCell>
-                  <TableCell className="text-right font-medium">{formatCurrency(contract.totalValue)}</TableCell>
-                  <TableCell>{getStatusBadge(contract.status)}</TableCell>
-                  <TableCell>{new Date(contract.createdAt).toLocaleDateString()}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                      <Button variant="ghost" size="sm" onClick={() => onViewDetail(contract.contractId)}>
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleEdit(contract)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={async () => {
-                          try {
-                            await deleteSubcontract(contract.id);
-                          } catch {
-                            // toast already handled
-                          }
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <SubcontractTableSummary filteredData={filteredData} />
 
-      {/* Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
-        <div className="text-center">
-          <div className="text-2xl font-bold">{filteredData.length}</div>
-          <div className="text-sm text-muted-foreground">Total Contracts</div>
-        </div>
-        <div className="text-center">
-          <div className="text-2xl font-bold text-green-600">
-            {formatCurrency(filteredData.reduce((sum, item) => sum + item.totalValue, 0))}
-          </div>
-          <div className="text-sm text-muted-foreground">Total Value</div>
-        </div>
-        <div className="text-center">
-          <div className="text-2xl font-bold text-blue-600">
-            {filteredData.filter(item => item.status === 'active').length}
-          </div>
-          <div className="text-sm text-muted-foreground">Active Contracts</div>
-        </div>
-      </div>
-
-      {/* Edit Modal */}
       {editingSubcontract && (
         <SubcontractEditModal
           subcontract={editingSubcontract}

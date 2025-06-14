@@ -1,0 +1,51 @@
+
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
+import { AdvancedSearch } from './AdvancedSearch';
+
+interface SearchCondition {
+  field: string;
+  value: string;
+}
+
+interface SubcontractTableSearchProps {
+  searchTerm: string;
+  onSimpleSearch: (value: string) => void;
+  onAdvancedSearch: (conditions: SearchCondition[]) => void;
+}
+
+export function SubcontractTableSearch({ 
+  searchTerm, 
+  onSimpleSearch, 
+  onAdvancedSearch 
+}: SubcontractTableSearchProps) {
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2 items-center">
+        <div className="relative max-w-md flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            placeholder="Search by Contract ID, Project, Subcontractor, Trade, or Trade Item..."
+            value={searchTerm}
+            onChange={(e) => onSimpleSearch(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <Button
+          variant="outline"
+          onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+        >
+          Advanced Search
+        </Button>
+      </div>
+
+      {showAdvancedSearch && (
+        <AdvancedSearch onSearch={onAdvancedSearch} />
+      )}
+    </div>
+  );
+}
