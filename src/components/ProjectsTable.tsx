@@ -26,6 +26,21 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const handleFilterChange = (field: keyof ProjectSearchFilters, value: string) => {
+    setSearchFilters(prev => ({ ...prev, [field]: value }));
+  };
+
+  const clearFilters = () => {
+    setSearchFilters({ name: '', code: '', location: '' });
+  };
+
+  const handleImportClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+      fileInputRef.current.click();
+    }
+  };
+
   const filteredProjects = projects.filter(project => {
     return (
       project.name.toLowerCase().includes(searchFilters.name.toLowerCase()) &&
