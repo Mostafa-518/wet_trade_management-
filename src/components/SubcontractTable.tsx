@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/table';
 import { AdvancedSearch } from './subcontract/AdvancedSearch';
 import { useData } from '@/contexts/DataContext';
+import { TableSelectionCheckbox } from './TableSelectionCheckbox';
 
 interface SubcontractTableProps {
   onCreateNew: () => void;
@@ -82,6 +83,36 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
     }).format(amount);
   };
 
+  // Bulk select state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // Select all toggle
+  const allSelected = filteredData.length > 0 && filteredData.every(p => selectedIds.has(p.id));
+
+  const toggleAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredData.map(p => p.id)));
+    }
+  };
+
+  const toggleOne = (id: string) => {
+    setSelectedIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) newSet.delete(id);
+      else newSet.add(id);
+      return newSet;
+    });
+  };
+
+  // Dummy bulk delete - currently just clears the selected in the UI since there is no `deleteSubcontract` method
+  const handleBulkDelete = async () => {
+    // In a real implementation, would call deleteSubcontract(id) for each id.
+    setSelectedIds(new Set());
+    // Optionally add a toast/feedback here.
+  };
+
   return (
     <div className="space-y-4">
       {/* Header */}
@@ -125,9 +156,26 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
 
       {/* Table */}
       <div className="border rounded-lg overflow-hidden">
+        {/* Bulk Actions bar */}
+        {selectedIds.size > 0 && (
+          <div className="p-2 bg-red-50 border-b flex items-center gap-2">
+            <span className="font-medium">{selectedIds.size} selected</span>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleBulkDelete}
+              className="ml-2"
+            >
+              Delete Selected
+            </Button>
+          </div>
+        )}
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>
+                <TableSelectionCheckbox checked={allSelected} onCheckedChange={toggleAll} ariaLabel="Select all subcontracts"/>
+              </TableHead>
               <TableHead>Contract ID</TableHead>
               <TableHead>Project</TableHead>
               <TableHead>Subcontractor</TableHead>
@@ -145,6 +193,13 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
                 className="cursor-pointer hover:bg-muted/50"
                 onClick={() => onViewDetail(contract.contractId)}
               >
+                <TableCell onClick={e => e.stopPropagation()}>
+                  <TableSelectionCheckbox
+                    checked={selectedIds.has(contract.id)}
+                    onCheckedChange={() => toggleOne(contract.id)}
+                    ariaLabel={`Select contract ${contract.contractId}`}
+                  />
+                </TableCell>
                 <TableCell className="font-medium text-blue-600">{contract.contractId}</TableCell>
                 <TableCell>{contract.project}</TableCell>
                 <TableCell>{contract.subcontractor}</TableCell>
