@@ -47,13 +47,26 @@ export const mapSubcontractToFrontend = (s: any) => {
   
   console.log('Mapped trade items for subcontract', s.id, ':', mappedTradeItems);
   
+  // Parse responsibilities from JSON string if it exists, otherwise use empty array
+  let responsibilities = [];
+  if (s.responsibilities) {
+    try {
+      responsibilities = typeof s.responsibilities === 'string' 
+        ? JSON.parse(s.responsibilities) 
+        : s.responsibilities;
+    } catch (error) {
+      console.warn('Failed to parse responsibilities for subcontract', s.id, ':', error);
+      responsibilities = [];
+    }
+  }
+  
   return {
     id: s.id,
     contractId: s.contract_number || `SC-${s.id.slice(0, 8)}`,
     project: s.project_id,
     subcontractor: s.subcontractor_id,
     tradeItems: mappedTradeItems,
-    responsibilities: [],
+    responsibilities: responsibilities,
     totalValue: s.total_value || 0,
     status: s.status || 'draft',
     startDate: s.start_date,

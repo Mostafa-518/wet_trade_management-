@@ -74,7 +74,13 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
           (tradeItem.item && tradeItem.item.toLowerCase().includes(searchLower))
         );
 
-      return basicFieldsMatch || tradeItemsMatch;
+      // Check responsibilities
+      const responsibilitiesMatch = item.responsibilities && item.responsibilities.length > 0 &&
+        item.responsibilities.some(resp => 
+          resp && resp.toLowerCase().includes(searchLower)
+        );
+
+      return basicFieldsMatch || tradeItemsMatch || responsibilitiesMatch;
     });
     
     setFilteredData(filtered);
@@ -112,6 +118,11 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
             return item.tradeItems && item.tradeItems.length > 0 && 
               item.tradeItems.some(tradeItem => 
                 tradeItem.item && tradeItem.item.toLowerCase().includes(conditionLower)
+              );
+          case 'responsibilities':
+            return item.responsibilities && item.responsibilities.length > 0 &&
+              item.responsibilities.some(resp => 
+                resp && resp.toLowerCase().includes(conditionLower)
               );
           case 'status':
             return item.status.toLowerCase().includes(conditionLower);

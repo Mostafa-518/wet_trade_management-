@@ -25,6 +25,7 @@ export const createSubcontractWithTradeItems = async (
     start_date: data.startDate,
     end_date: data.endDate,
     description: data.description || '',
+    responsibilities: data.responsibilities ? JSON.stringify(data.responsibilities) : null,
   };
 
   console.log('Supabase payload:', subcontractPayload);
@@ -97,6 +98,7 @@ export const updateSubcontractWithTradeItems = async (
     start_date: data.startDate,
     end_date: data.endDate,
     description: data.description || '',
+    responsibilities: data.responsibilities ? JSON.stringify(data.responsibilities) : null,
   };
 
   await subcontractService.update(id, updatePayload);
