@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,7 +22,7 @@ export function SubcontractEditModal({ subcontract, open, onClose, onSave }: Sub
     contractId: '',
     project: '',
     subcontractor: '',
-    status: 'draft' as const,
+    status: 'draft' as 'draft' | 'pending' | 'active' | 'completed' | 'cancelled',
     totalValue: 0,
     startDate: '',
     endDate: '',
@@ -123,7 +122,7 @@ export function SubcontractEditModal({ subcontract, open, onClose, onSave }: Sub
               <Label htmlFor="status">Status</Label>
               <Select
                 value={formData.status}
-                onValueChange={(value: any) => setFormData(prev => ({ ...prev, status: value }))}
+                onValueChange={(value: 'draft' | 'pending' | 'active' | 'completed' | 'cancelled') => setFormData(prev => ({ ...prev, status: value }))}
               >
                 <SelectTrigger>
                   <SelectValue />
