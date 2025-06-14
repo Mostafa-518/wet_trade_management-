@@ -9,7 +9,11 @@ export function useSubcontracts() {
 
   const { data: subcontractsRaw = [], refetch: refetchSubcontracts, isLoading: subcontractsLoading } = useQuery({
     queryKey: ['subcontracts'],
-    queryFn: () => subcontractService.getAll(),
+    queryFn: async () => {
+      const data = await subcontractService.getAll();
+      console.log('Raw subcontracts from database:', data);
+      return data;
+    },
     staleTime: 5 * 60 * 1000,
   });
 
@@ -24,8 +28,8 @@ export function useSubcontracts() {
 
       const subcontractPayload = {
         contract_number: data.contractId,
-        project_id: data.project, // Should be UUID
-        subcontractor_id: data.subcontractor, // Should be UUID
+        project_id: data.project,
+        subcontractor_id: data.subcontractor,
         status: data.status || 'draft',
         total_value: data.totalValue || 0,
         start_date: data.startDate,
@@ -51,6 +55,8 @@ export function useSubcontracts() {
 
   const updateSubcontract = async (id: string, data: Partial<Subcontract>) => {
     try {
+      console.log('Updating subcontract:', id, data);
+      
       const updatePayload = {
         contract_number: data.contractId,
         project_id: data.project,
@@ -98,22 +104,27 @@ export function useSubcontracts() {
     }
   };
 
+  // Map database fields to frontend expected format
+  const subcontracts = subcontractsRaw.map((s: any) => ({
+    id: s.id,
+    contractId: s.contract_number || `SC-${s.id.slice(0, 8)}`,
+    project: s.project_id,
+    subcontractor: s.subcontractor_id,
+    tradeItems: [],
+    responsibilities: [],
+    totalValue: s.total_value || 0,
+    status: s.status || 'draft',
+    startDate: s.start_date,
+    endDate: s.end_date,
+    description: s.description || '',
+    createdAt: s.created_at,
+    updatedAt: s.updated_at,
+  }));
+
+  console.log('Mapped subcontracts:', subcontracts);
+
   return {
-    subcontracts: subcontractsRaw.map((s: any) => ({
-      id: s.id,
-      contractId: s.contract_number,
-      project: s.project_id,
-      subcontractor: s.subcontractor_id,
-      tradeItems: [],
-      responsibilities: [],
-      totalValue: s.total_value,
-      status: s.status,
-      startDate: s.start_date,
-      endDate: s.end_date,
-      description: s.description || '',
-      createdAt: s.created_at,
-      updatedAt: s.updated_at,
-    })),
+    subcontracts,
     addSubcontract,
     updateSubcontract,
     deleteSubcontract,

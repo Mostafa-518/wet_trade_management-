@@ -13,7 +13,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { AdvancedSearch } from './subcontract/AdvancedSearch';
+import { SubcontractEditModal } from './subcontract/SubcontractEditModal';
 import { useSubcontracts } from '@/hooks/useSubcontracts';
+import { useData } from '@/contexts/DataContext';
 import { TableSelectionCheckbox } from './TableSelectionCheckbox';
 
 interface SubcontractTableProps {
@@ -27,27 +29,43 @@ interface SearchCondition {
 }
 
 export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTableProps) {
-  const { subcontracts, deleteSubcontract, deleteManySubcontracts, isLoading } = useSubcontracts();
+  const { subcontracts, updateSubcontract, deleteSubcontract, deleteManySubcontracts, isLoading } = useSubcontracts();
+  const { projects, subcontractors } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredData, setFilteredData] = useState(subcontracts);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const [editingSubcontract, setEditingSubcontract] = useState<any>(null);
 
   // Update filtered data when subcontracts change
   React.useEffect(() => {
     setFilteredData(subcontracts);
   }, [subcontracts]);
 
+  // Helper functions to resolve names from IDs
+  const getProjectName = (projectId: string) => {
+    const project = projects.find(p => p.id === projectId);
+    return project ? project.name : projectId;
+  };
+
+  const getSubcontractorName = (subcontractorId: string) => {
+    const subcontractor = subcontractors.find(s => s.id === subcontractorId);
+    return subcontractor ? subcontractor.name : subcontractorId;
+  };
+
   const handleSimpleSearch = (value: string) => {
     setSearchTerm(value);
-    const filtered = subcontracts.filter(item =>
-      item.contractId.toLowerCase().includes(value.toLowerCase()) ||
-      item.project.toLowerCase().includes(value.toLowerCase()) ||
-      item.subcontractor.toLowerCase().includes(value.toLowerCase()) ||
-      item.tradeItems.some(tradeItem => 
-        tradeItem.trade.toLowerCase().includes(value.toLowerCase()) ||
-        tradeItem.item.toLowerCase().includes(value.toLowerCase())
-      )
-    );
+    const filtered = subcontracts.filter(item => {
+      const projectName = getProjectName(item.project);
+      const subcontractorName = getSubcontractorName(item.subcontractor);
+      
+      return item.contractId.toLowerCase().includes(value.toLowerCase()) ||
+        projectName.toLowerCase().includes(value.toLowerCase()) ||
+        subcontractorName.toLowerCase().includes(value.toLowerCase()) ||
+        item.tradeItems.some(tradeItem => 
+          tradeItem.trade.toLowerCase().includes(value.toLowerCase()) ||
+          tradeItem.item.toLowerCase().includes(value.toLowerCase())
+        );
+    });
     setFilteredData(filtered);
   };
 
@@ -58,14 +76,17 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
     }
 
     const filtered = subcontracts.filter(item => {
+      const projectName = getProjectName(item.project);
+      const subcontractorName = getSubcontractorName(item.subcontractor);
+      
       return conditions.every(condition => {
         switch (condition.field) {
           case 'contractId':
             return item.contractId.toLowerCase().includes(condition.value.toLowerCase());
           case 'project':
-            return item.project.toLowerCase().includes(condition.value.toLowerCase());
+            return projectName.toLowerCase().includes(condition.value.toLowerCase());
           case 'subcontractor':
-            return item.subcontractor.toLowerCase().includes(condition.value.toLowerCase());
+            return subcontractorName.toLowerCase().includes(condition.value.toLowerCase());
           case 'trade':
             return item.tradeItems.some(tradeItem => 
               tradeItem.trade.toLowerCase().includes(condition.value.toLowerCase())
@@ -106,6 +127,15 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
       currency: 'EGP',
       minimumFractionDigits: 0
     }).format(amount);
+  };
+
+  const handleEdit = (subcontract: any) => {
+    setEditingSubcontract(subcontract);
+  };
+
+  const handleSaveEdit = async (id: string, data: any) => {
+    await updateSubcontract(id, data);
+    setEditingSubcontract(null);
   };
 
   // Bulk select state
@@ -169,7 +199,6 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
 
       {/* Search Section */}
       <div className="space-y-4">
-        {/* Simple Search */}
         <div className="flex gap-2 items-center">
           <div className="relative max-w-md flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -188,7 +217,6 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
           </Button>
         </div>
 
-        {/* Advanced Search */}
         {showAdvancedSearch && (
           <AdvancedSearch onSearch={handleAdvancedSearch} />
         )}
@@ -196,7 +224,6 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
 
       {/* Table */}
       <div className="border rounded-lg overflow-hidden">
-        {/* Bulk Actions bar */}
         {selectedIds.size > 0 && (
           <div className="p-2 bg-red-50 border-b flex items-center gap-2">
             <span className="font-medium">{selectedIds.size} selected</span>
@@ -250,8 +277,8 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
                     />
                   </TableCell>
                   <TableCell className="font-medium text-blue-600">{contract.contractId}</TableCell>
-                  <TableCell>{contract.project}</TableCell>
-                  <TableCell>{contract.subcontractor}</TableCell>
+                  <TableCell>{getProjectName(contract.project)}</TableCell>
+                  <TableCell>{getSubcontractorName(contract.subcontractor)}</TableCell>
                   <TableCell>{contract.tradeItems.length}</TableCell>
                   <TableCell className="text-right font-medium">{formatCurrency(contract.totalValue)}</TableCell>
                   <TableCell>{getStatusBadge(contract.status)}</TableCell>
@@ -261,7 +288,7 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
                       <Button variant="ghost" size="sm" onClick={() => onViewDetail(contract.contractId)}>
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={() => handleEdit(contract)}>
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
@@ -305,6 +332,16 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
           <div className="text-sm text-muted-foreground">Active Contracts</div>
         </div>
       </div>
+
+      {/* Edit Modal */}
+      {editingSubcontract && (
+        <SubcontractEditModal
+          subcontract={editingSubcontract}
+          open={!!editingSubcontract}
+          onClose={() => setEditingSubcontract(null)}
+          onSave={handleSaveEdit}
+        />
+      )}
     </div>
   );
 }
