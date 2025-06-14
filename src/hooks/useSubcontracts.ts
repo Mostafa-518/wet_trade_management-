@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { subcontractService, subcontractTradeItemService } from '@/services';
 import { Subcontract } from '@/types/subcontract';
@@ -19,14 +18,24 @@ export function useSubcontracts(trades: any[] = [], tradeItems: any[] = []) {
 
   // Helper function to map trade items from database to frontend format
   const mapTradeItemsToFrontend = (dbTradeItems: any[]) => {
+    console.log('Mapping trade items:', dbTradeItems);
+    
     return dbTradeItems.map((dbItem: any) => {
       const tradeItem = dbItem.trade_items;
       const trade = tradeItem?.trades;
       
+      console.log('Processing db item:', {
+        dbItem,
+        tradeItem,
+        trade,
+        tradeName: trade?.name,
+        itemName: tradeItem?.name
+      });
+      
       return {
         id: dbItem.id,
-        trade: trade?.name || tradeItem?.trade_id || '',
-        item: tradeItem?.name || '',
+        trade: trade?.name || 'Unknown Trade',
+        item: tradeItem?.name || 'Unknown Item',
         unit: tradeItem?.unit || '',
         quantity: dbItem.quantity || 0,
         unitPrice: dbItem.unit_price || 0,
@@ -208,23 +217,33 @@ export function useSubcontracts(trades: any[] = [], tradeItems: any[] = []) {
   };
 
   // Map database fields to frontend expected format
-  const subcontracts = subcontractsRaw.map((s: any) => ({
-    id: s.id,
-    contractId: s.contract_number || `SC-${s.id.slice(0, 8)}`,
-    project: s.project_id,
-    subcontractor: s.subcontractor_id,
-    tradeItems: s.tradeItems ? mapTradeItemsToFrontend(s.tradeItems) : [],
-    responsibilities: [],
-    totalValue: s.total_value || 0,
-    status: s.status || 'draft',
-    startDate: s.start_date,
-    endDate: s.end_date,
-    description: s.description || '',
-    createdAt: s.created_at,
-    updatedAt: s.updated_at,
-  }));
+  const subcontracts = subcontractsRaw.map((s: any) => {
+    console.log('Processing subcontract:', s.id, 'with tradeItems:', s.tradeItems);
+    
+    const mappedTradeItems = s.tradeItems && s.tradeItems.length > 0 
+      ? mapTradeItemsToFrontend(s.tradeItems) 
+      : [];
+    
+    console.log('Mapped trade items for subcontract', s.id, ':', mappedTradeItems);
+    
+    return {
+      id: s.id,
+      contractId: s.contract_number || `SC-${s.id.slice(0, 8)}`,
+      project: s.project_id,
+      subcontractor: s.subcontractor_id,
+      tradeItems: mappedTradeItems,
+      responsibilities: [],
+      totalValue: s.total_value || 0,
+      status: s.status || 'draft',
+      startDate: s.start_date,
+      endDate: s.end_date,
+      description: s.description || '',
+      createdAt: s.created_at,
+      updatedAt: s.updated_at,
+    };
+  });
 
-  console.log('Mapped subcontracts:', subcontracts);
+  console.log('Final mapped subcontracts:', subcontracts);
 
   return {
     subcontracts,
