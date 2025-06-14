@@ -122,13 +122,12 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
 
   const handleImport = async (rows: any[]) => {
     for (const row of rows) {
-      // Only send allowed fields to addProject
       await addProject({
-        name: row.name,
-        code: row.code,
-        location: row.location,
-        // Provide minimal defaults for required fields
-        status: 'planning', // although will be ignored
+        name: row.name || '',
+        code: row.code || '',
+        location: row.location || '',
+        // ProjectFormData expects only these fields for now;
+        // remove status, createdAt, updatedAt, etc.
       });
     }
     setImportedData(null);
