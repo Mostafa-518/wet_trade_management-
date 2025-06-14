@@ -34,24 +34,8 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
     );
   });
 
-  const handleFilterChange = (field: keyof ProjectSearchFilters, value: string) => {
-    setSearchFilters(prev => ({ ...prev, [field]: value }));
-  };
+  const [importedData, setImportedData] = useState<any[] | null>(null); // Hold imported rows
 
-  const clearFilters = () => {
-    setSearchFilters({ name: '', code: '', location: '' });
-  };
-
-  const handleImportClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-      fileInputRef.current.click();
-    }
-  };
-
-  const [importedData, setImportedData] = useState<any[] | null>(null); // Hold imported rows (original Excel)
-
-  // Columns for the preview dialog
   const previewColumns = [
     { key: "name", label: "Name" },
     { key: "code", label: "Code" },
@@ -61,6 +45,27 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
     { key: "endDate", label: "End Date" },
     { key: "status", label: "Status" },
   ];
+
+  function normalizeHeader(header: string) {
+    const key = header.trim().toLowerCase().replace(/[\s_]+/g, '');
+    // Map variations to expected camelCase keys
+    if (key === "startdate") return "startDate";
+    if (key === "enddate") return "endDate";
+    if (key === "projectname") return "name";
+    if (key === "projectcode") return "code";
+    if (key === "projectlocation") return "location";
+    return (
+      {
+        name: "name",
+        code: "code",
+        location: "location",
+        description: "description",
+        status: "status",
+        startdate: "startDate",
+        enddate: "endDate",
+      }[key] || key
+    );
+  }
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -74,34 +79,46 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
       const worksheet = workbook.Sheets[sheetName];
       const jsonData: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-      // Assume first row is headers, rest are data.
-      const [headers, ...rows] = jsonData;
+      if (!jsonData || jsonData.length < 2) {
+        // No data or just headers
+        setImportedData([]);
+        console.warn("No data rows found in Excel file.");
+        return;
+      }
+
+      let [rawHeaders, ...rows] = jsonData;
+
+      // Clean up headers
+      const headers = rawHeaders.map((h: string) => normalizeHeader(h));
+      console.log("Parsed headers:", headers);
+      console.log("First row sample:", rows[0]);
+
+      // Build array of objects using normalized headers
       const mapped = rows
-        .filter((row) => row.length > 1) // skip empty rows
+        .filter((row) => row.some((cell) => cell !== undefined && cell !== "")) // skip totally empty rows
         .map((row) => {
-          // Map headers from excel to project fields
-          // e.g., headers: ["name","code","location","description","startDate","endDate","status"]
           const out: any = {};
           headers.forEach((header: string, idx: number) => {
-            // Optionally map excel headers to internal keys
-            let key = header;
-            if (key.toLowerCase() === "start_date") key = "startDate";
-            if (key.toLowerCase() === "end_date") key = "endDate";
-            out[key] = row[idx] ?? "";
+            out[header] = row[idx] ?? "";
           });
-          // Provide default status if missing
           if (!out.status) out.status = "planning";
           return out;
         });
+
+      console.log("Imported data preview:", mapped);
+
+      if (mapped.length === 0) {
+        setImportedData([]);
+        return;
+      }
+
       setImportedData(mapped);
     };
     reader.readAsArrayBuffer(file);
   };
 
   const handleImport = async (rows: any[]) => {
-    // For each row, call addProject (serially to avoid supabase upsert errors)
     for (const row of rows) {
-      // 'addProject' expects ProjectFormData
       await addProject({
         name: row.name,
         code: row.code,
@@ -126,7 +143,7 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
         data-testid="import-excel-input"
       />
       {/* Import Preview Dialog */}
-      {importedData && (
+      {!!importedData && importedData.length > 0 && (
         <ImportPreviewDialog
           open={!!importedData}
           data={importedData}
