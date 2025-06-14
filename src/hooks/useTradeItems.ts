@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { tradeItemService } from '@/services/supabaseService';
+import { tradeItemService } from '@/services';
 import { TradeItemFormData } from '@/types/trade';
 import { useToast } from '@/hooks/use-toast';
 

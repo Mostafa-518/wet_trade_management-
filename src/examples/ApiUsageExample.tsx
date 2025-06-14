@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useApi } from '@/hooks/useApi';
 import { UserService } from '@/services/userService';
-import { AuthService } from '@/services/supabaseService';
+import { AuthService } from '@/services';
 import { User } from '@/types/user';
 
 // Example component showing how to use the API services

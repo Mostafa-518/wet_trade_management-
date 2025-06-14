@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { projectService } from '@/services/supabaseService';
+import { projectService } from '@/services';
 import { ProjectFormData } from '@/types/project';
 import { useToast } from '@/hooks/use-toast';
 

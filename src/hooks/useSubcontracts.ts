@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { subcontractService, subcontractTradeItemService } from '@/services/supabaseService';
+import { subcontractService, subcontractTradeItemService } from '@/services';
 import { Subcontract } from '@/types/subcontract';
 import { useToast } from '@/hooks/use-toast';
 import { useData } from '@/contexts/DataContext';

@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { responsibilityService } from '@/services/supabaseService';
+import { responsibilityService } from '@/services';
 import { Responsibility } from '@/types/responsibility';
 import { useToast } from '@/hooks/use-toast';
 

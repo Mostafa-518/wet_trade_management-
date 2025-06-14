@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { subcontractorService } from '@/services/supabaseService';
+import { subcontractorService } from '@/services';
 import { SubcontractorFormData } from '@/types/subcontractor';
 import { useToast } from '@/hooks/use-toast';
 
