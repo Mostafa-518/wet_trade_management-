@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { SubcontractEditModal } from './subcontract/SubcontractEditModal';
 import { SubcontractTableHeader } from './subcontract/SubcontractTableHeader';
@@ -19,8 +18,8 @@ interface SearchCondition {
 }
 
 export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTableProps) {
-  const { subcontracts, updateSubcontract, deleteSubcontract, deleteManySubcontracts, isLoading } = useSubcontracts();
-  const { projects, subcontractors } = useData();
+  const { projects, subcontractors, trades, tradeItems } = useData();
+  const { subcontracts, updateSubcontract, deleteSubcontract, deleteManySubcontracts, isLoading } = useSubcontracts(trades, tradeItems);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredData, setFilteredData] = useState(subcontracts);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);

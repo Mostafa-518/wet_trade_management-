@@ -4,11 +4,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { SubcontractDetailView } from '@/components/SubcontractDetailView';
 import { SubcontractEditModal } from '@/components/subcontract/SubcontractEditModal';
 import { useSubcontracts } from '@/hooks/useSubcontracts';
+import { useData } from '@/contexts/DataContext';
 
 export function SubcontractDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { subcontracts, updateSubcontract } = useSubcontracts();
+  const { trades, tradeItems } = useData();
+  const { subcontracts, updateSubcontract } = useSubcontracts(trades, tradeItems);
   const [showEditModal, setShowEditModal] = useState(false);
 
   const handleBack = () => {

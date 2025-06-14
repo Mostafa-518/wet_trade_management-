@@ -6,11 +6,13 @@ import { SubcontractStepper } from '@/components/SubcontractStepper';
 import { useSubcontracts } from '@/hooks/useSubcontracts';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useData } from '@/contexts/DataContext';
 
 export function Subcontracts() {
   const navigate = useNavigate();
   const [showStepper, setShowStepper] = useState(false);
-  const { addSubcontract } = useSubcontracts();
+  const { trades, tradeItems } = useData();
+  const { addSubcontract } = useSubcontracts(trades, tradeItems);
   const { toast } = useToast();
   const { profile } = useAuth();
   const canModify = profile?.role !== 'viewer';
