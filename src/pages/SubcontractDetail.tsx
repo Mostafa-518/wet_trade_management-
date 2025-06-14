@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { SubcontractDetailView } from '@/components/SubcontractDetailView';
@@ -49,6 +48,7 @@ export function SubcontractDetail() {
     status: subcontract.status,
     startDate: subcontract.startDate || new Date().toISOString().split('T')[0],
     endDate: subcontract.endDate || new Date().toISOString().split('T')[0],
+    description: subcontract.description || "", // <-- Add this line
     createdAt: subcontract.createdAt || new Date().toISOString(),
     updatedAt: subcontract.updatedAt || new Date().toISOString()
   };
