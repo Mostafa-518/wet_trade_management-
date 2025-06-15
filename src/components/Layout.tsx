@@ -89,7 +89,7 @@ export function Layout({ children }: LayoutProps) {
       `}
       >
         <div className="flex items-center justify-between h-16 px-6 border-b flex-shrink-0">
-          <h1 className="text-xl font-bold text-gray-900">Construction</h1>
+          <h1 className="text-xl font-bold text-gray-900">Wet Trades</h1>
           <Button
             variant="ghost"
             size="sm"
