@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Edit, FileText, Building2 } from 'lucide-react';
 import { Project } from '@/types/project';
 import { useData } from '@/contexts/DataContext';
+import { useNavigate } from 'react-router-dom';
 
 interface ProjectDetailViewProps {
   project: Project;
@@ -14,6 +15,7 @@ interface ProjectDetailViewProps {
 }
 
 export function ProjectDetailView({ project, onBack, onEdit }: ProjectDetailViewProps) {
+  const navigate = useNavigate();
   const { subcontracts, projects, subcontractors } = useData();
   
   // Find subcontracts for this project using project ID
@@ -31,6 +33,11 @@ export function ProjectDetailView({ project, onBack, onEdit }: ProjectDetailView
   const getSubcontractorName = (subcontractorId: string) => {
     const subcontractor = subcontractors.find(s => s.id === subcontractorId);
     return subcontractor ? subcontractor.name : subcontractorId;
+  };
+
+  // Handle subcontract click navigation
+  const handleSubcontractClick = (contractId: string) => {
+    navigate(`/subcontracts/${contractId}`);
   };
 
   return (
@@ -101,11 +108,17 @@ export function ProjectDetailView({ project, onBack, onEdit }: ProjectDetailView
               {projectSubcontracts.length > 0 ? (
                 <div className="space-y-4">
                   {projectSubcontracts.map(subcontract => (
-                    <div key={subcontract.id} className="border rounded-lg p-4 hover:bg-muted/50">
+                    <div 
+                      key={subcontract.id} 
+                      className="border rounded-lg p-4 hover:bg-muted/50 cursor-pointer transition-colors"
+                      onClick={() => handleSubcontractClick(subcontract.contractId)}
+                    >
                       <div className="flex justify-between items-start">
                         <div className="space-y-2">
                           <div>
-                            <h3 className="font-semibold text-lg">{getSubcontractorName(subcontract.subcontractor)}</h3>
+                            <h3 className="font-semibold text-lg text-blue-600 hover:text-blue-800">
+                              {getSubcontractorName(subcontract.subcontractor)}
+                            </h3>
                             <p className="text-sm text-muted-foreground">Contract ID: {subcontract.contractId}</p>
                           </div>
                           <div>
