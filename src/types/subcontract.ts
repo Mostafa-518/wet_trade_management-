@@ -1,4 +1,3 @@
-
 export interface TradeItem {
   id: string;
   trade: string;
@@ -70,6 +69,22 @@ export interface Subcontract {
   description: string;
   createdAt: string;
   updatedAt: string;
+  contractType: 'subcontract' | 'ADD'; // NEW
+  addendumNumber?: string; // NEW: for ADD
+  parentSubcontractId?: string; // NEW: for ADD - which contract this addendum is for
+}
+
+// Frontend form data
+export interface FormData {
+  project: string;
+  subcontractor: string;
+  tradeItems: TradeItem[];
+  responsibilities: string[];
+  pdfFile: File | null;
+  dateOfIssuing?: string; // already present
+  contractType?: 'subcontract' | 'ADD'; // NEW
+  addendumNumber?: string; // NEW
+  parentSubcontractId?: string; // NEW
 }
 
 export interface SubcontractFormData {

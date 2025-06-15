@@ -185,12 +185,15 @@ export type Database = {
       }
       subcontracts: {
         Row: {
+          addendum_number: string | null
           contract_number: string | null
+          contract_type: string
           created_at: string
           date_of_issuing: string | null
           description: string | null
           end_date: string | null
           id: string
+          parent_subcontract_id: string | null
           project_id: string | null
           start_date: string | null
           status: Database["public"]["Enums"]["subcontract_status"] | null
@@ -199,12 +202,15 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          addendum_number?: string | null
           contract_number?: string | null
+          contract_type?: string
           created_at?: string
           date_of_issuing?: string | null
           description?: string | null
           end_date?: string | null
           id?: string
+          parent_subcontract_id?: string | null
           project_id?: string | null
           start_date?: string | null
           status?: Database["public"]["Enums"]["subcontract_status"] | null
@@ -213,12 +219,15 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          addendum_number?: string | null
           contract_number?: string | null
+          contract_type?: string
           created_at?: string
           date_of_issuing?: string | null
           description?: string | null
           end_date?: string | null
           id?: string
+          parent_subcontract_id?: string | null
           project_id?: string | null
           start_date?: string | null
           status?: Database["public"]["Enums"]["subcontract_status"] | null
@@ -227,6 +236,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "subcontracts_parent_subcontract_id_fkey"
+            columns: ["parent_subcontract_id"]
+            isOneToOne: false
+            referencedRelation: "subcontracts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "subcontracts_project_id_fkey"
             columns: ["project_id"]

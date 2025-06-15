@@ -9,6 +9,7 @@ import { TradeItemForm } from '@/components/subcontract/TradeItemForm';
 import { TradeItemsList } from '@/components/subcontract/TradeItemsList';
 import { ResponsibilitiesStep } from '@/components/subcontract/ResponsibilitiesStep';
 import { DocumentsReviewStep } from '@/components/subcontract/DocumentsReviewStep';
+import { useSubcontracts } from '@/hooks/useSubcontracts';
 
 export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps) {
   const { toast } = useToast();
@@ -19,7 +20,10 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
     tradeItems: [],
     responsibilities: [],
     pdfFile: null,
-    dateOfIssuing: undefined
+    dateOfIssuing: undefined,
+    contractType: 'subcontract',
+    addendumNumber: '',
+    parentSubcontractId: ''
   });
 
   const [currentTradeItem, setCurrentTradeItem] = useState<Partial<TradeItem>>({
@@ -172,6 +176,10 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
       return;
     }
 
+    // Helper to get all subcontracts for "parent" selection when ADD is selected
+    // We'll fetch from the DataContext if available
+    const { subcontracts } = useSubcontracts();
+
     // Create proper subcontract data structure that matches the expected format
     const subcontractData = {
       contractId: `SC-${Date.now()}`,
@@ -182,9 +190,12 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
       totalValue: getTotalAmount(),
       status: 'draft' as const,
       startDate: new Date().toISOString().split('T')[0],
-      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days
       dateOfIssuing: formData.dateOfIssuing ?? new Date().toISOString().split('T')[0],
       description: `Subcontract for ${formData.project} with ${formData.subcontractor}`,
+      contractType: formData.contractType || 'subcontract',
+      addendumNumber: formData.contractType === 'ADD' ? formData.addendumNumber : undefined,
+      parentSubcontractId: formData.contractType === 'ADD' ? formData.parentSubcontractId : undefined
     };
 
     console.log('Final subcontract data being sent:', subcontractData);
@@ -194,6 +205,77 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
   const getTotalAmount = () => {
     return formData.tradeItems.reduce((sum, item) => sum + item.total, 0);
   };
+
+  // Extra fields for contract type/addendum in Review Step
+  const renderContractExtras = (
+    <div className="grid grid-cols-1 gap-4">
+      <div>
+        <label className="block font-medium mb-1">Type of Contract</label>
+        <select
+          className="border rounded px-3 py-2 w-full"
+          value={formData.contractType}
+          onChange={e =>
+            setFormData(prev => ({
+              ...prev,
+              contractType: e.target.value as 'subcontract' | 'ADD',
+              // Reset addendum fields if switched
+              ...(e.target.value === 'ADD'
+                ? {}
+                : { addendumNumber: '', parentSubcontractId: '' })
+            }))
+          }
+        >
+          <option value="subcontract">Subcontract</option>
+          <option value="ADD">Addendum</option>
+        </select>
+      </div>
+      {formData.contractType === 'ADD' && (
+        <>
+          <div>
+            <label className="block font-medium mb-1">Addendum Number</label>
+            <input
+              type="text"
+              className="border rounded px-3 py-2 w-full"
+              value={formData.addendumNumber ?? ''}
+              onChange={e =>
+                setFormData(prev => ({
+                  ...prev,
+                  addendumNumber: e.target.value
+                }))
+              }
+              placeholder="Enter addendum number"
+              required={formData.contractType === 'ADD'}
+            />
+          </div>
+          <div>
+            <label className="block font-medium mb-1">Parent Subcontract</label>
+            <select
+              className="border rounded px-3 py-2 w-full"
+              value={formData.parentSubcontractId ?? ''}
+              onChange={e =>
+                setFormData(prev => ({
+                  ...prev,
+                  parentSubcontractId: e.target.value
+                }))
+              }
+              required={formData.contractType === 'ADD'}
+            >
+              <option value="">Select parent subcontract...</option>
+              {Array.isArray(subcontracts)
+                ? subcontracts
+                    .filter(sc => sc.contractType === 'subcontract') // can only add to a main contract, not to another addendum
+                    .map(sc => (
+                      <option key={sc.id} value={sc.id}>
+                        {sc.contractId} - {sc.description}
+                      </option>
+                    ))
+                : null}
+            </select>
+          </div>
+        </>
+      )}
+    </div>
+  );
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -224,21 +306,24 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
             totalAmount={getTotalAmount()}
             onFileUpload={handleFileUpload}
             renderExtraFields={
-              <div className="mt-4">
-                <label className="block font-medium mb-1">Date of Issuing</label>
-                <input
-                  type="date"
-                  className="border rounded px-3 py-2 w-full"
-                  value={formData.dateOfIssuing ?? ''}
-                  onChange={e =>
-                    setFormData(prev => ({
-                      ...prev,
-                      dateOfIssuing: e.target.value
-                    }))
-                  }
-                  required
-                />
-              </div>
+              <>
+                <div className="mt-4">
+                  <label className="block font-medium mb-1">Date of Issuing</label>
+                  <input
+                    type="date"
+                    className="border rounded px-3 py-2 w-full"
+                    value={formData.dateOfIssuing ?? ''}
+                    onChange={e =>
+                      setFormData(prev => ({
+                        ...prev,
+                        dateOfIssuing: e.target.value
+                      }))
+                    }
+                    required
+                  />
+                </div>
+                <div className="mt-4">{renderContractExtras}</div>
+              </>
             }
           />
         );
