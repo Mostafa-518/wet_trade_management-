@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { UserProfile } from './types';
 
@@ -7,6 +6,11 @@ export class AuthService {
     console.log('AuthService.signUp called with:', { email, fullName });
     
     try {
+      // Test connection before attempting signup
+      console.log('Testing Supabase connection before signup...');
+      const healthCheck = await supabase.auth.getSession();
+      console.log('Health check result:', healthCheck);
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -22,19 +26,48 @@ export class AuthService {
       
       if (error) {
         console.error('SignUp error:', error);
+        console.error('SignUp error details:', {
+          name: error.name,
+          message: error.message,
+          status: error.status,
+          statusCode: error.statusCode
+        });
         throw error;
       }
       return data;
     } catch (error) {
       console.error('SignUp catch block:', error);
+      console.error('Error type:', typeof error);
+      console.error('Error constructor:', error.constructor.name);
       throw error;
     }
   }
 
   static async signIn(email: string, password: string) {
     console.log('AuthService.signIn called with:', { email });
+    console.log('Current URL:', window.location.href);
+    console.log('User agent:', navigator.userAgent);
     
     try {
+      // Test basic connectivity first
+      console.log('Testing basic fetch to Supabase URL...');
+      const testUrl = 'https://mcjdeqfqbucfterqzglp.supabase.co/rest/v1/';
+      
+      try {
+        const testResponse = await fetch(testUrl, {
+          method: 'GET',
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jamRlcWZxYnVjZnRlcnF6Z2xwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkxNzIzMjcsImV4cCI6MjA2NDc0ODMyN30.rg_2g5w9TidNCnTBsVtF2WTYZOXdgfPXSiIgnDJeTcw'
+          }
+        });
+        console.log('Basic fetch test - Status:', testResponse.status);
+        console.log('Basic fetch test - Headers:', Object.fromEntries(testResponse.headers.entries()));
+      } catch (fetchError) {
+        console.error('Basic fetch test failed:', fetchError);
+        throw new Error(`Network connectivity issue: ${fetchError.message}`);
+      }
+      
+      console.log('Attempting Supabase signIn...');
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
@@ -44,11 +77,19 @@ export class AuthService {
       
       if (error) {
         console.error('SignIn error:', error);
+        console.error('SignIn error details:', {
+          name: error.name,
+          message: error.message,
+          status: error.status,
+          statusCode: error.statusCode,
+          details: error.details
+        });
         throw error;
       }
       return data;
     } catch (error) {
       console.error('SignIn catch block:', error);
+      console.error('Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
       throw error;
     }
   }
