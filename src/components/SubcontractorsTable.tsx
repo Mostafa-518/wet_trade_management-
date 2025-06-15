@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ImportPreviewDialog } from './ImportPreviewDialog';
 import { SubcontractorsTableHeader } from './subcontractors/SubcontractorsTableHeader';
@@ -72,15 +71,12 @@ export function SubcontractorsTable({ onCreateNew, onViewDetail, onEdit, onDelet
         }}
         data={importData}
         columns={[
-          { key: 'name', label: 'Business Name' },
           { key: 'companyName', label: 'Company Name' },
           { key: 'representativeName', label: 'Representative Name' },
           { key: 'commercialRegistration', label: 'Commercial Registration' },
           { key: 'taxCardNo', label: 'Tax Card No.' },
-          { key: 'email', label: 'Email' },
-          { key: 'phone', label: 'Phone' },
-          { key: 'address', label: 'Address' },
-          { key: 'rating', label: 'Rating (0-5)' }
+          { key: 'phone', label: 'Phone Contact' },
+          { key: 'email', label: 'Mail' }
         ]}
         onImport={handleImport}
       />

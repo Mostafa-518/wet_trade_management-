@@ -45,33 +45,25 @@ export function useSubcontractorsImport() {
           .map((row, index) => {
             console.log(`Processing row ${index + 1}:`, row);
             
-            // Validate and set rating to a valid value (0-5 range typically for ratings)
-            let rating = 0;
-            if (row[8] && !isNaN(Number(row[8]))) {
-              const parsedRating = Number(row[8]);
-              // Ensure rating is within valid range (0-5)
-              rating = Math.max(0, Math.min(5, parsedRating));
-            }
-            
             const mappedItem = {
-              name: String(row[0] || '').trim(),
-              companyName: String(row[1] || row[0] || '').trim(),
-              representativeName: String(row[2] || '').trim(),
-              commercialRegistration: String(row[3] || '').trim(),
-              taxCardNo: String(row[4] || '').trim(),
-              email: String(row[5] || '').trim(),
-              phone: String(row[6] || '').trim(),
-              address: String(row[7] || '').trim(),
-              trades: [],
-              rating: rating
+              name: String(row[0] || '').trim(), // Company Name (will be used as business name)
+              companyName: String(row[0] || '').trim(), // Company Name
+              representativeName: String(row[1] || '').trim(), // Representative Name
+              commercialRegistration: String(row[2] || '').trim(), // Commercial Registration
+              taxCardNo: String(row[3] || '').trim(), // Tax Card No.
+              phone: String(row[4] || '').trim(), // Phone Contact
+              email: String(row[5] || '').trim(), // Mail
+              address: '', // Not in import, will be empty
+              trades: [], // Not in import, will be empty
+              rating: 0 // Not in import, will be default 0
             };
             
             console.log(`Mapped item ${index + 1}:`, mappedItem);
             return mappedItem;
           })
           .filter(item => {
-            const isValid = item.name && item.name.length > 0;
-            console.log('Item is valid:', isValid, item.name);
+            const isValid = item.companyName && item.companyName.length > 0;
+            console.log('Item is valid:', isValid, item.companyName);
             return isValid;
           });
 
@@ -80,7 +72,7 @@ export function useSubcontractorsImport() {
         if (mappedData.length === 0) {
           toast({
             title: "No Data Found", 
-            description: "No valid business names found in the Excel file. Please ensure your data contains business names in the first column.",
+            description: "No valid company names found in the Excel file. Please ensure your data contains company names in the first column.",
             variant: "destructive"
           });
           return;
@@ -138,37 +130,34 @@ export function useSubcontractorsImport() {
       try {
         console.log(`Importing item ${index + 1}:`, item);
         
-        if (!item.name || !item.name.trim()) {
-          console.warn(`Skipping item ${index + 1} without business name:`, item);
-          errors.push(`Row ${index + 1}: Missing business name`);
+        if (!item.companyName || !item.companyName.trim()) {
+          console.warn(`Skipping item ${index + 1} without company name:`, item);
+          errors.push(`Row ${index + 1}: Missing company name`);
           errorCount++;
           continue;
         }
 
-        // Ensure rating is valid for database constraints
-        const validRating = Math.max(0, Math.min(5, item.rating || 0));
-
         const subcontractorData: SubcontractorFormData = {
-          name: item.name.trim(),
-          companyName: item.companyName?.trim() || item.name.trim(),
+          name: item.companyName.trim(), // Use company name as business name
+          companyName: item.companyName.trim(),
           representativeName: item.representativeName?.trim() || '',
           commercialRegistration: item.commercialRegistration?.trim() || '',
           taxCardNo: item.taxCardNo?.trim() || '',
           email: item.email?.trim() || '',
           phone: item.phone?.trim() || '',
-          address: item.address?.trim() || '',
-          trades: item.trades || [],
-          rating: validRating
+          address: '', // Not included in import
+          trades: [], // Not included in import
+          rating: 0 // Default rating
         };
 
         console.log(`Attempting to add subcontractor:`, subcontractorData);
         await addSubcontractor(subcontractorData);
         successCount++;
-        console.log(`Successfully imported: ${subcontractorData.name}`);
+        console.log(`Successfully imported: ${subcontractorData.companyName}`);
       } catch (error) {
         console.error(`Failed to import item ${index + 1}:`, item, error);
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        errors.push(`Row ${index + 1}: ${item.name || 'Unknown'} - ${errorMessage}`);
+        errors.push(`Row ${index + 1}: ${item.companyName || 'Unknown'} - ${errorMessage}`);
         errorCount++;
       }
     }
@@ -181,7 +170,7 @@ export function useSubcontractorsImport() {
     } else {
       toast({
         title: "Import Failed", 
-        description: errorCount > 0 ? `All ${errorCount} items failed to import. Please check the data format and ensure rating values are between 0-5.` : "No items could be imported.",
+        description: errorCount > 0 ? `All ${errorCount} items failed to import. Please check the data format.` : "No items could be imported.",
         variant: "destructive"
       });
     }
@@ -197,8 +186,8 @@ export function useSubcontractorsImport() {
 
   const downloadTemplate = () => {
     const template = [
-      ['Business Name', 'Company Name', 'Representative Name', 'Commercial Registration', 'Tax Card No.', 'Email', 'Phone', 'Address', 'Rating (0-5)'],
-      ['Sample Business', 'Sample Company Ltd.', 'John Doe', 'CR-001-2024', 'TAX-001-2024', 'john@example.com', '+20 100 123 4567', 'Sample Address', '5']
+      ['Company Name', 'Representative Name', 'Commercial Registration', 'Tax Card No.', 'Phone Contact', 'Mail'],
+      ['Sample Company Ltd.', 'John Doe', 'CR-001-2024', 'TAX-001-2024', '+20 100 123 4567', 'john@example.com']
     ];
     
     const ws = XLSX.utils.aoa_to_sheet(template);
