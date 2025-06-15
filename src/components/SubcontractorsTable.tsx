@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -97,21 +96,24 @@ export function SubcontractorsTable({ onCreateNew, onViewDetail, onEdit, onDelet
         const mappedData: SubcontractorFormData[] = rows
           .filter(row => row.length > 0 && row[0]) // Filter out empty rows
           .map(row => ({
-            name: row[0] || '',
-            companyName: row[1] || '',
-            representativeName: row[2] || '',
-            commercialRegistration: row[3] || '',
-            taxCardNo: row[4] || '',
-            email: row[5] || '',
-            phone: row[6] || '',
-            address: row[7] || '',
+            name: String(row[0] || '').trim(),
+            companyName: String(row[1] || '').trim(),
+            representativeName: String(row[2] || '').trim(),
+            commercialRegistration: String(row[3] || '').trim(),
+            taxCardNo: String(row[4] || '').trim(),
+            email: String(row[5] || '').trim(),
+            phone: String(row[6] || '').trim(),
+            address: String(row[7] || '').trim(),
             trades: [],
             rating: 0
-          }));
+          }))
+          .filter(item => item.name); // Only include rows with a business name
 
+        console.log('Mapped import data:', mappedData);
         setImportData(mappedData);
         setShowImportDialog(true);
       } catch (error) {
+        console.error('Import error:', error);
         toast({
           title: "Import Error",
           description: "Failed to parse Excel file. Please check the format.",
@@ -124,21 +126,69 @@ export function SubcontractorsTable({ onCreateNew, onViewDetail, onEdit, onDelet
   };
 
   const handleImport = async (data: SubcontractorFormData[]) => {
-    try {
-      for (const item of data) {
-        await addSubcontractor(item);
-      }
-      toast({
-        title: "Import Successful",
-        description: `${data.length} subcontractors imported successfully`
-      });
-    } catch (error) {
+    console.log('Starting import with data:', data);
+    
+    if (!data || data.length === 0) {
       toast({
         title: "Import Error",
-        description: "Failed to import some subcontractors",
+        description: "No data to import",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const item of data) {
+      try {
+        console.log('Importing item:', item);
+        
+        // Validate required fields
+        if (!item.name || !item.name.trim()) {
+          console.warn('Skipping item without business name:', item);
+          errorCount++;
+          continue;
+        }
+
+        // Ensure all required fields have default values
+        const subcontractorData: SubcontractorFormData = {
+          name: item.name.trim(),
+          companyName: item.companyName?.trim() || item.name.trim(),
+          representativeName: item.representativeName?.trim() || '',
+          commercialRegistration: item.commercialRegistration?.trim() || '',
+          taxCardNo: item.taxCardNo?.trim() || '',
+          email: item.email?.trim() || '',
+          phone: item.phone?.trim() || '',
+          address: item.address?.trim() || '',
+          trades: item.trades || [],
+          rating: item.rating || 0
+        };
+
+        await addSubcontractor(subcontractorData);
+        successCount++;
+        console.log('Successfully imported:', subcontractorData.name);
+      } catch (error) {
+        console.error('Failed to import item:', item, error);
+        errorCount++;
+      }
+    }
+
+    if (successCount > 0) {
+      toast({
+        title: "Import Successful",
+        description: `${successCount} subcontractor${successCount !== 1 ? 's' : ''} imported successfully${errorCount > 0 ? `. ${errorCount} failed to import.` : ''}`
+      });
+    } else {
+      toast({
+        title: "Import Failed",
+        description: "No subcontractors could be imported. Please check the data format.",
         variant: "destructive"
       });
     }
+
+    setShowImportDialog(false);
+    setImportData([]);
   };
 
   const downloadTemplate = () => {
@@ -277,7 +327,10 @@ export function SubcontractorsTable({ onCreateNew, onViewDetail, onEdit, onDelet
 
       <ImportPreviewDialog
         open={showImportDialog}
-        onClose={() => setShowImportDialog(false)}
+        onClose={() => {
+          setShowImportDialog(false);
+          setImportData([]);
+        }}
         data={importData}
         columns={[
           { key: 'name', label: 'Business Name' },
