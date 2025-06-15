@@ -81,6 +81,7 @@ export function useSubcontractorsImport() {
           return;
         }
         
+        console.log('Setting import data and showing dialog:', mappedData.length, 'records');
         setImportData(mappedData);
         setShowImportDialog(true);
         
@@ -158,7 +159,7 @@ export function useSubcontractorsImport() {
         console.log(`Successfully imported: ${subcontractorData.name}`);
       } catch (error) {
         console.error(`Failed to import item ${index + 1}:`, item, error);
-        errors.push(`Row ${index + 1}: ${item.name || 'Unknown'} - ${error.message || 'Unknown error'}`);
+        errors.push(`Row ${index + 1}: ${item.name || 'Unknown'} - ${error instanceof Error ? error.message : 'Unknown error'}`);
         errorCount++;
       }
     }
@@ -180,6 +181,7 @@ export function useSubcontractorsImport() {
       console.error('Import errors:', errors);
     }
 
+    console.log('Closing import dialog');
     setShowImportDialog(false);
     setImportData([]);
   };
@@ -195,6 +197,8 @@ export function useSubcontractorsImport() {
     XLSX.utils.book_append_sheet(wb, ws, 'Subcontractors Template');
     XLSX.writeFile(wb, 'subcontractors_template.xlsx');
   };
+
+  console.log('useSubcontractorsImport state:', { showImportDialog, importDataLength: importData.length });
 
   return {
     showImportDialog,

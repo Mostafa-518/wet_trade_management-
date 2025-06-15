@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -29,6 +29,13 @@ export function ImportPreviewDialog<T extends { [key: string]: any }>({
 }: ImportPreviewDialogProps<T>) {
   const [tableData, setTableData] = useState<T[]>(data);
 
+  useEffect(() => {
+    console.log('ImportPreviewDialog - open:', open);
+    console.log('ImportPreviewDialog - data:', data);
+    console.log('ImportPreviewDialog - data length:', data?.length);
+    setTableData(data);
+  }, [data, open]);
+
   // Handlers for editing
   const handleCellChange = (rowIdx: number, key: keyof T, value: string) => {
     setTableData((old) =>
@@ -43,74 +50,82 @@ export function ImportPreviewDialog<T extends { [key: string]: any }>({
   };
 
   const handleImport = () => {
+    console.log('Importing data:', tableData);
     onImport(tableData);
+  };
+
+  const handleClose = () => {
+    console.log('Closing dialog');
     onClose();
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl w-full">
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="max-w-4xl w-full max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Review Imported Data</DialogTitle>
           <DialogDescription>
             Please review and edit the data as needed before importing into the system.
+            Found {tableData.length} records to import.
           </DialogDescription>
         </DialogHeader>
-        <div className="overflow-auto max-h-96 my-2">
-          <table className="min-w-full border rounded text-sm">
-            <thead>
-              <tr>
-                {columns.map((col) => (
-                  <th key={String(col.key)} className="p-2 border-b text-left">{col.label}</th>
-                ))}
-                <th className="p-2 border-b">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tableData.map((row, rowIdx) => (
-                <tr key={rowIdx}>
-                  {columns.map((col) => (
-                    <td key={String(col.key)} className="p-2 border-b">
-                      <Input
-                        type="text"
-                        value={row[col.key] ?? ""}
-                        onChange={(e) =>
-                          handleCellChange(rowIdx, col.key, e.target.value)
-                        }
-                        className="w-36"
-                      />
-                    </td>
-                  ))}
-                  <td className="p-2 border-b">
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDelete(rowIdx)}
-                    >
-                      Delete
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-              {tableData.length === 0 && (
+        <div className="overflow-auto max-h-96 my-4 border rounded-lg">
+          {tableData.length > 0 ? (
+            <table className="min-w-full text-sm">
+              <thead className="bg-gray-50 sticky top-0">
                 <tr>
-                  <td colSpan={columns.length + 1} className="text-center p-8">
-                    No data to import.
-                  </td>
+                  {columns.map((col) => (
+                    <th key={String(col.key)} className="p-3 text-left font-medium border-b">
+                      {col.label}
+                    </th>
+                  ))}
+                  <th className="p-3 text-left font-medium border-b">Actions</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {tableData.map((row, rowIdx) => (
+                  <tr key={rowIdx} className="border-b hover:bg-gray-50">
+                    {columns.map((col) => (
+                      <td key={String(col.key)} className="p-3">
+                        <Input
+                          type="text"
+                          value={row[col.key] ?? ""}
+                          onChange={(e) =>
+                            handleCellChange(rowIdx, col.key, e.target.value)
+                          }
+                          className="w-full min-w-[120px]"
+                        />
+                      </td>
+                    ))}
+                    <td className="p-3">
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDelete(rowIdx)}
+                      >
+                        Delete
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="text-center p-8">
+              <p className="text-gray-500">No data to import.</p>
+            </div>
+          )}
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} asChild>
-            <DialogClose>Cancel</DialogClose>
+          <Button variant="outline" onClick={handleClose}>
+            Cancel
           </Button>
           <Button
             disabled={tableData.length === 0}
             onClick={handleImport}
+            className="bg-blue-600 hover:bg-blue-700"
           >
-            Import Data
+            Import {tableData.length} Record{tableData.length !== 1 ? 's' : ''}
           </Button>
         </DialogFooter>
       </DialogContent>
