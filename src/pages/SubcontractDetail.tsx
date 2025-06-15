@@ -35,7 +35,8 @@ export function SubcontractDetail() {
     );
   }
 
-  const subcontract = subcontracts.find(s => s.contractId === id);
+  // Look for subcontract by database ID instead of contractId
+  const subcontract = subcontracts.find(s => s.id === id);
 
   if (!subcontract) {
     return (
