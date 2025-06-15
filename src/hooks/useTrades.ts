@@ -78,6 +78,25 @@ export function useTrades() {
     }
   };
 
+  const bulkDeleteTrades = async (ids: string[]): Promise<void> => {
+    try {
+      await Promise.all(ids.map(id => tradeService.delete(id)));
+      refetchTrades();
+      toast({
+        title: "Success",
+        description: `${ids.length} trades deleted successfully`,
+      });
+    } catch (error) {
+      console.error('Error bulk deleting trades:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete trades",
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
+
   return {
     trades: tradesRaw.map(t => ({
       ...t,
@@ -89,6 +108,7 @@ export function useTrades() {
     addTrade,
     updateTrade,
     deleteTrade,
+    bulkDeleteTrades,
     isLoading: tradesLoading
   };
 }

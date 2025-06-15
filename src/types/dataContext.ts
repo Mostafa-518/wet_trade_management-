@@ -23,12 +23,14 @@ export interface DataContextType {
   addTrade: (data: TradeFormData) => Promise<void>;
   updateTrade: (id: string, data: TradeFormData) => Promise<void>;
   deleteTrade: (id: string) => Promise<void>;
+  bulkDeleteTrades: (ids: string[]) => Promise<void>;
   
   // Trade Items
   tradeItems: TradeItem[];
   addTradeItem: (data: TradeItemFormData) => Promise<void>;
   updateTradeItem: (id: string, data: TradeItemFormData) => Promise<void>;
   deleteTradeItem: (id: string) => Promise<void>;
+  bulkDeleteTradeItems: (ids: string[]) => Promise<void>;
   
   // Responsibilities
   responsibilities: Responsibility[];

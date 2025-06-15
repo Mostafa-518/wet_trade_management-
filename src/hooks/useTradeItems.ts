@@ -80,6 +80,25 @@ export function useTradeItems() {
     }
   };
 
+  const bulkDeleteTradeItems = async (ids: string[]): Promise<void> => {
+    try {
+      await Promise.all(ids.map(id => tradeItemService.delete(id)));
+      refetchTradeItems();
+      toast({
+        title: "Success",
+        description: `${ids.length} trade items deleted successfully`,
+      });
+    } catch (error) {
+      console.error('Error bulk deleting trade items:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete trade items",
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
+
   return {
     tradeItems: tradeItemsRaw.map(ti => ({
       ...ti,
@@ -91,6 +110,7 @@ export function useTradeItems() {
     addTradeItem,
     updateTradeItem,
     deleteTradeItem,
+    bulkDeleteTradeItems,
     isLoading: tradeItemsLoading
   };
 }

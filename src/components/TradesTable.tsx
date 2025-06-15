@@ -9,6 +9,7 @@ import { Plus, Search, Eye, Edit, Trash2, FileDown, Package, Filter, X, Calendar
 import { Trade, TradeSearchFilters, TradeItem } from '@/types/trade';
 import { useData } from '@/contexts/DataContext';
 import { useToast } from '@/hooks/use-toast';
+import { TableSelectionCheckbox } from '@/components/TableSelectionCheckbox';
 import * as XLSX from 'xlsx';
 
 interface TradesTableProps {
@@ -16,9 +17,11 @@ interface TradesTableProps {
   onViewDetail: (tradeId: string) => void;
   onEdit?: (trade: Trade) => void;
   onDelete?: (tradeId: string) => void;
+  onBulkDelete?: (tradeIds: string[]) => void;
   onAddItem?: (tradeId: string) => void;
   onEditItem?: (item: TradeItem) => void;
   onDeleteItem?: (itemId: string) => void;
+  onBulkDeleteItems?: (itemIds: string[]) => void;
 }
 
 export function TradesTable({ 
@@ -26,9 +29,11 @@ export function TradesTable({
   onViewDetail, 
   onEdit, 
   onDelete, 
+  onBulkDelete,
   onAddItem, 
   onEditItem, 
-  onDeleteItem 
+  onDeleteItem,
+  onBulkDeleteItems
 }: TradesTableProps) {
   const { trades, tradeItems, addTrade } = useData();
   const { toast } = useToast();
@@ -41,6 +46,8 @@ export function TradesTable({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [expandedTradeId, setExpandedTradeId] = useState<string | null>(null);
+  const [selectedTradeIds, setSelectedTradeIds] = useState<string[]>([]);
+  const [selectedItemIds, setSelectedItemIds] = useState<string[]>([]);
 
   const filteredTrades = trades.filter(trade => {
     return (
@@ -132,6 +139,58 @@ export function TradesTable({
     setExpandedTradeId(expandedTradeId === tradeId ? null : tradeId);
   };
 
+  const handleSelectAllTrades = (checked: boolean) => {
+    if (checked) {
+      setSelectedTradeIds(filteredTrades.map(trade => trade.id));
+    } else {
+      setSelectedTradeIds([]);
+    }
+  };
+
+  const handleSelectTrade = (tradeId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedTradeIds(prev => [...prev, tradeId]);
+    } else {
+      setSelectedTradeIds(prev => prev.filter(id => id !== tradeId));
+    }
+  };
+
+  const handleSelectAllItems = (tradeId: string, checked: boolean) => {
+    const items = getTradeItems(tradeId);
+    if (checked) {
+      const newItemIds = items.map(item => item.id);
+      setSelectedItemIds(prev => [...prev, ...newItemIds]);
+    } else {
+      const itemIdsToRemove = items.map(item => item.id);
+      setSelectedItemIds(prev => prev.filter(id => !itemIdsToRemove.includes(id)));
+    }
+  };
+
+  const handleSelectItem = (itemId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedItemIds(prev => [...prev, itemId]);
+    } else {
+      setSelectedItemIds(prev => prev.filter(id => id !== itemId));
+    }
+  };
+
+  const handleBulkDeleteTrades = () => {
+    if (selectedTradeIds.length > 0 && onBulkDelete) {
+      onBulkDelete(selectedTradeIds);
+      setSelectedTradeIds([]);
+    }
+  };
+
+  const handleBulkDeleteItems = () => {
+    if (selectedItemIds.length > 0 && onBulkDeleteItems) {
+      onBulkDeleteItems(selectedItemIds);
+      setSelectedItemIds([]);
+    }
+  };
+
+  const allTradesSelected = filteredTrades.length > 0 && selectedTradeIds.length === filteredTrades.length;
+  const someTradesSelected = selectedTradeIds.length > 0 && selectedTradeIds.length < filteredTrades.length;
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <input
@@ -166,6 +225,18 @@ export function TradesTable({
             </div>
           </div>
           <div className="flex gap-3">
+            {selectedTradeIds.length > 0 && onBulkDelete && (
+              <Button variant="destructive" onClick={handleBulkDeleteTrades} className="shadow-sm">
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete {selectedTradeIds.length} Trades
+              </Button>
+            )}
+            {selectedItemIds.length > 0 && onBulkDeleteItems && (
+              <Button variant="destructive" onClick={handleBulkDeleteItems} className="shadow-sm">
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete {selectedItemIds.length} Items
+              </Button>
+            )}
             <Button variant="outline" onClick={handleImportClick} className="shadow-sm">
               <FileDown className="h-4 w-4 mr-2" />
               Import Excel
@@ -267,6 +338,13 @@ export function TradesTable({
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50">
+                    <TableHead className="w-12">
+                      <TableSelectionCheckbox
+                        checked={allTradesSelected}
+                        onCheckedChange={handleSelectAllTrades}
+                        ariaLabel="Select all trades"
+                      />
+                    </TableHead>
                     <TableHead className="font-semibold">Trade Name</TableHead>
                     <TableHead className="font-semibold">Category</TableHead>
                     <TableHead className="font-semibold">Description</TableHead>
@@ -279,10 +357,18 @@ export function TradesTable({
                   {filteredTrades.map((trade, index) => {
                     const items = getTradeItems(trade.id);
                     const isExpanded = expandedTradeId === trade.id;
+                    const isSelected = selectedTradeIds.includes(trade.id);
                     
                     return (
                       <React.Fragment key={trade.id}>
                         <TableRow className={index % 2 === 0 ? 'bg-white hover:bg-gray-50' : 'bg-gray-50 hover:bg-gray-100'}>
+                          <TableCell>
+                            <TableSelectionCheckbox
+                              checked={isSelected}
+                              onCheckedChange={(checked) => handleSelectTrade(trade.id, checked)}
+                              ariaLabel={`Select trade ${trade.name}`}
+                            />
+                          </TableCell>
                           <TableCell className="font-medium text-gray-900">{trade.name}</TableCell>
                           <TableCell>
                             <Badge variant="outline" className="text-xs">
@@ -330,12 +416,19 @@ export function TradesTable({
                         </TableRow>
                         {isExpanded && (
                           <TableRow>
-                            <TableCell colSpan={6} className="bg-blue-50 p-6">
+                            <TableCell colSpan={7} className="bg-blue-50 p-6">
                               <div className="space-y-4">
                                 <div className="flex items-center justify-between">
                                   <h4 className="font-semibold text-gray-900 flex items-center gap-2">
                                     <Package className="h-4 w-4 text-blue-600" />
                                     Trade Items ({items.length})
+                                    {items.length > 0 && (
+                                      <TableSelectionCheckbox
+                                        checked={items.every(item => selectedItemIds.includes(item.id))}
+                                        onCheckedChange={(checked) => handleSelectAllItems(trade.id, checked)}
+                                        ariaLabel="Select all items in this trade"
+                                      />
+                                    )}
                                   </h4>
                                   {onAddItem && (
                                     <Button size="sm" onClick={() => onAddItem(trade.id)} className="shadow-sm">
@@ -346,37 +439,47 @@ export function TradesTable({
                                 </div>
                                 {items.length > 0 ? (
                                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {items.map((item) => (
-                                      <div key={item.id} className="bg-white p-4 rounded-lg border shadow-sm">
-                                        <div className="flex justify-between items-start">
-                                          <div className="flex-1">
-                                            <div className="font-medium text-gray-900">{item.name}</div>
-                                            <div className="text-xs text-gray-500 mt-1 flex items-center gap-1">
-                                              <Badge variant="outline" className="text-xs">
-                                                {item.unit}
-                                              </Badge>
+                                    {items.map((item) => {
+                                      const isItemSelected = selectedItemIds.includes(item.id);
+                                      return (
+                                        <div key={item.id} className="bg-white p-4 rounded-lg border shadow-sm">
+                                          <div className="flex justify-between items-start">
+                                            <div className="flex items-start gap-2 flex-1">
+                                              <TableSelectionCheckbox
+                                                checked={isItemSelected}
+                                                onCheckedChange={(checked) => handleSelectItem(item.id, checked)}
+                                                ariaLabel={`Select item ${item.name}`}
+                                              />
+                                              <div className="flex-1">
+                                                <div className="font-medium text-gray-900">{item.name}</div>
+                                                <div className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                                                  <Badge variant="outline" className="text-xs">
+                                                    {item.unit}
+                                                  </Badge>
+                                                </div>
+                                                <div className="text-sm text-gray-600 mt-2">{item.description}</div>
+                                                <div className="text-xs text-gray-400 mt-2 flex items-center gap-1">
+                                                  <Calendar className="h-3 w-3" />
+                                                  {new Date(item.created_at).toLocaleDateString()}
+                                                </div>
+                                              </div>
                                             </div>
-                                            <div className="text-sm text-gray-600 mt-2">{item.description}</div>
-                                            <div className="text-xs text-gray-400 mt-2 flex items-center gap-1">
-                                              <Calendar className="h-3 w-3" />
-                                              {new Date(item.created_at).toLocaleDateString()}
+                                            <div className="flex gap-1 ml-3">
+                                              {onEditItem && (
+                                                <Button variant="ghost" size="sm" onClick={() => onEditItem(item)} className="h-7 w-7 p-0">
+                                                  <Edit className="h-3 w-3" />
+                                                </Button>
+                                              )}
+                                              {onDeleteItem && (
+                                                <Button variant="ghost" size="sm" onClick={() => onDeleteItem(item.id)} className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50">
+                                                  <Trash2 className="h-3 w-3" />
+                                                </Button>
+                                              )}
                                             </div>
-                                          </div>
-                                          <div className="flex gap-1 ml-3">
-                                            {onEditItem && (
-                                              <Button variant="ghost" size="sm" onClick={() => onEditItem(item)} className="h-7 w-7 p-0">
-                                                <Edit className="h-3 w-3" />
-                                              </Button>
-                                            )}
-                                            {onDeleteItem && (
-                                              <Button variant="ghost" size="sm" onClick={() => onDeleteItem(item.id)} className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50">
-                                                <Trash2 className="h-3 w-3" />
-                                              </Button>
-                                            )}
                                           </div>
                                         </div>
-                                      </div>
-                                    ))}
+                                      );
+                                    })}
                                   </div>
                                 ) : (
                                   <div className="text-center py-8">
