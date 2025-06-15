@@ -40,7 +40,6 @@ export function SubcontractorsTableContent({
               ariaLabel="Select all subcontractors"
             />
           </TableHead>
-          <TableHead>Business Name</TableHead>
           <TableHead>Company Name</TableHead>
           <TableHead>Representative</TableHead>
           <TableHead>Commercial Registration</TableHead>
@@ -57,10 +56,9 @@ export function SubcontractorsTableContent({
               <TableSelectionCheckbox 
                 checked={selectedIds.has(sc.id)} 
                 onCheckedChange={() => onToggleOne(sc.id)} 
-                ariaLabel={`Select subcontractor ${sc.name}`} 
+                ariaLabel={`Select subcontractor ${sc.companyName}`} 
               />
             </TableCell>
-            <TableCell>{sc.name}</TableCell>
             <TableCell>{sc.companyName}</TableCell>
             <TableCell>{sc.representativeName}</TableCell>
             <TableCell>{sc.commercialRegistration}</TableCell>
@@ -88,7 +86,7 @@ export function SubcontractorsTableContent({
         ))}
         {filteredSubcontractors.length === 0 && (
           <TableRow>
-            <TableCell colSpan={9} className="text-center py-8">
+            <TableCell colSpan={8} className="text-center py-8">
               {searchTerm ? 'No subcontractors found matching your search.' : 'No subcontractors found.'}
             </TableCell>
           </TableRow>
