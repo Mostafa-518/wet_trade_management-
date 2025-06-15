@@ -19,7 +19,7 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
     tradeItems: [],
     responsibilities: [],
     pdfFile: null,
-    dateOfIssuing: new Date().toISOString().split('T')[0]
+    dateOfIssuing: undefined
   });
 
   const [currentTradeItem, setCurrentTradeItem] = useState<Partial<TradeItem>>({
@@ -223,23 +223,24 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
             setFormData={setFormData}
             totalAmount={getTotalAmount()}
             onFileUpload={handleFileUpload}
-          >
-            <div className="mt-4">
-              <label className="block font-medium mb-1">Date of Issuing</label>
-              <input
-                type="date"
-                className="border rounded px-3 py-2 w-full"
-                value={formData.dateOfIssuing ?? ''}
-                onChange={e =>
-                  setFormData(prev => ({
-                    ...prev,
-                    dateOfIssuing: e.target.value
-                  }))
-                }
-                required
-              />
-            </div>
-          </DocumentsReviewStep>
+            renderExtraFields={
+              <div className="mt-4">
+                <label className="block font-medium mb-1">Date of Issuing</label>
+                <input
+                  type="date"
+                  className="border rounded px-3 py-2 w-full"
+                  value={formData.dateOfIssuing ?? ''}
+                  onChange={e =>
+                    setFormData(prev => ({
+                      ...prev,
+                      dateOfIssuing: e.target.value
+                    }))
+                  }
+                  required
+                />
+              </div>
+            }
+          />
         );
       default:
         return null;

@@ -16,6 +16,7 @@ export interface FormData {
   tradeItems: TradeItem[];
   responsibilities: string[];
   pdfFile: File | null;
+  dateOfIssuing?: string; // <--- FIXED: added property
 }
 
 export interface Project {

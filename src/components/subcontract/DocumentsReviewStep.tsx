@@ -13,9 +13,16 @@ interface DocumentsReviewStepProps {
   setFormData: React.Dispatch<React.SetStateAction<FormData>>;
   totalAmount: number;
   onFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  renderExtraFields?: React.ReactNode; // Allow for extra UI (for date of issuing, etc.)
 }
 
-export function DocumentsReviewStep({ formData, setFormData, totalAmount, onFileUpload }: DocumentsReviewStepProps) {
+export function DocumentsReviewStep({
+  formData,
+  setFormData,
+  totalAmount,
+  onFileUpload,
+  renderExtraFields,
+}: DocumentsReviewStepProps) {
   return (
     <div className="space-y-6">
       <div>
@@ -38,6 +45,10 @@ export function DocumentsReviewStep({ formData, setFormData, totalAmount, onFile
           </Button>
         </div>
       </div>
+
+      {renderExtraFields && (
+        <div>{renderExtraFields}</div>
+      )}
 
       {/* Review Summary */}
       <div className="border rounded-lg p-4 space-y-4">
@@ -74,3 +85,4 @@ export function DocumentsReviewStep({ formData, setFormData, totalAmount, onFile
     </div>
   );
 }
+
