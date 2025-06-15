@@ -29,8 +29,7 @@ export class AuthService {
         console.error('SignUp error details:', {
           name: error.name,
           message: error.message,
-          status: error.status,
-          statusCode: error.statusCode
+          status: error.status
         });
         throw error;
       }
@@ -80,9 +79,7 @@ export class AuthService {
         console.error('SignIn error details:', {
           name: error.name,
           message: error.message,
-          status: error.status,
-          statusCode: error.statusCode,
-          details: error.details
+          status: error.status
         });
         throw error;
       }
