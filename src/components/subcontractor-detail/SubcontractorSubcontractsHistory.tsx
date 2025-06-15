@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +12,8 @@ interface SubcontractorSubcontractsHistoryProps {
 }
 
 export function SubcontractorSubcontractsHistory({ subcontractorProjects }: SubcontractorSubcontractsHistoryProps) {
+  const navigate = useNavigate();
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -30,6 +33,10 @@ export function SubcontractorSubcontractsHistory({ subcontractorProjects }: Subc
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
+  };
+
+  const handleSubcontractClick = (subcontractId: string) => {
+    navigate(`/subcontracts/${subcontractId}`);
   };
 
   return (
@@ -56,8 +63,14 @@ export function SubcontractorSubcontractsHistory({ subcontractorProjects }: Subc
             </TableHeader>
             <TableBody>
               {subcontractorProjects.map((project) => (
-                <TableRow key={project.id}>
-                  <TableCell className="font-medium">{project.contractId}</TableCell>
+                <TableRow 
+                  key={project.id} 
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => handleSubcontractClick(project.id)}
+                >
+                  <TableCell className="font-medium text-blue-600 hover:text-blue-800">
+                    {project.contractId}
+                  </TableCell>
                   <TableCell>{project.project}</TableCell>
                   <TableCell className="text-right">{formatCurrency(project.totalValue)}</TableCell>
                   <TableCell>{getProjectStatusBadge(project.status)}</TableCell>
