@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import {
   Form,
   FormControl,
@@ -14,14 +13,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { X, Plus } from 'lucide-react';
 import { Subcontractor, SubcontractorFormData } from '@/types/subcontractor';
 
 const formSchema = z.object({
@@ -32,7 +23,6 @@ const formSchema = z.object({
   taxCardNo: z.string().min(1, 'Tax card number is required'),
   email: z.string().email('Invalid email address'),
   phone: z.string().min(1, 'Phone number is required'),
-  address: z.string().min(1, 'Address is required'),
 });
 
 interface SubcontractorFormProps {
@@ -41,18 +31,7 @@ interface SubcontractorFormProps {
   onCancel: () => void;
 }
 
-const availableTrades = [
-  'Electrical', 'HVAC', 'Plumbing', 'Water Systems', 'Ventilation',
-  'Concrete', 'Steel Works', 'Finishing', 'Interior Design', 'Painting',
-  'Masonry', 'Roofing', 'Flooring', 'Landscaping'
-];
-
 export function SubcontractorForm({ subcontractor, onSubmit, onCancel }: SubcontractorFormProps) {
-  const [selectedTrades, setSelectedTrades] = React.useState<string[]>(
-    subcontractor?.trades || []
-  );
-  const [newTrade, setNewTrade] = React.useState('');
-
   const form = useForm<SubcontractorFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -63,26 +42,11 @@ export function SubcontractorForm({ subcontractor, onSubmit, onCancel }: Subcont
       taxCardNo: subcontractor?.taxCardNo || '',
       email: subcontractor?.email || '',
       phone: subcontractor?.phone || '',
-      address: subcontractor?.address || '',
     },
   });
 
   const handleSubmit = (data: SubcontractorFormData) => {
-    onSubmit({
-      ...data,
-      trades: selectedTrades,
-    });
-  };
-
-  const addTrade = (trade: string) => {
-    if (trade && !selectedTrades.includes(trade)) {
-      setSelectedTrades([...selectedTrades, trade]);
-    }
-    setNewTrade('');
-  };
-
-  const removeTrade = (trade: string) => {
-    setSelectedTrades(selectedTrades.filter(t => t !== trade));
+    onSubmit(data);
   };
 
   return (
@@ -196,65 +160,6 @@ export function SubcontractorForm({ subcontractor, onSubmit, onCancel }: Subcont
                 </FormItem>
               )}
             />
-          </div>
-
-          <FormField
-            control={form.control}
-            name="address"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Address</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter full address" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Trades Section */}
-          <div className="space-y-4">
-            <FormLabel>Trades & Specializations</FormLabel>
-            
-            <div className="flex gap-2">
-              <Select value={newTrade} onValueChange={setNewTrade}>
-                <SelectTrigger className="flex-1">
-                  <SelectValue placeholder="Select a trade" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableTrades
-                    .filter(trade => !selectedTrades.includes(trade))
-                    .map((trade) => (
-                      <SelectItem key={trade} value={trade}>
-                        {trade}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => addTrade(newTrade)}
-                disabled={!newTrade || selectedTrades.includes(newTrade)}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              {selectedTrades.map((trade) => (
-                <Badge key={trade} variant="outline" className="px-3 py-1">
-                  {trade}
-                  <button
-                    type="button"
-                    onClick={() => removeTrade(trade)}
-                    className="ml-2 hover:text-destructive"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
           </div>
 
           <div className="flex gap-4 pt-4">

@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Edit, Phone, Mail, MapPin, Calendar, Star, TrendingUp, FileText, Building2, User, Award } from 'lucide-react';
+import { ArrowLeft, Edit, Phone, Mail, Calendar, TrendingUp, FileText, Building2, User } from 'lucide-react';
 import { Subcontractor } from '@/types/subcontractor';
 import { useData } from '@/contexts/DataContext';
 
@@ -55,22 +55,6 @@ export function SubcontractorDetailView({ subcontractor, onBack, onEdit }: Subco
     }
   };
 
-  const renderStars = (rating: number) => {
-    return (
-      <div className="flex items-center gap-1">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Star
-            key={star}
-            className={`h-4 w-4 ${
-              star <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'
-            }`}
-          />
-        ))}
-        <span className="ml-1 text-sm font-medium">({rating})</span>
-      </div>
-    );
-  };
-
   const totalContractValue = subcontractorProjects.reduce((sum, project) => sum + project.totalValue, 0);
 
   return (
@@ -95,7 +79,7 @@ export function SubcontractorDetailView({ subcontractor, onBack, onEdit }: Subco
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-2">
@@ -137,20 +121,6 @@ export function SubcontractorDetailView({ subcontractor, onBack, onEdit }: Subco
             </div>
           </CardContent>
         </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2">
-              <Award className="h-5 w-5 text-yellow-600" />
-              <div>
-                <div className="text-2xl font-bold text-yellow-600">
-                  {subcontractor.rating}
-                </div>
-                <div className="text-sm text-muted-foreground">Average Rating</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Tabs */}
@@ -161,109 +131,56 @@ export function SubcontractorDetailView({ subcontractor, onBack, onEdit }: Subco
         </TabsList>
 
         <TabsContent value="info" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Trades & Specializations */}
-            <div className="lg:col-span-2 space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Trades & Specializations</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {subcontractor.trades.map(trade => (
-                      <Badge key={trade} variant="secondary" className="px-3 py-1">
-                        {trade}
-                      </Badge>
-                    ))}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Contact Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Contact Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <div className="font-semibold">{subcontractor.representativeName}</div>
+                  <div className="text-sm text-muted-foreground">Representative</div>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <span>{subcontractor.phone}</span>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <span>{subcontractor.email}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-            {/* Sidebar Information */}
-            <div className="space-y-6">
-              {/* Contact Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <User className="h-5 w-5" />
-                    Contact Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div>
-                    <div className="font-semibold">{subcontractor.representativeName}</div>
-                    <div className="text-sm text-muted-foreground">Representative</div>
-                  </div>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <span>{subcontractor.phone}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <span>{subcontractor.email}</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                      <span>{subcontractor.address}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Business Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Building2 className="h-5 w-5" />
-                    Business Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                  <div>
-                    <div className="font-medium">Commercial Registration</div>
-                    <div className="text-muted-foreground">{subcontractor.commercialRegistration}</div>
-                  </div>
-                  <div>
-                    <div className="font-medium">Tax Card No.</div>
-                    <div className="text-muted-foreground">{subcontractor.taxCardNo}</div>
-                  </div>
-                  <div>
-                    <div className="font-medium">Registration Date</div>
-                    <div className="text-muted-foreground">{new Date(subcontractor.registrationDate).toLocaleDateString()}</div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Performance Metrics */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Award className="h-5 w-5" />
-                    Performance Metrics
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div>
-                    <div className="font-medium mb-1">Overall Rating</div>
-                    {renderStars(subcontractor.rating)}
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Total Projects:</span>
-                    <span className="font-medium">{subcontractor.totalProjects}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Active Projects:</span>
-                    <span className="font-medium">{subcontractor.currentProjects}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Total Contract Value:</span>
-                    <span className="font-medium text-green-600">{formatCurrency(totalContractValue)}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            {/* Business Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  Business Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                <div>
+                  <div className="font-medium">Commercial Registration</div>
+                  <div className="text-muted-foreground">{subcontractor.commercialRegistration}</div>
+                </div>
+                <div>
+                  <div className="font-medium">Tax Card No.</div>
+                  <div className="text-muted-foreground">{subcontractor.taxCardNo}</div>
+                </div>
+                <div>
+                  <div className="font-medium">Registration Date</div>
+                  <div className="text-muted-foreground">{new Date(subcontractor.registrationDate).toLocaleDateString()}</div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
 
