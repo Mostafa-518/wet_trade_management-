@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -52,12 +53,20 @@ export function SubcontractTableContent({
       style: 'currency',
       currency: 'EGP',
       minimumFractionDigits: 0
-    }).format(amount);
+    }).format(amount ?? 0);
   };
 
-  // Format responsibilities as comma separated
-  const formatResponsibilities = (responsibilities: string[]) => {
-    return responsibilities && responsibilities.length > 0 ? responsibilities.join(', ') : '-';
+  // Ensure responsibilities come as a comma separated string, safe against object/array forms
+  const formatResponsibilities = (responsibilities: any) => {
+    if (Array.isArray(responsibilities) && responsibilities.length > 0) {
+      // If values are objects with name, extract; else print as string
+      return responsibilities.map(r => {
+        if (typeof r === 'string') return r;
+        if (r && typeof r === 'object' && 'name' in r) return r.name;
+        return '';
+      }).filter(Boolean).join(', ');
+    }
+    return '-';
   };
 
   // Format date from string YYYY-MM-DD to "Month, YYYY"
@@ -65,6 +74,7 @@ export function SubcontractTableContent({
     if (!isoDate) return '-';
     try {
       const date = new Date(isoDate);
+      if (isNaN(date.getTime())) return isoDate;
       const month = date.toLocaleString('default', { month: 'long' });
       const year = date.getFullYear();
       return `${month}, ${year}`;
@@ -103,6 +113,8 @@ export function SubcontractTableContent({
             <TableHead>Project Name</TableHead>
             <TableHead>Subcontractor Company</TableHead>
             <TableHead>Type of Contract</TableHead>
+            <TableHead>Addendum Number</TableHead>
+            <TableHead>Parent Subcontract</TableHead>
             <TableHead>Trades</TableHead>
             <TableHead>Items</TableHead>
             <TableHead>QTY</TableHead>
@@ -116,7 +128,7 @@ export function SubcontractTableContent({
         <TableBody>
           {filteredData.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={14} className="text-center py-8">
+              <TableCell colSpan={16} className="text-center py-8">
                 <div className="text-muted-foreground">
                   {searchTerm || showAdvancedSearch ? 'No subcontracts found matching your search.' : 'No subcontracts found.'}
                 </div>
@@ -157,12 +169,18 @@ export function SubcontractTableContent({
                         <TableCell rowSpan={contract.tradeItems.length}>
                           {contract.contractType === "ADD" ? "Addendum" : "Subcontract"}
                         </TableCell>
+                        <TableCell rowSpan={contract.tradeItems.length}>
+                          {contract.contractType === "ADD" ? (contract.addendumNumber || '-') : '-'}
+                        </TableCell>
+                        <TableCell rowSpan={contract.tradeItems.length}>
+                          {contract.contractType === "ADD" ? (contract.parentSubcontractId || '-') : '-'}
+                        </TableCell>
                       </>
                     )}
                     {/* Trades, Items, QTY, Rate, Wastage, Total */}
                     <TableCell>{item.trade || '-'}</TableCell>
                     <TableCell>{item.item || '-'}</TableCell>
-                    <TableCell className="text-right">{item.quantity ?? '-'} {item.unit}</TableCell>
+                    <TableCell className="text-right">{item.quantity ?? '-'} {item.unit || ''}</TableCell>
                     <TableCell className="text-right">{formatCurrency(item.unitPrice ?? 0)}</TableCell>
                     <TableCell className="text-right">{item.wastagePercentage !== undefined ? `${item.wastagePercentage}%` : '0%'}</TableCell>
                     <TableCell className="text-right font-medium">{formatCurrency(item.total ?? 0)}</TableCell>
@@ -207,6 +225,8 @@ export function SubcontractTableContent({
                   <TableCell>{getProjectName(contract.project)}</TableCell>
                   <TableCell>{getSubcontractorName(contract.subcontractor)}</TableCell>
                   <TableCell>{contract.contractType === "ADD" ? "Addendum" : "Subcontract"}</TableCell>
+                  <TableCell>{contract.contractType === "ADD" ? (contract.addendumNumber || '-') : '-'}</TableCell>
+                  <TableCell>{contract.contractType === "ADD" ? (contract.parentSubcontractId || '-') : '-'}</TableCell>
                   <TableCell className="text-muted-foreground">-</TableCell>
                   <TableCell className="text-muted-foreground">-</TableCell>
                   <TableCell className="text-muted-foreground">-</TableCell>
@@ -237,3 +257,4 @@ export function SubcontractTableContent({
     </div>
   );
 }
+
