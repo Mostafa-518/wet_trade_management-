@@ -13,6 +13,7 @@ import { useSubcontracts } from '@/hooks/useSubcontracts';
 
 export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps) {
   const { toast } = useToast();
+  const { subcontracts } = useSubcontracts();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
     project: '',
@@ -218,7 +219,6 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
             setFormData(prev => ({
               ...prev,
               contractType: e.target.value as 'subcontract' | 'ADD',
-              // Reset addendum fields if switched
               ...(e.target.value === 'ADD'
                 ? {}
                 : { addendumNumber: '', parentSubcontractId: '' })
@@ -263,7 +263,7 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
               <option value="">Select parent subcontract...</option>
               {Array.isArray(subcontracts)
                 ? subcontracts
-                    .filter(sc => sc.contractType === 'subcontract') // can only add to a main contract, not to another addendum
+                    .filter(sc => sc.contractType === 'subcontract') // Only allow "main" contracts
                     .map(sc => (
                       <option key={sc.id} value={sc.id}>
                         {sc.contractId} - {sc.description}
