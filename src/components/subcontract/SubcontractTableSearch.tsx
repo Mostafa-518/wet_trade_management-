@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { AdvancedSearch } from './AdvancedSearch';
+import { Subcontract } from '@/types/subcontract';
 
 interface SearchCondition {
   field: string;
@@ -14,12 +15,14 @@ interface SubcontractTableSearchProps {
   searchTerm: string;
   onSimpleSearch: (value: string) => void;
   onAdvancedSearch: (conditions: SearchCondition[]) => void;
+  subcontracts: Subcontract[];
 }
 
 export function SubcontractTableSearch({ 
   searchTerm, 
   onSimpleSearch, 
-  onAdvancedSearch 
+  onAdvancedSearch,
+  subcontracts
 }: SubcontractTableSearchProps) {
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
 
@@ -44,7 +47,7 @@ export function SubcontractTableSearch({
       </div>
 
       {showAdvancedSearch && (
-        <AdvancedSearch onSearch={onAdvancedSearch} />
+        <AdvancedSearch onSearch={onAdvancedSearch} subcontracts={subcontracts} />
       )}
     </div>
   );

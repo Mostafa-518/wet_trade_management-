@@ -1,9 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { X } from 'lucide-react';
+import { Subcontract } from '@/types/subcontract';
+import { useSubcontractHelpers } from '@/hooks/subcontract/useSubcontractHelpers';
 
 interface SearchCondition {
   field: string;
@@ -12,12 +14,14 @@ interface SearchCondition {
 
 interface AdvancedSearchProps {
   onSearch: (conditions: SearchCondition[]) => void;
+  subcontracts: Subcontract[];
 }
 
-export function AdvancedSearch({ onSearch }: AdvancedSearchProps) {
+export function AdvancedSearch({ onSearch, subcontracts }: AdvancedSearchProps) {
   const [field, setField] = useState('contractId');
   const [value, setValue] = useState('');
   const [conditions, setConditions] = useState<SearchCondition[]>([]);
+  const { getProjectName, getProjectCode, getSubcontractorName } = useSubcontractHelpers();
 
   const searchFields = [
     { value: 'contractId', label: 'Contract ID' },
@@ -28,6 +32,50 @@ export function AdvancedSearch({ onSearch }: AdvancedSearchProps) {
     { value: 'item', label: 'Trade Item' },
     { value: 'status', label: 'Status' },
   ];
+
+  // Generate dropdown options based on selected field
+  const dropdownOptions = useMemo(() => {
+    const optionsSet = new Set<string>();
+    
+    subcontracts.forEach(item => {
+      switch (field) {
+        case 'contractId':
+          if (item.contractId) optionsSet.add(item.contractId);
+          break;
+        case 'project':
+          const projectName = getProjectName(item.project);
+          if (projectName) optionsSet.add(projectName);
+          break;
+        case 'projectCode':
+          const projectCode = getProjectCode(item.project);
+          if (projectCode) optionsSet.add(projectCode);
+          break;
+        case 'subcontractor':
+          const subcontractorName = getSubcontractorName(item.subcontractor);
+          if (subcontractorName) optionsSet.add(subcontractorName);
+          break;
+        case 'trade':
+          if (item.tradeItems && item.tradeItems.length > 0) {
+            item.tradeItems.forEach(tradeItem => {
+              if (tradeItem.trade) optionsSet.add(tradeItem.trade);
+            });
+          }
+          break;
+        case 'item':
+          if (item.tradeItems && item.tradeItems.length > 0) {
+            item.tradeItems.forEach(tradeItem => {
+              if (tradeItem.item) optionsSet.add(tradeItem.item);
+            });
+          }
+          break;
+        case 'status':
+          if (item.status) optionsSet.add(item.status);
+          break;
+      }
+    });
+    
+    return Array.from(optionsSet).sort();
+  }, [field, subcontracts, getProjectName, getProjectCode, getSubcontractorName]);
 
   const addCondition = () => {
     if (value.trim()) {
@@ -46,13 +94,13 @@ export function AdvancedSearch({ onSearch }: AdvancedSearchProps) {
 
   const clearAll = () => {
     setConditions([]);
+    setValue('');
     onSearch([]);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      addCondition();
-    }
+  const handleFieldChange = (newField: string) => {
+    setField(newField);
+    setValue(''); // Clear value when field changes
   };
 
   return (
@@ -60,7 +108,7 @@ export function AdvancedSearch({ onSearch }: AdvancedSearchProps) {
       <div className="flex gap-2 items-end">
         <div className="flex-1">
           <label className="text-sm font-medium mb-1 block">Search Field</label>
-          <Select value={field} onValueChange={setField}>
+          <Select value={field} onValueChange={handleFieldChange}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
@@ -76,13 +124,18 @@ export function AdvancedSearch({ onSearch }: AdvancedSearchProps) {
 
         <div className="flex-2">
           <label className="text-sm font-medium mb-1 block">Value</label>
-          <Input
-            type="text"
-            placeholder="Enter search value..."
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            onKeyPress={handleKeyPress}
-          />
+          <Select value={value} onValueChange={setValue}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select or type a value..." />
+            </SelectTrigger>
+            <SelectContent>
+              {dropdownOptions.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <Button onClick={addCondition} disabled={!value.trim()}>
