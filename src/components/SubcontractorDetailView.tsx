@@ -226,8 +226,8 @@ export function SubcontractorDetailView({ subcontractor, onBack, onEdit }: Subco
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
-                <div className="font-semibold">{subcontractor.contactPerson}</div>
-                <div className="text-sm text-muted-foreground">Contact Person</div>
+                <div className="font-semibold">{subcontractor.representativeName}</div>
+                <div className="text-sm text-muted-foreground">Representative</div>
               </div>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2">
@@ -256,12 +256,12 @@ export function SubcontractorDetailView({ subcontractor, onBack, onEdit }: Subco
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <div>
-                <div className="font-medium">Tax ID</div>
-                <div className="text-muted-foreground">{subcontractor.taxId}</div>
+                <div className="font-medium">Commercial Registration</div>
+                <div className="text-muted-foreground">{subcontractor.commercialRegistration}</div>
               </div>
               <div>
-                <div className="font-medium">Bank Account</div>
-                <div className="text-muted-foreground">{subcontractor.bankAccount}</div>
+                <div className="font-medium">Tax Card No.</div>
+                <div className="text-muted-foreground">{subcontractor.taxCardNo}</div>
               </div>
               <div>
                 <div className="font-medium">Registration Date</div>

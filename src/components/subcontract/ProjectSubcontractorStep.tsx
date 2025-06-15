@@ -93,7 +93,7 @@ export function ProjectSubcontractorStep({ formData, setFormData }: ProjectSubco
                 <SelectItem key={sub.id} value={sub.id}>
                   <div>
                     <div className="font-medium">{sub.name}</div>
-                    <div className="text-sm text-muted-foreground">{sub.contactPerson} • {sub.phone}</div>
+                    <div className="text-sm text-muted-foreground">{sub.representativeName} • {sub.phone}</div>
                   </div>
                 </SelectItem>
               ))}

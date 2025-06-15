@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -78,7 +77,7 @@ export function SubcontractSidebar({ subcontract }: SubcontractSidebarProps) {
             <div className="space-y-1 text-sm">
               <div className="flex items-center gap-2">
                 <User className="h-4 w-4 text-muted-foreground" />
-                <span>{subcontractorData.contactPerson}</span>
+                <span>{subcontractorData.representativeName}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground">📞</span>
