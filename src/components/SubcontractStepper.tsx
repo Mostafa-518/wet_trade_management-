@@ -166,21 +166,21 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
   const handleSave = async () => {
     setSaveError(null);
     setIsSaving(true);
-    console.log('Saving subcontract with data:', formData);
+
     if (!validateStep()) {
       setIsSaving(false);
       return;
     }
     try {
-      // Create proper subcontract data structure that matches the expected format
-      const subcontractData = {
+      // Make sure we await and only close on successful save
+      await onSave({
         contractId: `SC-${Date.now()}`,
         project: formData.project,
         subcontractor: formData.subcontractor,
         tradeItems: formData.tradeItems,
         responsibilities: formData.responsibilities,
         totalValue: getTotalAmount(),
-        status: 'draft' as const,
+        status: 'draft',
         startDate: new Date().toISOString().split('T')[0],
         endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         dateOfIssuing: formData.dateOfIssuing ?? new Date().toISOString().split('T')[0],
@@ -188,10 +188,11 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
         contractType: formData.contractType || 'subcontract',
         addendumNumber: formData.contractType === 'ADD' ? formData.addendumNumber : undefined,
         parentSubcontractId: formData.contractType === 'ADD' ? formData.parentSubcontractId : undefined
-      };
-      console.log('Final subcontract data being sent:', subcontractData);
-      await onSave(subcontractData);
+      });
       setIsSaving(false);
+      // Success toast
+      toast({ title: "Subcontract Saved", description: "Your subcontract has been saved to Supabase.", variant: "default" });
+      onClose(); // close the modal/stepper
     } catch (error: any) {
       setIsSaving(false);
       const msg = error instanceof Error ? error.message : "Unknown error";

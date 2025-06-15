@@ -27,11 +27,13 @@ export function Subcontracts() {
     navigate(`/subcontracts/${contractId}`);
   };
 
+  // Updated: await addSubcontract and manually refresh after saving
   const handleSaveSubcontract = async (data: any) => {
     setSaveError(null);
     try {
       await addSubcontract(data);
       setShowStepper(false);
+      toast({ title: "Success", description: "Subcontract saved! It will now appear in the list." });
     } catch (error: any) {
       setSaveError(error instanceof Error ? error.message : 'Unknown error');
     }
