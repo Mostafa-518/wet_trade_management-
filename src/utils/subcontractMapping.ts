@@ -28,3 +28,26 @@ export function mapSubcontractToFrontend(dbRow: any): Subcontract {
     parentSubcontractId,
   };
 }
+
+/**
+ * Finds the trade item ID by tradeId and item name.
+ * Used for mapping trade/item name to DB ID during subcontract save.
+ */
+export function findTradeItemId(tradeItems: any[], tradeId: string, itemName: string): string | undefined {
+  // tradeItems: typically array of all trade items in the app [{ id, trade_id, name, ... }]
+  return (tradeItems || []).find(
+    (ti) => ti.trade_id === tradeId && ti.name === itemName
+  )?.id;
+}
+
+/**
+ * Finds the responsibility ID by name.
+ * Used for mapping responsibility name to DB ID during subcontract save.
+ */
+export function findResponsibilityId(responsibilities: any[], responsibilityName: string): string | undefined {
+  // responsibilities: typically array of all responsibilities [{ id, name, ... }]
+  return (responsibilities || []).find(
+    (resp) => resp.name === responsibilityName
+  )?.id;
+}
+
