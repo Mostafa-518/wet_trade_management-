@@ -1,3 +1,4 @@
+
 import { Subcontract, TradeItem } from '@/types/subcontract';
 
 // This utility maps a DB row to the frontend Subcontract type.
@@ -7,29 +8,13 @@ export function mapSubcontractToFrontend(dbRow: any): Subcontract {
   const addendumNumber = dbRow.addendumNumber || dbRow.addendum_number || undefined;
   const parentSubcontractId = dbRow.parentSubcontractId || dbRow.parent_subcontract_id || undefined;
 
-  // Fix responsibilities: map array of objects to array of names
-  // Handles both structures: array of objects (with .responsibilities.name), or array of strings
-  let responsibilities: string[] = [];
-  if (Array.isArray(dbRow.responsibilities)) {
-    // handles the case where dbRow.responsibilities is an array of objects with a 'responsibilities' property
-    responsibilities = dbRow.responsibilities.map((respObj: any) => {
-      // Support both { name: "X" } and { responsibilities: { name: "X" } }
-      if (typeof respObj === 'string') return respObj;
-      if (respObj && typeof respObj === 'object') {
-        if (respObj.responsibilities && respObj.responsibilities.name) return respObj.responsibilities.name;
-        if (respObj.name) return respObj.name;
-      }
-      return null;
-    }).filter(Boolean);
-  }
-
   return {
     id: dbRow.id,
     contractId: dbRow.contractId || dbRow.contract_number || '', // adapt as needed
     project: dbRow.project || dbRow.project_id || '',
     subcontractor: dbRow.subcontractor || dbRow.subcontractor_id || '',
     tradeItems: dbRow.tradeItems || [],
-    responsibilities,
+    responsibilities: dbRow.responsibilities || [],
     totalValue: dbRow.totalValue || dbRow.total_value || 0,
     status: dbRow.status || 'draft',
     startDate: dbRow.startDate || dbRow.start_date || '',
@@ -65,3 +50,4 @@ export function findResponsibilityId(responsibilities: any[], responsibilityName
     (resp) => resp.name === responsibilityName
   )?.id;
 }
+

@@ -36,9 +36,6 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
     total: 0
   });
 
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
-
   const steps = [
     'Project & Subcontractor',
     'Trade & Items',
@@ -163,46 +160,47 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
     }
   };
 
-  const handleSave = async () => {
-    setSaveError(null);
-    setIsSaving(true);
-
+  const handleSave = () => {
+    console.log('Saving subcontract with data:', formData);
+    
     if (!validateStep()) {
-      setIsSaving(false);
       return;
     }
-    try {
-      // Make sure we await and only close on successful save
-      await onSave({
-        contractId: `SC-${Date.now()}`,
-        project: formData.project,
-        subcontractor: formData.subcontractor,
-        tradeItems: formData.tradeItems,
-        responsibilities: formData.responsibilities,
-        totalValue: getTotalAmount(),
-        status: 'draft',
-        startDate: new Date().toISOString().split('T')[0],
-        endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        dateOfIssuing: formData.dateOfIssuing ?? new Date().toISOString().split('T')[0],
-        description: `Subcontract for ${formData.project} with ${formData.subcontractor}`,
-        contractType: formData.contractType || 'subcontract',
-        addendumNumber: formData.contractType === 'ADD' ? formData.addendumNumber : undefined,
-        parentSubcontractId: formData.contractType === 'ADD' ? formData.parentSubcontractId : undefined
-      });
-      setIsSaving(false);
-      // Success toast
-      toast({ title: "Subcontract Saved", description: "Your subcontract has been saved to Supabase.", variant: "default" });
-      onClose(); // close the modal/stepper
-    } catch (error: any) {
-      setIsSaving(false);
-      const msg = error instanceof Error ? error.message : "Unknown error";
-      setSaveError(msg);
+
+    // Ensure we have valid UUIDs for project and subcontractor
+    if (!formData.project || !formData.subcontractor) {
       toast({
-        title: "Save Failed",
-        description: msg,
+        title: "Invalid Data",
+        description: "Project and subcontractor must be selected",
         variant: "destructive"
       });
+      return;
     }
+
+    // Helper to get all subcontracts for "parent" selection when ADD is selected
+    // We'll fetch from the DataContext if available
+    const { subcontracts } = useSubcontracts();
+
+    // Create proper subcontract data structure that matches the expected format
+    const subcontractData = {
+      contractId: `SC-${Date.now()}`,
+      project: formData.project, // This should now be a UUID
+      subcontractor: formData.subcontractor, // This should now be a UUID
+      tradeItems: formData.tradeItems,
+      responsibilities: formData.responsibilities,
+      totalValue: getTotalAmount(),
+      status: 'draft' as const,
+      startDate: new Date().toISOString().split('T')[0],
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days
+      dateOfIssuing: formData.dateOfIssuing ?? new Date().toISOString().split('T')[0],
+      description: `Subcontract for ${formData.project} with ${formData.subcontractor}`,
+      contractType: formData.contractType || 'subcontract',
+      addendumNumber: formData.contractType === 'ADD' ? formData.addendumNumber : undefined,
+      parentSubcontractId: formData.contractType === 'ADD' ? formData.parentSubcontractId : undefined
+    };
+
+    console.log('Final subcontract data being sent:', subcontractData);
+    onSave(subcontractData);
   };
 
   const getTotalAmount = () => {
@@ -368,19 +366,12 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
         <CardContent className="space-y-6">
           {renderStepContent()}
 
-          {/* Error Message on Save */}
-          {saveError && (
-            <div className="py-2 px-4 bg-red-100 text-red-800 rounded relative">
-              <span className="font-semibold">Error:</span> {saveError}
-            </div>
-          )}
-
           {/* Navigation Buttons */}
           <div className="flex items-center justify-between pt-4 border-t">
             <Button
               variant="outline"
               onClick={handlePrev}
-              disabled={currentStep === 1 || isSaving}
+              disabled={currentStep === 1}
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -388,20 +379,13 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
             </Button>
 
             {currentStep < steps.length ? (
-              <Button onClick={handleNext} className="flex items-center gap-2" disabled={isSaving}>
+              <Button onClick={handleNext} className="flex items-center gap-2">
                 Next
                 <ArrowRight className="h-4 w-4" />
               </Button>
             ) : (
-              <Button 
-                onClick={handleSave} 
-                className="bg-green-600 hover:bg-green-700 flex items-center gap-2 relative"
-                disabled={isSaving}
-              >
-                {isSaving && (
-                  <span className="loader animate-spin h-4 w-4 mr-2 border-b-2 border-white rounded-full" />
-                )}
-                {isSaving ? 'Saving...' : 'Save Subcontract'}
+              <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700">
+                Save Subcontract
               </Button>
             )}
           </div>
