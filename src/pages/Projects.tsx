@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ProjectsTable } from '@/components/ProjectsTable';
 import { ProjectForm } from '@/components/ProjectForm';
 import { Project, ProjectFormData } from '@/types/project';
@@ -9,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 export function Projects() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [showForm, setShowForm] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   
@@ -16,6 +18,16 @@ export function Projects() {
   const { toast } = useToast();
   const { profile } = useAuth();
   const canModify = profile?.role !== 'viewer';
+
+  // Handle edit project state from navigation
+  useEffect(() => {
+    if (location.state?.editProject) {
+      setEditingProject(location.state.editProject);
+      setShowForm(true);
+      // Clear the state to prevent re-triggering
+      navigate('/projects', { replace: true });
+    }
+  }, [location.state, navigate]);
 
   const handleCreateNew = () => {
     if (!canModify) return;
