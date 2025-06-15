@@ -23,7 +23,9 @@ export function TradeItemsList({ items, onRemoveItem, totalAmount }: TradeItemsL
             <div className="flex-1">
               <div className="font-medium">{item.trade} - {item.item}</div>
               <div className="text-sm text-muted-foreground">
-                {item.quantity} {item.unit} × {formatCurrency(item.unitPrice)} = {formatCurrency(item.total)}
+                {item.quantity} {item.unit} × {formatCurrency(item.unitPrice)} = {formatCurrency(item.total)} 
+                {" "}
+                <span className="ml-2 text-xs text-yellow-600">{(item.wastagePercentage ?? 0) > 0 ? `(Wastage: ${item.wastagePercentage}%)` : ''}</span>
               </div>
             </div>
             <Button

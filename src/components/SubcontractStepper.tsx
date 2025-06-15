@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,7 +18,8 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
     subcontractor: '',
     tradeItems: [],
     responsibilities: [],
-    pdfFile: null
+    pdfFile: null,
+    dateOfIssuing: new Date().toISOString().split('T')[0]
   });
 
   const [currentTradeItem, setCurrentTradeItem] = useState<Partial<TradeItem>>({
@@ -183,6 +183,7 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
       status: 'draft' as const,
       startDate: new Date().toISOString().split('T')[0],
       endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
+      dateOfIssuing: formData.dateOfIssuing ?? new Date().toISOString().split('T')[0],
       description: `Subcontract for ${formData.project} with ${formData.subcontractor}`,
     };
 
@@ -222,7 +223,23 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
             setFormData={setFormData}
             totalAmount={getTotalAmount()}
             onFileUpload={handleFileUpload}
-          />
+          >
+            <div className="mt-4">
+              <label className="block font-medium mb-1">Date of Issuing</label>
+              <input
+                type="date"
+                className="border rounded px-3 py-2 w-full"
+                value={formData.dateOfIssuing ?? ''}
+                onChange={e =>
+                  setFormData(prev => ({
+                    ...prev,
+                    dateOfIssuing: e.target.value
+                  }))
+                }
+                required
+              />
+            </div>
+          </DocumentsReviewStep>
         );
       default:
         return null;

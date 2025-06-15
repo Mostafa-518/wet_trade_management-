@@ -108,6 +108,7 @@ export type Database = {
           total_price: number | null
           trade_item_id: string | null
           unit_price: number | null
+          wastage_percentage: number | null
         }
         Insert: {
           created_at?: string
@@ -117,6 +118,7 @@ export type Database = {
           total_price?: number | null
           trade_item_id?: string | null
           unit_price?: number | null
+          wastage_percentage?: number | null
         }
         Update: {
           created_at?: string
@@ -126,6 +128,7 @@ export type Database = {
           total_price?: number | null
           trade_item_id?: string | null
           unit_price?: number | null
+          wastage_percentage?: number | null
         }
         Relationships: [
           {
@@ -184,6 +187,7 @@ export type Database = {
         Row: {
           contract_number: string | null
           created_at: string
+          date_of_issuing: string | null
           description: string | null
           end_date: string | null
           id: string
@@ -197,6 +201,7 @@ export type Database = {
         Insert: {
           contract_number?: string | null
           created_at?: string
+          date_of_issuing?: string | null
           description?: string | null
           end_date?: string | null
           id?: string
@@ -210,6 +215,7 @@ export type Database = {
         Update: {
           contract_number?: string | null
           created_at?: string
+          date_of_issuing?: string | null
           description?: string | null
           end_date?: string | null
           id?: string

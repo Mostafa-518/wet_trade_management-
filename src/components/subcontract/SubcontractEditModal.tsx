@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,6 +26,7 @@ export function SubcontractEditModal({ subcontract, open, onClose, onSave }: Sub
     totalValue: 0,
     startDate: '',
     endDate: '',
+    dateOfIssuing: '',
     description: ''
   });
 
@@ -44,6 +44,7 @@ export function SubcontractEditModal({ subcontract, open, onClose, onSave }: Sub
         totalValue: subcontract.totalValue || 0,
         startDate: subcontract.startDate || '',
         endDate: subcontract.endDate || '',
+        dateOfIssuing: subcontract.dateOfIssuing || '',
         description: subcontract.description || ''
       });
     }
@@ -172,6 +173,16 @@ export function SubcontractEditModal({ subcontract, open, onClose, onSave }: Sub
                   onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
                 />
               </div>
+            </div>
+
+            <div>
+              <Label htmlFor="dateOfIssuing">Date of Issuing</Label>
+              <Input
+                id="dateOfIssuing"
+                type="date"
+                value={formData.dateOfIssuing}
+                onChange={(e) => setFormData(prev => ({ ...prev, dateOfIssuing: e.target.value }))}
+              />
             </div>
 
             <div>

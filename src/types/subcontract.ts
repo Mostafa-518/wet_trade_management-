@@ -7,6 +7,7 @@ export interface TradeItem {
   quantity: number;
   unitPrice: number;
   total: number;
+  wastagePercentage?: number; // NEW
 }
 
 export interface FormData {
@@ -49,6 +50,7 @@ export interface SubcontractTradeItemDB {
   total_price: number;
   created_at: string;
   updated_at: string;
+  wastage_percentage?: number; // NEW
 }
 
 // Updated Subcontract interface to match what components expect and database schema
@@ -63,6 +65,7 @@ export interface Subcontract {
   status: 'draft' | 'pending' | 'active' | 'completed' | 'cancelled';
   startDate: string;
   endDate: string;
+  dateOfIssuing?: string; // NEW
   description: string;
   createdAt: string;
   updatedAt: string;
@@ -74,4 +77,5 @@ export interface SubcontractFormData {
   tradeItems: TradeItem[];
   responsibilities: string[];
   pdfFile: File | null;
+  dateOfIssuing?: string; // NEW
 }

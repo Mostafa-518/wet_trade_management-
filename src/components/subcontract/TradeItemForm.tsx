@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -139,6 +138,21 @@ export function TradeItemForm({ currentTradeItem, setCurrentTradeItem, onAddItem
               unitPrice: parseFloat(e.target.value) || 0 
             }))}
             placeholder="Enter unit price"
+          />
+        </div>
+
+        <div>
+          <Label>Wastage %</Label>
+          <Input
+            type="number"
+            value={currentTradeItem.wastagePercentage ?? ''}
+            min={0}
+            max={100}
+            onChange={(e) => {
+              let value = Math.max(0, Math.min(100, Number(e.target.value) || 0));
+              setCurrentTradeItem(prev => ({ ...prev, wastagePercentage: value }));
+            }}
+            placeholder="0 - 100"
           />
         </div>
 

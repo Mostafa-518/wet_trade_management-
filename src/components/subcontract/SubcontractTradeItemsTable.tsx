@@ -36,6 +36,7 @@ export function SubcontractTradeItemsTable({ tradeItems, totalValue }: Subcontra
                 <TableHead>Item</TableHead>
                 <TableHead className="text-right">Qty</TableHead>
                 <TableHead className="text-right">Unit Price</TableHead>
+                <TableHead className="text-right">Wastage %</TableHead>
                 <TableHead className="text-right">Total</TableHead>
               </TableRow>
             </TableHeader>
@@ -46,11 +47,12 @@ export function SubcontractTradeItemsTable({ tradeItems, totalValue }: Subcontra
                   <TableCell>{item.item}</TableCell>
                   <TableCell className="text-right">{item.quantity} {item.unit}</TableCell>
                   <TableCell className="text-right">{formatCurrency(item.unitPrice)}</TableCell>
+                  <TableCell className="text-right">{item.wastagePercentage ?? 0}%</TableCell>
                   <TableCell className="text-right font-medium">{formatCurrency(item.total)}</TableCell>
                 </TableRow>
               ))}
               <TableRow className="border-t-2">
-                <TableCell colSpan={4} className="font-bold">Total Contract Value</TableCell>
+                <TableCell colSpan={5} className="font-bold">Total Contract Value</TableCell>
                 <TableCell className="text-right font-bold text-lg">{formatCurrency(totalValue)}</TableCell>
               </TableRow>
             </TableBody>
