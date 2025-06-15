@@ -8,13 +8,30 @@ export function mapSubcontractToFrontend(dbRow: any): Subcontract {
   const addendumNumber = dbRow.addendumNumber || dbRow.addendum_number || undefined;
   const parentSubcontractId = dbRow.parentSubcontractId || dbRow.parent_subcontract_id || undefined;
 
+  // --- NEW FIX: Map responsibilities to an array of names (strings), not objects ---
+  let responsibilities: string[] = [];
+  if (dbRow.responsibilities && Array.isArray(dbRow.responsibilities)) {
+    responsibilities = dbRow.responsibilities
+      .map((respObj: any) => {
+        // from Supabase join, format is:
+        // respObj: { id, subcontract_id, responsibility_id, created_at, responsibilities: { id, name, ... } }
+        if (respObj.responsibilities && respObj.responsibilities.name) {
+          return respObj.responsibilities.name;
+        }
+        // fallback for old format or direct string
+        if (typeof respObj === "string") return respObj;
+        return undefined;
+      })
+      .filter(Boolean);
+  }
+
   return {
     id: dbRow.id,
     contractId: dbRow.contractId || dbRow.contract_number || '', // adapt as needed
     project: dbRow.project || dbRow.project_id || '',
     subcontractor: dbRow.subcontractor || dbRow.subcontractor_id || '',
     tradeItems: dbRow.tradeItems || [],
-    responsibilities: dbRow.responsibilities || [],
+    responsibilities,
     totalValue: dbRow.totalValue || dbRow.total_value || 0,
     status: dbRow.status || 'draft',
     startDate: dbRow.startDate || dbRow.start_date || '',
