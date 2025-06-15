@@ -26,6 +26,7 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
     addendumNumber: '',
     parentSubcontractId: ''
   });
+  const [isSaving, setIsSaving] = useState(false);
 
   const [currentTradeItem, setCurrentTradeItem] = useState<Partial<TradeItem>>({
     trade: '',
@@ -160,14 +161,12 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     console.log('Saving subcontract with data:', formData);
-    
+
     if (!validateStep()) {
       return;
     }
-
-    // Ensure we have valid UUIDs for project and subcontractor
     if (!formData.project || !formData.subcontractor) {
       toast({
         title: "Invalid Data",
@@ -177,21 +176,17 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
       return;
     }
 
-    // Helper to get all subcontracts for "parent" selection when ADD is selected
-    // We'll fetch from the DataContext if available
-    const { subcontracts } = useSubcontracts();
-
-    // Create proper subcontract data structure that matches the expected format
+    // Compose data as expected by backend:
     const subcontractData = {
       contractId: `SC-${Date.now()}`,
-      project: formData.project, // This should now be a UUID
-      subcontractor: formData.subcontractor, // This should now be a UUID
+      project: formData.project,
+      subcontractor: formData.subcontractor,
       tradeItems: formData.tradeItems,
       responsibilities: formData.responsibilities,
       totalValue: getTotalAmount(),
       status: 'draft' as const,
       startDate: new Date().toISOString().split('T')[0],
-      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       dateOfIssuing: formData.dateOfIssuing ?? new Date().toISOString().split('T')[0],
       description: `Subcontract for ${formData.project} with ${formData.subcontractor}`,
       contractType: formData.contractType || 'subcontract',
@@ -199,8 +194,23 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
       parentSubcontractId: formData.contractType === 'ADD' ? formData.parentSubcontractId : undefined
     };
 
-    console.log('Final subcontract data being sent:', subcontractData);
-    onSave(subcontractData);
+    try {
+      setIsSaving(true);
+      await onSave(subcontractData);
+      toast({
+        title: "Success",
+        description: "Subcontract saved and will appear in the table."
+      });
+      setIsSaving(false);
+      onClose(); // Close the modal/stepper after save
+    } catch (err: any) {
+      setIsSaving(false);
+      toast({
+        title: "Save failed",
+        description: err?.message || "Could not save subcontract.",
+        variant: "destructive"
+      });
+    }
   };
 
   const getTotalAmount = () => {
@@ -371,7 +381,7 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
             <Button
               variant="outline"
               onClick={handlePrev}
-              disabled={currentStep === 1}
+              disabled={currentStep === 1 || isSaving}
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -379,13 +389,13 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
             </Button>
 
             {currentStep < steps.length ? (
-              <Button onClick={handleNext} className="flex items-center gap-2">
+              <Button onClick={handleNext} className="flex items-center gap-2" disabled={isSaving}>
                 Next
                 <ArrowRight className="h-4 w-4" />
               </Button>
             ) : (
-              <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700">
-                Save Subcontract
+              <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700" disabled={isSaving}>
+                {isSaving ? "Saving..." : "Save Subcontract"}
               </Button>
             )}
           </div>
