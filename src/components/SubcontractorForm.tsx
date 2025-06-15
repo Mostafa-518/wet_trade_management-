@@ -25,14 +25,14 @@ import { X, Plus } from 'lucide-react';
 import { Subcontractor, SubcontractorFormData } from '@/types/subcontractor';
 
 const formSchema = z.object({
-  name: z.string().min(1, 'Company name is required'),
+  name: z.string().min(1, 'Business name is required'),
   companyName: z.string().min(1, 'Company name is required'),
-  contactPerson: z.string().min(1, 'Contact person is required'),
+  representativeName: z.string().min(1, 'Representative name is required'),
+  commercialRegistration: z.string().min(1, 'Commercial registration is required'),
+  taxCardNo: z.string().min(1, 'Tax card number is required'),
   email: z.string().email('Invalid email address'),
   phone: z.string().min(1, 'Phone number is required'),
   address: z.string().min(1, 'Address is required'),
-  taxId: z.string().min(1, 'Tax ID is required'),
-  bankAccount: z.string().min(1, 'Bank account is required'),
 });
 
 interface SubcontractorFormProps {
@@ -58,12 +58,12 @@ export function SubcontractorForm({ subcontractor, onSubmit, onCancel }: Subcont
     defaultValues: {
       name: subcontractor?.name || '',
       companyName: subcontractor?.companyName || '',
-      contactPerson: subcontractor?.contactPerson || '',
+      representativeName: subcontractor?.representativeName || '',
+      commercialRegistration: subcontractor?.commercialRegistration || '',
+      taxCardNo: subcontractor?.taxCardNo || '',
       email: subcontractor?.email || '',
       phone: subcontractor?.phone || '',
       address: subcontractor?.address || '',
-      taxId: subcontractor?.taxId || '',
-      bankAccount: subcontractor?.bankAccount || '',
     },
   });
 
@@ -129,12 +129,40 @@ export function SubcontractorForm({ subcontractor, onSubmit, onCancel }: Subcont
 
             <FormField
               control={form.control}
-              name="contactPerson"
+              name="representativeName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Contact Person</FormLabel>
+                  <FormLabel>Representative Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter contact person name" {...field} />
+                    <Input placeholder="Enter representative name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="commercialRegistration"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Commercial Registration</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter commercial registration" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="taxCardNo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tax Card No.</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter tax card number" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -168,20 +196,6 @@ export function SubcontractorForm({ subcontractor, onSubmit, onCancel }: Subcont
                 </FormItem>
               )}
             />
-
-            <FormField
-              control={form.control}
-              name="taxId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tax ID</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter tax ID" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
           </div>
 
           <FormField
@@ -192,20 +206,6 @@ export function SubcontractorForm({ subcontractor, onSubmit, onCancel }: Subcont
                 <FormLabel>Address</FormLabel>
                 <FormControl>
                   <Input placeholder="Enter full address" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="bankAccount"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Bank Account</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter bank account details" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

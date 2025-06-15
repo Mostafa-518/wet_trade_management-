@@ -62,8 +62,11 @@ export function SubcontractorsTable({ onCreateNew, onViewDetail, onEdit, onDelet
             <TableHead>
               <TableSelectionCheckbox checked={allSelected} onCheckedChange={toggleAll} ariaLabel="Select all subcontractors"/>
             </TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Contact Person</TableHead>
+            <TableHead>Business Name</TableHead>
+            <TableHead>Company Name</TableHead>
+            <TableHead>Representative</TableHead>
+            <TableHead>Commercial Registration</TableHead>
+            <TableHead>Tax Card No.</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Phone</TableHead>
             <TableHead>Actions</TableHead>
@@ -76,7 +79,10 @@ export function SubcontractorsTable({ onCreateNew, onViewDetail, onEdit, onDelet
                 <TableSelectionCheckbox checked={selectedIds.has(sc.id)} onCheckedChange={() => toggleOne(sc.id)} ariaLabel={`Select subcontractor ${sc.name}`} />
               </TableCell>
               <TableCell>{sc.name}</TableCell>
-              <TableCell>{sc.contactPerson}</TableCell>
+              <TableCell>{sc.companyName}</TableCell>
+              <TableCell>{sc.representativeName}</TableCell>
+              <TableCell>{sc.commercialRegistration}</TableCell>
+              <TableCell>{sc.taxCardNo}</TableCell>
               <TableCell>{sc.email}</TableCell>
               <TableCell>{sc.phone}</TableCell>
               <TableCell>

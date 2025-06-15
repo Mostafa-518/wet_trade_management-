@@ -21,22 +21,22 @@ export function CreateSubcontractorModal({ open, onClose, onSubcontractorCreated
   const [formData, setFormData] = useState<SubcontractorFormData>({
     name: '',
     companyName: '',
-    contactPerson: '',
+    representativeName: '',
+    commercialRegistration: '',
+    taxCardNo: '',
     email: '',
     phone: '',
     address: '',
     trades: [],
-    taxId: '',
-    bankAccount: '',
     rating: 0
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.contactPerson || !formData.phone) {
+    if (!formData.name || !formData.representativeName || !formData.phone) {
       toast({
         title: "Missing Information",
-        description: "Please fill required fields (Name, Contact Person, Phone)",
+        description: "Please fill required fields (Name, Representative Name, Phone)",
         variant: "destructive"
       });
       return;
@@ -52,13 +52,13 @@ export function CreateSubcontractorModal({ open, onClose, onSubcontractorCreated
       setFormData({
         name: '',
         companyName: '',
-        contactPerson: '',
+        representativeName: '',
+        commercialRegistration: '',
+        taxCardNo: '',
         email: '',
         phone: '',
         address: '',
         trades: [],
-        taxId: '',
-        bankAccount: '',
         rating: 0
       });
       onClose();
@@ -84,12 +84,12 @@ export function CreateSubcontractorModal({ open, onClose, onSubcontractorCreated
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="sub-name">Name *</Label>
+              <Label htmlFor="sub-name">Business Name *</Label>
               <Input
                 id="sub-name"
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
-                placeholder="Enter subcontractor name"
+                placeholder="Enter business name"
                 required
               />
             </div>
@@ -105,13 +105,33 @@ export function CreateSubcontractorModal({ open, onClose, onSubcontractorCreated
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="sub-contact">Contact Person *</Label>
+              <Label htmlFor="sub-representative">Representative Name *</Label>
               <Input
-                id="sub-contact"
-                value={formData.contactPerson}
-                onChange={(e) => handleInputChange('contactPerson', e.target.value)}
-                placeholder="Enter contact person"
+                id="sub-representative"
+                value={formData.representativeName}
+                onChange={(e) => handleInputChange('representativeName', e.target.value)}
+                placeholder="Enter representative name"
                 required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="sub-commercial">Commercial Registration</Label>
+              <Input
+                id="sub-commercial"
+                value={formData.commercialRegistration}
+                onChange={(e) => handleInputChange('commercialRegistration', e.target.value)}
+                placeholder="Enter commercial registration"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="sub-tax">Tax Card No.</Label>
+              <Input
+                id="sub-tax"
+                value={formData.taxCardNo}
+                onChange={(e) => handleInputChange('taxCardNo', e.target.value)}
+                placeholder="Enter tax card number"
               />
             </div>
 
@@ -136,16 +156,6 @@ export function CreateSubcontractorModal({ open, onClose, onSubcontractorCreated
                 placeholder="Enter email address"
               />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="sub-tax">Tax ID</Label>
-              <Input
-                id="sub-tax"
-                value={formData.taxId}
-                onChange={(e) => handleInputChange('taxId', e.target.value)}
-                placeholder="Enter tax ID"
-              />
-            </div>
           </div>
 
           <div className="space-y-2">
@@ -156,16 +166,6 @@ export function CreateSubcontractorModal({ open, onClose, onSubcontractorCreated
               onChange={(e) => handleInputChange('address', e.target.value)}
               placeholder="Enter address"
               rows={3}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="sub-bank">Bank Account</Label>
-            <Input
-              id="sub-bank"
-              value={formData.bankAccount}
-              onChange={(e) => handleInputChange('bankAccount', e.target.value)}
-              placeholder="Enter bank account details"
             />
           </div>
 

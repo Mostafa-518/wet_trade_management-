@@ -17,7 +17,10 @@ export function useSubcontractors() {
     try {
       await subcontractorService.create({
         name: data.name,
-        contact_person: data.contactPerson,
+        company_name: data.companyName,
+        representative_name: data.representativeName,
+        commercial_registration: data.commercialRegistration,
+        tax_card_no: data.taxCardNo,
         email: data.email,
         phone: data.phone,
         address: data.address,
@@ -44,7 +47,10 @@ export function useSubcontractors() {
     try {
       await subcontractorService.update(id, {
         name: data.name,
-        contact_person: data.contactPerson,
+        company_name: data.companyName,
+        representative_name: data.representativeName,
+        commercial_registration: data.commercialRegistration,
+        tax_card_no: data.taxCardNo,
         email: data.email,
         phone: data.phone,
         address: data.address,
@@ -90,8 +96,10 @@ export function useSubcontractors() {
     subcontractors: subcontractors.map(s => ({
       id: s.id,
       name: s.name,
-      companyName: s.name,
-      contactPerson: s.contact_person || '',
+      companyName: s.company_name || s.name,
+      representativeName: s.representative_name || s.contact_person || '',
+      commercialRegistration: s.commercial_registration || '',
+      taxCardNo: s.tax_card_no || '',
       email: s.email || '',
       phone: s.phone || '',
       address: s.address || '',
@@ -101,8 +109,6 @@ export function useSubcontractors() {
       status: 'active' as const,
       totalProjects: 0,
       currentProjects: 0,
-      taxId: '',
-      bankAccount: '',
       registrationDate: s.created_at,
       createdAt: s.created_at,
       updatedAt: s.updated_at

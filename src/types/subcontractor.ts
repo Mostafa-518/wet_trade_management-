@@ -3,7 +3,9 @@ export interface Subcontractor {
   id: string;
   name: string;
   companyName: string;
-  contactPerson: string;
+  representativeName: string;
+  commercialRegistration: string;
+  taxCardNo: string;
   email: string;
   phone: string;
   address: string;
@@ -13,8 +15,6 @@ export interface Subcontractor {
   status: 'active' | 'inactive' | 'suspended';
   totalProjects: number;
   currentProjects: number;
-  taxId: string;
-  bankAccount: string;
   registrationDate: string;
   createdAt: string;
   updatedAt: string;
@@ -23,13 +23,13 @@ export interface Subcontractor {
 export interface SubcontractorFormData {
   name: string;
   companyName: string;
-  contactPerson: string;
+  representativeName: string;
+  commercialRegistration: string;
+  taxCardNo: string;
   email: string;
   phone: string;
   address: string;
   licenseNumber?: string;
   rating: number;
-  taxId: string;
-  bankAccount: string;
   trades: string[];
 }
