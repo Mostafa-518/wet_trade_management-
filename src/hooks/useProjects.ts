@@ -20,8 +20,8 @@ export function useProjects() {
         code: data.code,
         location: data.location,
         description: data.description,
-        start_date: data.startDate,
-        end_date: data.endDate,
+        start_date: data.startDate || null,
+        end_date: data.endDate || null,
         status: data.status as any
       });
       refetchProjects();
@@ -47,8 +47,8 @@ export function useProjects() {
         code: data.code,
         location: data.location,
         description: data.description,
-        start_date: data.startDate,
-        end_date: data.endDate,
+        start_date: data.startDate || null,
+        end_date: data.endDate || null,
         status: data.status as any
       });
       refetchProjects();
