@@ -146,49 +146,37 @@ export type Database = {
       }
       subcontractors: {
         Row: {
-          address: string | null
           commercial_registration: string | null
           company_name: string | null
-          contact_person: string | null
           created_at: string
           email: string | null
           id: string
-          license_number: string | null
           name: string
           phone: string | null
-          rating: number | null
           representative_name: string | null
           tax_card_no: string | null
           updated_at: string
         }
         Insert: {
-          address?: string | null
           commercial_registration?: string | null
           company_name?: string | null
-          contact_person?: string | null
           created_at?: string
           email?: string | null
           id?: string
-          license_number?: string | null
           name: string
           phone?: string | null
-          rating?: number | null
           representative_name?: string | null
           tax_card_no?: string | null
           updated_at?: string
         }
         Update: {
-          address?: string | null
           commercial_registration?: string | null
           company_name?: string | null
-          contact_person?: string | null
           created_at?: string
           email?: string | null
           id?: string
-          license_number?: string | null
           name?: string
           phone?: string | null
-          rating?: number | null
           representative_name?: string | null
           tax_card_no?: string | null
           updated_at?: string

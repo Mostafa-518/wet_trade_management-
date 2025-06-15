@@ -53,9 +53,6 @@ export function useSubcontractorsImport() {
               taxCardNo: String(row[3] || '').trim(), // Tax Card No.
               phone: String(row[4] || '').trim(), // Phone Contact
               email: String(row[5] || '').trim(), // Mail
-              address: '', // Not in import, will be empty
-              trades: [], // Not in import, will be empty
-              rating: 0 // Not in import, will be default 0
             };
             
             console.log(`Mapped item ${index + 1}:`, mappedItem);
@@ -144,10 +141,7 @@ export function useSubcontractorsImport() {
           commercialRegistration: item.commercialRegistration?.trim() || '',
           taxCardNo: item.taxCardNo?.trim() || '',
           email: item.email?.trim() || '',
-          phone: item.phone?.trim() || '',
-          address: '', // Not included in import
-          trades: [], // Not included in import
-          rating: 0 // Default rating
+          phone: item.phone?.trim() || ''
         };
 
         console.log(`Attempting to add subcontractor:`, subcontractorData);

@@ -22,10 +22,7 @@ export function useSubcontractors() {
         commercial_registration: data.commercialRegistration,
         tax_card_no: data.taxCardNo,
         email: data.email,
-        phone: data.phone,
-        address: data.address,
-        license_number: data.licenseNumber,
-        rating: data.rating
+        phone: data.phone
       });
       refetchSubcontractors();
       toast({
@@ -52,10 +49,7 @@ export function useSubcontractors() {
         commercial_registration: data.commercialRegistration,
         tax_card_no: data.taxCardNo,
         email: data.email,
-        phone: data.phone,
-        address: data.address,
-        license_number: data.licenseNumber,
-        rating: data.rating
+        phone: data.phone
       });
       refetchSubcontractors();
       toast({
@@ -97,15 +91,11 @@ export function useSubcontractors() {
       id: s.id,
       name: s.name,
       companyName: s.company_name || s.name,
-      representativeName: s.representative_name || s.contact_person || '',
+      representativeName: s.representative_name || '',
       commercialRegistration: s.commercial_registration || '',
       taxCardNo: s.tax_card_no || '',
       email: s.email || '',
       phone: s.phone || '',
-      address: s.address || '',
-      licenseNumber: s.license_number,
-      rating: s.rating || 0,
-      trades: [],
       status: 'active' as const,
       totalProjects: 0,
       currentProjects: 0,

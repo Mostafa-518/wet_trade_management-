@@ -8,10 +8,6 @@ export interface Subcontractor {
   taxCardNo: string;
   email: string;
   phone: string;
-  address: string;
-  licenseNumber?: string;
-  rating: number;
-  trades: string[];
   status: 'active' | 'inactive' | 'suspended';
   totalProjects: number;
   currentProjects: number;
@@ -28,8 +24,4 @@ export interface SubcontractorFormData {
   taxCardNo: string;
   email: string;
   phone: string;
-  address: string;
-  licenseNumber?: string;
-  rating: number;
-  trades: string[];
 }

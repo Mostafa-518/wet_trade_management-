@@ -4,7 +4,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { SubcontractorFormData } from '@/types/subcontractor';
 import { useData } from '@/contexts/DataContext';
 import { useToast } from '@/hooks/use-toast';
@@ -25,10 +24,7 @@ export function CreateSubcontractorModal({ open, onClose, onSubcontractorCreated
     commercialRegistration: '',
     taxCardNo: '',
     email: '',
-    phone: '',
-    address: '',
-    trades: [],
-    rating: 0
+    phone: ''
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -56,10 +52,7 @@ export function CreateSubcontractorModal({ open, onClose, onSubcontractorCreated
         commercialRegistration: '',
         taxCardNo: '',
         email: '',
-        phone: '',
-        address: '',
-        trades: [],
-        rating: 0
+        phone: ''
       });
       onClose();
     } catch (error) {
@@ -71,7 +64,7 @@ export function CreateSubcontractorModal({ open, onClose, onSubcontractorCreated
     }
   };
 
-  const handleInputChange = (field: keyof SubcontractorFormData, value: string | string[] | number) => {
+  const handleInputChange = (field: keyof SubcontractorFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -156,17 +149,6 @@ export function CreateSubcontractorModal({ open, onClose, onSubcontractorCreated
                 placeholder="Enter email address"
               />
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="sub-address">Address</Label>
-            <Textarea
-              id="sub-address"
-              value={formData.address}
-              onChange={(e) => handleInputChange('address', e.target.value)}
-              placeholder="Enter address"
-              rows={3}
-            />
           </div>
 
           <div className="flex gap-2 pt-4">
