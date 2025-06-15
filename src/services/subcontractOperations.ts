@@ -12,11 +12,17 @@ export const createSubcontractWithTradeItems = async (
   responsibilities: any[] = []
 ) => {
   console.log('Adding subcontract with data:', data);
-  
+
   if (!data.project || !data.subcontractor) {
+    toast({
+      title: "Project & Subcontractor missing",
+      description: "You must select a Project and Subcontractor.",
+      variant: "destructive"
+    });
     throw new Error('Project and subcontractor are required');
   }
 
+  // Added all fields needed for contract type/addendum
   const subcontractPayload = {
     contract_number: data.contractId,
     project_id: data.project,
@@ -26,20 +32,35 @@ export const createSubcontractWithTradeItems = async (
     start_date: data.startDate,
     end_date: data.endDate,
     description: data.description || '',
+    contract_type: data.contractType || 'subcontract',
+    addendum_number: data.contractType === 'ADD' ? (data.addendumNumber ?? null) : null,
+    parent_subcontract_id: data.contractType === 'ADD' ? (data.parentSubcontractId ?? null) : null,
+    date_of_issuing: data.dateOfIssuing || null,
   };
 
-  console.log('Supabase payload:', subcontractPayload);
-  
-  const createdSubcontract = await subcontractService.create(subcontractPayload);
-  
+  console.log('Supabase insert payload:', subcontractPayload);
+
+  let createdSubcontract;
+  try {
+    createdSubcontract = await subcontractService.create(subcontractPayload);
+  } catch (error) {
+    console.error("Error creating subcontract in Supabase:", error);
+    toast({
+      title: "Save Failed",
+      description: `Could not save subcontract: ${error instanceof Error ? error.message : "Unknown error"}`,
+      variant: "destructive"
+    });
+    throw error;
+  }
+
   // Save trade items if any
   if (data.tradeItems && data.tradeItems.length > 0) {
     console.log('Processing trade items:', data.tradeItems);
-    
+
     const tradeItemsPayload = data.tradeItems.map((item, index) => {
       const tradeId = trades.find(t => t.name === item.trade)?.id;
       const tradeItemId = findTradeItemId(tradeItems, tradeId || '', item.item);
-      
+
       console.log(`Trade item ${index}:`, {
         tradeName: item.trade,
         tradeId,
@@ -47,19 +68,19 @@ export const createSubcontractWithTradeItems = async (
         tradeItemId,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
-        total: item.total
+        total: item.total,
+        wastagePercentage: item.wastagePercentage ?? 0
       });
-      
+
       return {
         subcontract_id: createdSubcontract.id,
         trade_item_id: tradeItemId || '',
         quantity: item.quantity,
         unit_price: item.unitPrice,
         total_price: item.total,
+        wastage_percentage: item.wastagePercentage ?? 0
       };
     }).filter(item => item.trade_item_id);
-
-    console.log('Final trade items payload:', tradeItemsPayload);
 
     if (tradeItemsPayload.length > 0) {
       try {
@@ -69,7 +90,7 @@ export const createSubcontractWithTradeItems = async (
         console.error('Error saving trade items:', tradeItemError);
         toast({
           title: "Partial Success",
-          description: "Subcontract created but some trade items could not be saved. Please edit the subcontract to add them.",
+          description: "Subcontract created but some trade items could not be saved.",
           variant: "destructive"
         });
       }
@@ -79,22 +100,15 @@ export const createSubcontractWithTradeItems = async (
   // Save responsibilities if any
   if (data.responsibilities && data.responsibilities.length > 0) {
     console.log('Processing responsibilities:', data.responsibilities);
-    
+
     const responsibilityPayload = data.responsibilities.map((responsibilityName) => {
       const responsibilityId = findResponsibilityId(responsibilities, responsibilityName);
-      
-      console.log('Responsibility mapping:', {
-        responsibilityName,
-        responsibilityId
-      });
-      
+
       return {
         subcontract_id: createdSubcontract.id,
         responsibility_id: responsibilityId || '',
       };
     }).filter(item => item.responsibility_id);
-
-    console.log('Final responsibilities payload:', responsibilityPayload);
 
     if (responsibilityPayload.length > 0) {
       try {
@@ -104,12 +118,19 @@ export const createSubcontractWithTradeItems = async (
         console.error('Error saving responsibilities:', responsibilityError);
         toast({
           title: "Partial Success",
-          description: "Subcontract created but some responsibilities could not be saved. Please edit the subcontract to add them.",
+          description: "Subcontract created but some responsibilities could not be saved.",
           variant: "destructive"
         });
       }
     }
   }
+
+  // Show toast and return for success
+  toast({
+    title: "Success",
+    description: "Subcontract created successfully.",
+    variant: "default"
+  });
 
   return createdSubcontract;
 };
