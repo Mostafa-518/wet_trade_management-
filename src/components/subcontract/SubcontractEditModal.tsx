@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,6 +29,10 @@ export function SubcontractEditModal({ subcontract, open, onClose, onSave }: Sub
     endDate: '',
     description: ''
   });
+
+  // Filter out projects and subcontractors with empty or invalid IDs
+  const validProjects = projects.filter(project => project.id && project.name && project.id.trim() !== '' && project.name.trim() !== '');
+  const validSubcontractors = subcontractors.filter(sub => sub.id && sub.companyName && sub.id.trim() !== '' && sub.companyName.trim() !== '');
 
   useEffect(() => {
     if (subcontract) {
@@ -90,7 +95,7 @@ export function SubcontractEditModal({ subcontract, open, onClose, onSave }: Sub
                   <SelectValue placeholder="Select project" />
                 </SelectTrigger>
                 <SelectContent>
-                  {projects.map(project => (
+                  {validProjects.map(project => (
                     <SelectItem key={project.id} value={project.id}>
                       {project.name} - {project.code}
                     </SelectItem>
@@ -109,9 +114,9 @@ export function SubcontractEditModal({ subcontract, open, onClose, onSave }: Sub
                   <SelectValue placeholder="Select subcontractor" />
                 </SelectTrigger>
                 <SelectContent>
-                  {subcontractors.map(sub => (
+                  {validSubcontractors.map(sub => (
                     <SelectItem key={sub.id} value={sub.id}>
-                      {sub.name}
+                      {sub.companyName}
                     </SelectItem>
                   ))}
                 </SelectContent>

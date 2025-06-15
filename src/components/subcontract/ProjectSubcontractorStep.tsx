@@ -19,9 +19,13 @@ export function ProjectSubcontractorStep({ formData, setFormData }: ProjectSubco
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [showSubcontractorModal, setShowSubcontractorModal] = useState(false);
 
+  // Filter out projects and subcontractors with empty or invalid IDs
+  const validProjects = projects.filter(project => project.id && project.name && project.id.trim() !== '' && project.name.trim() !== '');
+  const validSubcontractors = subcontractors.filter(sub => sub.id && sub.companyName && sub.id.trim() !== '' && sub.companyName.trim() !== '');
+
   const handleProjectCreated = (projectName: string) => {
     // Find the project by name to get its ID
-    const project = projects.find(p => p.name === projectName);
+    const project = validProjects.find(p => p.name === projectName);
     if (project) {
       setFormData(prev => ({ ...prev, project: project.id }));
     }
@@ -29,14 +33,14 @@ export function ProjectSubcontractorStep({ formData, setFormData }: ProjectSubco
 
   const handleSubcontractorCreated = (subcontractorName: string) => {
     // Find the subcontractor by name to get its ID
-    const subcontractor = subcontractors.find(s => s.name === subcontractorName);
+    const subcontractor = validSubcontractors.find(s => s.companyName === subcontractorName);
     if (subcontractor) {
       setFormData(prev => ({ ...prev, subcontractor: subcontractor.id }));
     }
   };
 
-  const selectedProject = projects.find(p => p.id === formData.project);
-  const selectedSubcontractor = subcontractors.find(s => s.id === formData.subcontractor);
+  const selectedProject = validProjects.find(p => p.id === formData.project);
+  const selectedSubcontractor = validSubcontractors.find(s => s.id === formData.subcontractor);
 
   return (
     <div className="space-y-6">
@@ -53,7 +57,7 @@ export function ProjectSubcontractorStep({ formData, setFormData }: ProjectSubco
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {projects.map(project => (
+              {validProjects.map(project => (
                 <SelectItem key={project.id} value={project.id}>
                   <div>
                     <div className="font-medium">{project.name}</div>
@@ -85,14 +89,14 @@ export function ProjectSubcontractorStep({ formData, setFormData }: ProjectSubco
           >
             <SelectTrigger>
               <SelectValue placeholder="Choose a subcontractor...">
-                {selectedSubcontractor ? selectedSubcontractor.name : "Choose a subcontractor..."}
+                {selectedSubcontractor ? selectedSubcontractor.companyName : "Choose a subcontractor..."}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {subcontractors.map(sub => (
+              {validSubcontractors.map(sub => (
                 <SelectItem key={sub.id} value={sub.id}>
                   <div>
-                    <div className="font-medium">{sub.name}</div>
+                    <div className="font-medium">{sub.companyName}</div>
                     <div className="text-sm text-muted-foreground">{sub.representativeName} • {sub.phone}</div>
                   </div>
                 </SelectItem>

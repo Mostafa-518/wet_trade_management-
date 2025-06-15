@@ -17,18 +17,21 @@ interface TradeItemFormProps {
 export function TradeItemForm({ currentTradeItem, setCurrentTradeItem, onAddItem }: TradeItemFormProps) {
   const { trades, tradeItems } = useData();
 
+  // Filter out trades with empty or invalid IDs/names
+  const validTrades = trades.filter(trade => trade.id && trade.name && trade.id.trim() !== '' && trade.name.trim() !== '');
+
   // Get available items for selected trade
   const availableItems = currentTradeItem.trade 
     ? tradeItems.filter(item => {
-        const selectedTrade = trades.find(t => t.name === currentTradeItem.trade);
-        return selectedTrade && item.trade_id === selectedTrade.id;
+        const selectedTrade = validTrades.find(t => t.name === currentTradeItem.trade);
+        return selectedTrade && item.trade_id === selectedTrade.id && item.id && item.name && item.id.trim() !== '' && item.name.trim() !== '';
       })
     : [];
 
   // Auto-fill unit when item is selected
   useEffect(() => {
     if (currentTradeItem.item && currentTradeItem.trade) {
-      const selectedTrade = trades.find(t => t.name === currentTradeItem.trade);
+      const selectedTrade = validTrades.find(t => t.name === currentTradeItem.trade);
       const selectedItem = tradeItems.find(
         item => item.name === currentTradeItem.item && 
                 selectedTrade && item.trade_id === selectedTrade.id
@@ -41,7 +44,7 @@ export function TradeItemForm({ currentTradeItem, setCurrentTradeItem, onAddItem
         }));
       }
     }
-  }, [currentTradeItem.item, currentTradeItem.trade, tradeItems, trades, setCurrentTradeItem]);
+  }, [currentTradeItem.item, currentTradeItem.trade, tradeItems, validTrades, setCurrentTradeItem]);
 
   // Calculate total when quantity or unit price changes
   useEffect(() => {
@@ -75,7 +78,7 @@ export function TradeItemForm({ currentTradeItem, setCurrentTradeItem, onAddItem
               <SelectValue placeholder="Select trade..." />
             </SelectTrigger>
             <SelectContent>
-              {trades.map(trade => (
+              {validTrades.map(trade => (
                 <SelectItem key={trade.id} value={trade.name}>
                   {trade.name}
                 </SelectItem>
