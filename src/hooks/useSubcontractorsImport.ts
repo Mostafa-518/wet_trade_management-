@@ -33,17 +33,23 @@ export function useSubcontractorsImport() {
 
         console.log('Raw Excel data:', jsonData);
 
-        const rows = jsonData.slice(1) as any[][];
-        console.log('Data rows after removing header:', rows);
+        // Don't skip any rows - start from the first row
+        const rows = jsonData as any[][];
+        console.log('All data rows:', rows);
 
         const mappedData: SubcontractorFormData[] = rows
-          .filter(row => row && row.length > 0 && row[0] && String(row[0]).trim())
+          .filter((row, index) => {
+            // Filter out completely empty rows
+            const hasData = row && row.length > 0 && row.some(cell => cell && String(cell).trim());
+            console.log(`Row ${index + 1} has data:`, hasData, row);
+            return hasData;
+          })
           .map((row, index) => {
             console.log(`Processing row ${index + 1}:`, row);
             
             const mappedItem = {
               name: String(row[0] || '').trim(),
-              companyName: String(row[1] || '').trim(),
+              companyName: String(row[1] || row[0] || '').trim(), // Use business name as company name if not provided
               representativeName: String(row[2] || '').trim(),
               commercialRegistration: String(row[3] || '').trim(),
               taxCardNo: String(row[4] || '').trim(),
@@ -57,14 +63,19 @@ export function useSubcontractorsImport() {
             console.log(`Mapped item ${index + 1}:`, mappedItem);
             return mappedItem;
           })
-          .filter(item => item.name && item.name.length > 0);
+          .filter(item => {
+            // Only filter out items that have no business name
+            const isValid = item.name && item.name.length > 0;
+            console.log('Item is valid:', isValid, item.name);
+            return isValid;
+          });
 
         console.log('Final mapped data for import:', mappedData);
         
         if (mappedData.length === 0) {
           toast({
-            title: "Import Warning", 
-            description: "No valid data found in the Excel file. Please ensure the first column contains business names.",
+            title: "No Data Found", 
+            description: "No valid business names found in the Excel file. Please ensure your data contains business names in the first column.",
             variant: "destructive"
           });
           return;
@@ -72,6 +83,12 @@ export function useSubcontractorsImport() {
         
         setImportData(mappedData);
         setShowImportDialog(true);
+        
+        toast({
+          title: "File Processed",
+          description: `Found ${mappedData.length} records to import`,
+        });
+        
       } catch (error) {
         console.error('Import error:', error);
         toast({
@@ -117,7 +134,7 @@ export function useSubcontractorsImport() {
         
         if (!item.name || !item.name.trim()) {
           console.warn(`Skipping item ${index + 1} without business name:`, item);
-          errors.push(`Row ${index + 2}: Missing business name`);
+          errors.push(`Row ${index + 1}: Missing business name`);
           errorCount++;
           continue;
         }
@@ -141,7 +158,7 @@ export function useSubcontractorsImport() {
         console.log(`Successfully imported: ${subcontractorData.name}`);
       } catch (error) {
         console.error(`Failed to import item ${index + 1}:`, item, error);
-        errors.push(`Row ${index + 2}: ${item.name || 'Unknown'} - ${error.message || 'Unknown error'}`);
+        errors.push(`Row ${index + 1}: ${item.name || 'Unknown'} - ${error.message || 'Unknown error'}`);
         errorCount++;
       }
     }
