@@ -1,20 +1,43 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { SubcontractorDetailView } from '@/components/SubcontractorDetailView';
+import { SubcontractorForm } from '@/components/SubcontractorForm';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useData } from '@/contexts/DataContext';
+import { SubcontractorFormData } from '@/types/subcontractor';
+import { useToast } from '@/hooks/use-toast';
 
 export function SubcontractorDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { subcontractors } = useData();
+  const { subcontractors, updateSubcontractor } = useData();
+  const [showEditModal, setShowEditModal] = useState(false);
+  const { toast } = useToast();
 
   const handleBack = () => {
     navigate('/subcontractors');
   };
 
-  const handleEdit = (subcontractor: any) => {
-    navigate('/subcontractors', { state: { editSubcontractor: subcontractor } });
+  const handleEdit = () => {
+    console.log('Edit button clicked, opening modal');
+    setShowEditModal(true);
+  };
+
+  const handleSaveEdit = async (data: SubcontractorFormData) => {
+    console.log('Saving subcontractor edit:', id, data);
+    if (id) {
+      await updateSubcontractor(id, data);
+      toast({
+        title: "Subcontractor updated",
+        description: "The subcontractor has been updated successfully."
+      });
+      setShowEditModal(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setShowEditModal(false);
   };
 
   if (!id) {
@@ -38,10 +61,22 @@ export function SubcontractorDetail() {
   }
 
   return (
-    <SubcontractorDetailView
-      subcontractor={subcontractor}
-      onBack={handleBack}
-      onEdit={handleEdit}
-    />
+    <>
+      <SubcontractorDetailView
+        subcontractor={subcontractor}
+        onBack={handleBack}
+        onEdit={handleEdit}
+      />
+      
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <SubcontractorForm
+            subcontractor={subcontractor}
+            onSubmit={handleSaveEdit}
+            onCancel={handleCancelEdit}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
