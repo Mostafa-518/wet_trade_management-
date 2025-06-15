@@ -5,7 +5,7 @@ import { SubcontractorDetailView } from '@/components/SubcontractorDetailView';
 import { useData } from '@/contexts/DataContext';
 
 export function SubcontractorDetail() {
-  const { subcontractorId } = useParams<{ subcontractorId: string }>();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { subcontractors } = useData();
 
@@ -17,7 +17,7 @@ export function SubcontractorDetail() {
     navigate('/subcontractors', { state: { editSubcontractor: subcontractor } });
   };
 
-  if (!subcontractorId) {
+  if (!id) {
     return (
       <div className="text-center py-12">
         <h2 className="text-2xl font-bold mb-2">Subcontractor Not Found</h2>
@@ -26,7 +26,7 @@ export function SubcontractorDetail() {
     );
   }
 
-  const subcontractor = subcontractors.find(s => s.id === subcontractorId);
+  const subcontractor = subcontractors.find(s => s.id === id);
 
   if (!subcontractor) {
     return (
