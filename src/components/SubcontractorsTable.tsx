@@ -82,6 +82,8 @@ export function SubcontractorsTable({ onCreateNew, onViewDetail, onEdit, onDelet
     const file = event.target.files?.[0];
     if (!file) return;
 
+    console.log('Starting file upload:', file.name, file.type);
+
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
@@ -89,44 +91,81 @@ export function SubcontractorsTable({ onCreateNew, onViewDetail, onEdit, onDelet
         const workbook = XLSX.read(data, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        
+        // Convert to JSON with proper handling for different data types
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+          header: 1,
+          defval: '', // Default value for empty cells
+          raw: false // This ensures we get string values which is better for our use case
+        });
+
+        console.log('Raw Excel data:', jsonData);
 
         // Skip header row and convert to SubcontractorFormData
         const rows = jsonData.slice(1) as any[][];
-        const mappedData: SubcontractorFormData[] = rows
-          .filter(row => row.length > 0 && row[0]) // Filter out empty rows
-          .map(row => ({
-            name: String(row[0] || '').trim(),
-            companyName: String(row[1] || '').trim(),
-            representativeName: String(row[2] || '').trim(),
-            commercialRegistration: String(row[3] || '').trim(),
-            taxCardNo: String(row[4] || '').trim(),
-            email: String(row[5] || '').trim(),
-            phone: String(row[6] || '').trim(),
-            address: String(row[7] || '').trim(),
-            trades: [],
-            rating: 0
-          }))
-          .filter(item => item.name); // Only include rows with a business name
+        console.log('Data rows after removing header:', rows);
 
-        console.log('Mapped import data:', mappedData);
+        const mappedData: SubcontractorFormData[] = rows
+          .filter(row => row && row.length > 0 && row[0] && String(row[0]).trim()) // Filter out empty rows
+          .map((row, index) => {
+            console.log(`Processing row ${index + 1}:`, row);
+            
+            const mappedItem = {
+              name: String(row[0] || '').trim(),
+              companyName: String(row[1] || '').trim(),
+              representativeName: String(row[2] || '').trim(),
+              commercialRegistration: String(row[3] || '').trim(),
+              taxCardNo: String(row[4] || '').trim(),
+              email: String(row[5] || '').trim(),
+              phone: String(row[6] || '').trim(),
+              address: String(row[7] || '').trim(),
+              trades: [],
+              rating: 0
+            };
+            
+            console.log(`Mapped item ${index + 1}:`, mappedItem);
+            return mappedItem;
+          })
+          .filter(item => item.name && item.name.length > 0); // Only include rows with a business name
+
+        console.log('Final mapped data for import:', mappedData);
+        
+        if (mappedData.length === 0) {
+          toast({
+            title: "Import Warning", 
+            description: "No valid data found in the Excel file. Please ensure the first column contains business names.",
+            variant: "destructive"
+          });
+          return;
+        }
+        
         setImportData(mappedData);
         setShowImportDialog(true);
       } catch (error) {
         console.error('Import error:', error);
         toast({
           title: "Import Error",
-          description: "Failed to parse Excel file. Please check the format.",
+          description: "Failed to parse Excel file. Please check the format and try again.",
           variant: "destructive"
         });
       }
     };
+    
+    reader.onerror = (error) => {
+      console.error('FileReader error:', error);
+      toast({
+        title: "File Read Error",
+        description: "Failed to read the Excel file. Please try again.",
+        variant: "destructive"
+      });
+    };
+    
     reader.readAsArrayBuffer(file);
     event.target.value = '';
   };
 
   const handleImport = async (data: SubcontractorFormData[]) => {
-    console.log('Starting import with data:', data);
+    console.log('Starting import process with data:', data);
     
     if (!data || data.length === 0) {
       toast({
@@ -139,14 +178,16 @@ export function SubcontractorsTable({ onCreateNew, onViewDetail, onEdit, onDelet
 
     let successCount = 0;
     let errorCount = 0;
+    const errors: string[] = [];
 
-    for (const item of data) {
+    for (const [index, item] of data.entries()) {
       try {
-        console.log('Importing item:', item);
+        console.log(`Importing item ${index + 1}:`, item);
         
         // Validate required fields
         if (!item.name || !item.name.trim()) {
-          console.warn('Skipping item without business name:', item);
+          console.warn(`Skipping item ${index + 1} without business name:`, item);
+          errors.push(`Row ${index + 2}: Missing business name`);
           errorCount++;
           continue;
         }
@@ -165,26 +206,33 @@ export function SubcontractorsTable({ onCreateNew, onViewDetail, onEdit, onDelet
           rating: item.rating || 0
         };
 
+        console.log(`Attempting to add subcontractor:`, subcontractorData);
         await addSubcontractor(subcontractorData);
         successCount++;
-        console.log('Successfully imported:', subcontractorData.name);
+        console.log(`Successfully imported: ${subcontractorData.name}`);
       } catch (error) {
-        console.error('Failed to import item:', item, error);
+        console.error(`Failed to import item ${index + 1}:`, item, error);
+        errors.push(`Row ${index + 2}: ${item.name || 'Unknown'} - ${error.message || 'Unknown error'}`);
         errorCount++;
       }
     }
 
+    // Show detailed results
     if (successCount > 0) {
       toast({
-        title: "Import Successful",
-        description: `${successCount} subcontractor${successCount !== 1 ? 's' : ''} imported successfully${errorCount > 0 ? `. ${errorCount} failed to import.` : ''}`
+        title: "Import Completed",
+        description: `${successCount} subcontractor${successCount !== 1 ? 's' : ''} imported successfully${errorCount > 0 ? `. ${errorCount} failed.` : ''}`,
       });
     } else {
       toast({
-        title: "Import Failed",
-        description: "No subcontractors could be imported. Please check the data format.",
+        title: "Import Failed", 
+        description: errorCount > 0 ? `All ${errorCount} items failed to import. Please check the data format.` : "No items could be imported.",
         variant: "destructive"
       });
+    }
+
+    if (errors.length > 0) {
+      console.error('Import errors:', errors);
     }
 
     setShowImportDialog(false);
