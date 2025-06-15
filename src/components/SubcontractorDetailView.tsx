@@ -2,6 +2,7 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Subcontractor } from '@/types/subcontractor';
+import { useSubcontracts } from '@/hooks/useSubcontracts';
 import { useData } from '@/contexts/DataContext';
 import { SubcontractorDetailHeader } from './subcontractor-detail/SubcontractorDetailHeader';
 import { SubcontractorOverviewCards } from './subcontractor-detail/SubcontractorOverviewCards';
@@ -16,10 +17,11 @@ interface SubcontractorDetailViewProps {
 }
 
 export function SubcontractorDetailView({ subcontractor, onBack, onEdit }: SubcontractorDetailViewProps) {
-  const { subcontracts } = useData();
+  const { trades, tradeItems, responsibilities } = useData();
+  const { subcontracts } = useSubcontracts(trades, tradeItems, responsibilities);
 
-  // Get subcontracts for this subcontractor
-  const subcontractorProjects = subcontracts.filter(s => s.subcontractor === subcontractor.name);
+  // Get subcontracts for this subcontractor using the subcontractor ID
+  const subcontractorProjects = subcontracts.filter(s => s.subcontractor === subcontractor.id);
   const totalContractValue = subcontractorProjects.reduce((sum, project) => sum + project.totalValue, 0);
 
   return (
@@ -34,8 +36,8 @@ export function SubcontractorDetailView({ subcontractor, onBack, onEdit }: Subco
       {/* Overview Cards */}
       <SubcontractorOverviewCards 
         totalContractValue={totalContractValue}
-        totalProjects={subcontractor.totalProjects}
-        currentProjects={subcontractor.currentProjects}
+        totalProjects={subcontractorProjects.length}
+        currentProjects={subcontractorProjects.filter(p => p.status === 'active').length}
       />
 
       {/* Tabs */}

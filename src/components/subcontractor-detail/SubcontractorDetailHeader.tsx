@@ -32,8 +32,8 @@ export function SubcontractorDetailHeader({ subcontractor, onBack, onEdit }: Sub
         Back to Subcontractors
       </Button>
       <div className="flex-1">
-        <h1 className="text-3xl font-bold">{subcontractor.name}</h1>
-        <p className="text-muted-foreground">{subcontractor.companyName}</p>
+        <h1 className="text-3xl font-bold">{subcontractor.companyName}</h1>
+        <p className="text-muted-foreground">Representative: {subcontractor.representativeName}</p>
       </div>
       <div className="flex items-center gap-2">
         {getStatusBadge(subcontractor.status)}

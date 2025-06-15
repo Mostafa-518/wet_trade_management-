@@ -16,7 +16,7 @@ export function useSubcontractHelpers() {
 
   const getSubcontractorName = (subcontractorId: string) => {
     const subcontractor = subcontractors.find(s => s.id === subcontractorId);
-    return subcontractor ? subcontractor.name : subcontractorId;
+    return subcontractor ? subcontractor.companyName : subcontractorId;
   };
 
   return {

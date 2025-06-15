@@ -16,7 +16,6 @@ export function useSubcontractors() {
   const addSubcontractor = async (data: SubcontractorFormData): Promise<void> => {
     try {
       await subcontractorService.create({
-        name: data.name,
         company_name: data.companyName,
         representative_name: data.representativeName,
         commercial_registration: data.commercialRegistration,
@@ -43,7 +42,6 @@ export function useSubcontractors() {
   const updateSubcontractor = async (id: string, data: SubcontractorFormData): Promise<void> => {
     try {
       await subcontractorService.update(id, {
-        name: data.name,
         company_name: data.companyName,
         representative_name: data.representativeName,
         commercial_registration: data.commercialRegistration,
@@ -89,8 +87,8 @@ export function useSubcontractors() {
   return {
     subcontractors: subcontractors.map(s => ({
       id: s.id,
-      name: s.name,
-      companyName: s.company_name || s.name,
+      name: s.company_name || 'Unnamed Company',
+      companyName: s.company_name || 'Unnamed Company',
       representativeName: s.representative_name || '',
       commercialRegistration: s.commercial_registration || '',
       taxCardNo: s.tax_card_no || '',

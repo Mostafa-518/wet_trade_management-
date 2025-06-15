@@ -1,7 +1,7 @@
 
 export interface Subcontractor {
   id: string;
-  name: string;
+  name: string; // This will now be mapped from company_name
   companyName: string;
   representativeName: string;
   commercialRegistration: string;
@@ -17,7 +17,6 @@ export interface Subcontractor {
 }
 
 export interface SubcontractorFormData {
-  name: string;
   companyName: string;
   representativeName: string;
   commercialRegistration: string;

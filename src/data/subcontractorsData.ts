@@ -4,7 +4,7 @@ import { Subcontractor } from '@/types/subcontractor';
 export const mockSubcontractors: Subcontractor[] = [
   {
     id: '1',
-    name: 'Al-Khaleej Construction',
+    name: 'Al-Khaleej Construction Co.',
     companyName: 'Al-Khaleej Construction Co.',
     representativeName: 'Ahmed Hassan',
     commercialRegistration: 'CR-001-2020',
@@ -20,7 +20,7 @@ export const mockSubcontractors: Subcontractor[] = [
   },
   {
     id: '2',
-    name: 'Modern Plumbing Co.',
+    name: 'Modern Plumbing Solutions Ltd.',
     companyName: 'Modern Plumbing Solutions Ltd.',
     representativeName: 'Sara Mohamed',
     commercialRegistration: 'CR-002-2019',
@@ -36,7 +36,7 @@ export const mockSubcontractors: Subcontractor[] = [
   },
   {
     id: '3',
-    name: 'Elite HVAC Systems',
+    name: 'Elite HVAC & Climate Control',
     companyName: 'Elite HVAC & Climate Control',
     representativeName: 'Omar Ali',
     commercialRegistration: 'CR-003-2018',
@@ -52,7 +52,7 @@ export const mockSubcontractors: Subcontractor[] = [
   },
   {
     id: '4',
-    name: 'Delta Concrete Works',
+    name: 'Delta Concrete & Steel',
     companyName: 'Delta Concrete & Steel',
     representativeName: 'Mahmoud Farid',
     commercialRegistration: 'CR-004-2021',
@@ -68,7 +68,7 @@ export const mockSubcontractors: Subcontractor[] = [
   },
   {
     id: '5',
-    name: 'Prime Finishing',
+    name: 'Prime Finishing & Interiors',
     companyName: 'Prime Finishing & Interiors',
     representativeName: 'Yasmin Nasser',
     commercialRegistration: 'CR-005-2020',

@@ -8,7 +8,7 @@ export function useSubcontractorsTable() {
   const { toast } = useToast();
   
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchBy, setSearchBy] = useState('name');
+  const [searchBy, setSearchBy] = useState('companyName');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const filteredSubcontractors = subcontractors.filter(subcontractor => {
@@ -16,8 +16,6 @@ export function useSubcontractorsTable() {
     
     const term = searchTerm.toLowerCase();
     switch (searchBy) {
-      case 'name':
-        return subcontractor.name.toLowerCase().includes(term);
       case 'companyName':
         return subcontractor.companyName.toLowerCase().includes(term);
       case 'commercialRegistration':
