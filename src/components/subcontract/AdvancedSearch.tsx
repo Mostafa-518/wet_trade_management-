@@ -21,7 +21,8 @@ export function AdvancedSearch({ onSearch }: AdvancedSearchProps) {
 
   const searchFields = [
     { value: 'contractId', label: 'Contract ID' },
-    { value: 'project', label: 'Project' },
+    { value: 'project', label: 'Project Name' },
+    { value: 'projectCode', label: 'Project Code' },
     { value: 'subcontractor', label: 'Subcontractor' },
     { value: 'trade', label: 'Trade' },
     { value: 'item', label: 'Trade Item' },

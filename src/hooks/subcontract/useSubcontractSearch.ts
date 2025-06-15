@@ -91,8 +91,9 @@ export function useSubcontractSearch(subcontracts: Subcontract[]) {
           case 'contractId':
             return item.contractId.toLowerCase().includes(conditionLower);
           case 'project':
-            return projectName.toLowerCase().includes(conditionLower) ||
-                   projectCode.toLowerCase().includes(conditionLower);
+            return projectName.toLowerCase().includes(conditionLower);
+          case 'projectCode':
+            return projectCode.toLowerCase().includes(conditionLower);
           case 'subcontractor':
             return subcontractorName.toLowerCase().includes(conditionLower);
           case 'trade':
