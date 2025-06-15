@@ -18,7 +18,6 @@ export function CreateSubcontractorModal({ open, onClose, onSubcontractorCreated
   const { addSubcontractor } = useData();
   const { toast } = useToast();
   const [formData, setFormData] = useState<SubcontractorFormData>({
-    name: '',
     companyName: '',
     representativeName: '',
     commercialRegistration: '',
@@ -29,10 +28,10 @@ export function CreateSubcontractorModal({ open, onClose, onSubcontractorCreated
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.representativeName || !formData.phone) {
+    if (!formData.companyName || !formData.representativeName || !formData.phone) {
       toast({
         title: "Missing Information",
-        description: "Please fill required fields (Name, Representative Name, Phone)",
+        description: "Please fill required fields (Company Name, Representative Name, Phone)",
         variant: "destructive"
       });
       return;
@@ -42,11 +41,10 @@ export function CreateSubcontractorModal({ open, onClose, onSubcontractorCreated
       await addSubcontractor(formData);
       toast({
         title: "Subcontractor Created",
-        description: `${formData.name} has been created successfully`
+        description: `${formData.companyName} has been created successfully`
       });
-      onSubcontractorCreated(formData.name);
+      onSubcontractorCreated(formData.companyName);
       setFormData({
-        name: '',
         companyName: '',
         representativeName: '',
         commercialRegistration: '',
@@ -77,23 +75,13 @@ export function CreateSubcontractorModal({ open, onClose, onSubcontractorCreated
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="sub-name">Business Name *</Label>
-              <Input
-                id="sub-name"
-                value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
-                placeholder="Enter business name"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="sub-company">Company Name</Label>
+              <Label htmlFor="sub-company">Company Name *</Label>
               <Input
                 id="sub-company"
                 value={formData.companyName}
                 onChange={(e) => handleInputChange('companyName', e.target.value)}
                 placeholder="Enter company name"
+                required
               />
             </div>
 

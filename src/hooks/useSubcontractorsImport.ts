@@ -46,7 +46,6 @@ export function useSubcontractorsImport() {
             console.log(`Processing row ${index + 1}:`, row);
             
             const mappedItem = {
-              name: String(row[0] || '').trim(), // Company Name (will be used as business name)
               companyName: String(row[0] || '').trim(), // Company Name
               representativeName: String(row[1] || '').trim(), // Representative Name
               commercialRegistration: String(row[2] || '').trim(), // Commercial Registration
@@ -135,7 +134,6 @@ export function useSubcontractorsImport() {
         }
 
         const subcontractorData: SubcontractorFormData = {
-          name: item.companyName.trim(), // Use company name as business name
           companyName: item.companyName.trim(),
           representativeName: item.representativeName?.trim() || '',
           commercialRegistration: item.commercialRegistration?.trim() || '',

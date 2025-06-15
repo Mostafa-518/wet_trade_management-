@@ -20,20 +20,6 @@ export function SubcontractorFormFields({ control }: SubcontractorFormFieldsProp
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <FormField
         control={control}
-        name="name"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Business Name</FormLabel>
-            <FormControl>
-              <Input placeholder="Enter business name" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={control}
         name="companyName"
         render={({ field }) => (
           <FormItem>

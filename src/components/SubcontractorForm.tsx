@@ -10,7 +10,6 @@ import { SubcontractorFormFields } from './subcontractor-form/SubcontractorFormF
 import { SubcontractorFormActions } from './subcontractor-form/SubcontractorFormActions';
 
 const formSchema = z.object({
-  name: z.string().min(1, 'Business name is required'),
   companyName: z.string().min(1, 'Company name is required'),
   representativeName: z.string().min(1, 'Representative name is required'),
   commercialRegistration: z.string().min(1, 'Commercial registration is required'),
@@ -29,7 +28,6 @@ export function SubcontractorForm({ subcontractor, onSubmit, onCancel }: Subcont
   const form = useForm<SubcontractorFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: subcontractor?.name || '',
       companyName: subcontractor?.companyName || '',
       representativeName: subcontractor?.representativeName || '',
       commercialRegistration: subcontractor?.commercialRegistration || '',
