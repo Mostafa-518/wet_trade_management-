@@ -20,11 +20,7 @@ export function CreateProjectModal({ open, onClose, onProjectCreated }: CreatePr
   const [formData, setFormData] = useState<ProjectFormData>({
     name: '',
     code: '',
-    location: '',
-    description: '',
-    startDate: '',
-    endDate: '',
-    status: 'planning'
+    location: ''
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,11 +44,7 @@ export function CreateProjectModal({ open, onClose, onProjectCreated }: CreatePr
       setFormData({ 
         name: '', 
         code: '', 
-        location: '', 
-        description: '', 
-        startDate: '', 
-        endDate: '', 
-        status: 'planning' 
+        location: ''
       });
       onClose();
     } catch (error) {

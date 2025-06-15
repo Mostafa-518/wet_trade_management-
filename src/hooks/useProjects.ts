@@ -18,11 +18,7 @@ export function useProjects() {
       await projectService.create({
         name: data.name,
         code: data.code,
-        location: data.location,
-        description: data.description,
-        start_date: data.startDate || null,
-        end_date: data.endDate || null,
-        status: data.status as any
+        location: data.location
       });
       refetchProjects();
       toast({
@@ -45,11 +41,7 @@ export function useProjects() {
       await projectService.update(id, {
         name: data.name,
         code: data.code,
-        location: data.location,
-        description: data.description,
-        start_date: data.startDate || null,
-        end_date: data.endDate || null,
-        status: data.status as any
+        location: data.location
       });
       refetchProjects();
       toast({
@@ -90,9 +82,7 @@ export function useProjects() {
     projects: projects.map(p => ({
       ...p,
       createdAt: p.created_at,
-      updatedAt: p.updated_at,
-      startDate: p.start_date,
-      endDate: p.end_date
+      updatedAt: p.updated_at
     })),
     addProject,
     updateProject,

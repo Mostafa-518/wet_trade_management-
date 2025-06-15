@@ -13,37 +13,25 @@ export type Database = {
         Row: {
           code: string
           created_at: string
-          description: string | null
-          end_date: string | null
           id: string
           location: string
           name: string
-          start_date: string | null
-          status: Database["public"]["Enums"]["project_status"] | null
           updated_at: string
         }
         Insert: {
           code: string
           created_at?: string
-          description?: string | null
-          end_date?: string | null
           id?: string
           location: string
           name: string
-          start_date?: string | null
-          status?: Database["public"]["Enums"]["project_status"] | null
           updated_at?: string
         }
         Update: {
           code?: string
           created_at?: string
-          description?: string | null
-          end_date?: string | null
           id?: string
           location?: string
           name?: string
-          start_date?: string | null
-          status?: Database["public"]["Enums"]["project_status"] | null
           updated_at?: string
         }
         Relationships: []

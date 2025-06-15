@@ -4,7 +4,6 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft } from 'lucide-react';
 import { Project, ProjectFormData } from '@/types/project';
 
@@ -18,11 +17,7 @@ export function ProjectForm({ project, onSubmit, onCancel }: ProjectFormProps) {
   const [formData, setFormData] = useState<ProjectFormData>({
     name: '',
     code: '',
-    location: '',
-    description: '',
-    startDate: '',
-    endDate: '',
-    status: 'planning'
+    location: ''
   });
 
   useEffect(() => {
@@ -30,11 +25,7 @@ export function ProjectForm({ project, onSubmit, onCancel }: ProjectFormProps) {
       setFormData({
         name: project.name,
         code: project.code,
-        location: project.location,
-        description: project.description || '',
-        startDate: project.startDate || '',
-        endDate: project.endDate || '',
-        status: project.status
+        location: project.location
       });
     }
   }, [project]);
@@ -98,52 +89,6 @@ export function ProjectForm({ project, onSubmit, onCancel }: ProjectFormProps) {
                   placeholder="Enter project location"
                   required
                 />
-              </div>
-
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="description">Description</Label>
-                <Input
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
-                  placeholder="Enter project description"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="startDate">Start Date</Label>
-                <Input
-                  id="startDate"
-                  type="date"
-                  value={formData.startDate}
-                  onChange={(e) => handleInputChange('startDate', e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="endDate">End Date</Label>
-                <Input
-                  id="endDate"
-                  type="date"
-                  value={formData.endDate}
-                  onChange={(e) => handleInputChange('endDate', e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select value={formData.status} onValueChange={(value) => handleInputChange('status', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="planning">Planning</SelectItem>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="on_hold">On Hold</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
             </div>
 

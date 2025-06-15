@@ -53,9 +53,8 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
 
   const [importedData, setImportedData] = useState<any[] | null>(null); // Hold imported rows
 
-  // Only show preview columns for the four fields
+  // Only show preview columns for the three fields
   const previewColumns = [
-    { key: "id", label: "ID" },
     { key: "name", label: "Name" },
     { key: "code", label: "Code" },
     { key: "location", label: "Location" },
@@ -66,10 +65,8 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
     if (key === "projectname") return "name";
     if (key === "projectcode") return "code";
     if (key === "projectlocation") return "location";
-    if (key === "projectid") return "id";
     return (
       {
-        id: "id",
         name: "name",
         code: "code",
         location: "location",
@@ -96,9 +93,9 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
 
       let [rawHeaders, ...rows] = jsonData;
 
-      // Only keep the four fields in the headers and mapped data
+      // Only keep the three fields in the headers and mapped data
       const headers = rawHeaders.map((h: string) => normalizeHeader(h));
-      const allowedKeys = ['id', 'name', 'code', 'location'];
+      const allowedKeys = ['name', 'code', 'location'];
 
       const mapped = rows
         .filter((row) => row.some((cell) => cell !== undefined && cell !== "")) // skip empty rows
@@ -122,9 +119,7 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
       await addProject({
         name: row.name || '',
         code: row.code || '',
-        location: row.location || '',
-        // Provide the required status field
-        status: 'planning'
+        location: row.location || ''
       });
     }
     setImportedData(null);
