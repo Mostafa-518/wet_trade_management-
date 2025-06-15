@@ -18,10 +18,12 @@ export function SubcontractDetail() {
   };
 
   const handleEdit = () => {
+    console.log('Edit button clicked, opening modal');
     setShowEditModal(true);
   };
 
   const handleSaveEdit = async (subcontractId: string, data: any) => {
+    console.log('Saving subcontract edit:', subcontractId, data);
     await updateSubcontract(subcontractId, data);
     setShowEditModal(false);
   };
