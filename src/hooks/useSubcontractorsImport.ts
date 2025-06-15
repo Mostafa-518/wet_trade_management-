@@ -33,13 +33,11 @@ export function useSubcontractorsImport() {
 
         console.log('Raw Excel data:', jsonData);
 
-        // Don't skip any rows - start from the first row
         const rows = jsonData as any[][];
         console.log('All data rows:', rows);
 
         const mappedData: SubcontractorFormData[] = rows
           .filter((row, index) => {
-            // Filter out completely empty rows
             const hasData = row && row.length > 0 && row.some(cell => cell && String(cell).trim());
             console.log(`Row ${index + 1} has data:`, hasData, row);
             return hasData;
@@ -47,9 +45,17 @@ export function useSubcontractorsImport() {
           .map((row, index) => {
             console.log(`Processing row ${index + 1}:`, row);
             
+            // Validate and set rating to a valid value (0-5 range typically for ratings)
+            let rating = 0;
+            if (row[8] && !isNaN(Number(row[8]))) {
+              const parsedRating = Number(row[8]);
+              // Ensure rating is within valid range (0-5)
+              rating = Math.max(0, Math.min(5, parsedRating));
+            }
+            
             const mappedItem = {
               name: String(row[0] || '').trim(),
-              companyName: String(row[1] || row[0] || '').trim(), // Use business name as company name if not provided
+              companyName: String(row[1] || row[0] || '').trim(),
               representativeName: String(row[2] || '').trim(),
               commercialRegistration: String(row[3] || '').trim(),
               taxCardNo: String(row[4] || '').trim(),
@@ -57,14 +63,13 @@ export function useSubcontractorsImport() {
               phone: String(row[6] || '').trim(),
               address: String(row[7] || '').trim(),
               trades: [],
-              rating: 0
+              rating: rating
             };
             
             console.log(`Mapped item ${index + 1}:`, mappedItem);
             return mappedItem;
           })
           .filter(item => {
-            // Only filter out items that have no business name
             const isValid = item.name && item.name.length > 0;
             console.log('Item is valid:', isValid, item.name);
             return isValid;
@@ -140,6 +145,9 @@ export function useSubcontractorsImport() {
           continue;
         }
 
+        // Ensure rating is valid for database constraints
+        const validRating = Math.max(0, Math.min(5, item.rating || 0));
+
         const subcontractorData: SubcontractorFormData = {
           name: item.name.trim(),
           companyName: item.companyName?.trim() || item.name.trim(),
@@ -150,7 +158,7 @@ export function useSubcontractorsImport() {
           phone: item.phone?.trim() || '',
           address: item.address?.trim() || '',
           trades: item.trades || [],
-          rating: item.rating || 0
+          rating: validRating
         };
 
         console.log(`Attempting to add subcontractor:`, subcontractorData);
@@ -159,7 +167,8 @@ export function useSubcontractorsImport() {
         console.log(`Successfully imported: ${subcontractorData.name}`);
       } catch (error) {
         console.error(`Failed to import item ${index + 1}:`, item, error);
-        errors.push(`Row ${index + 1}: ${item.name || 'Unknown'} - ${error instanceof Error ? error.message : 'Unknown error'}`);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        errors.push(`Row ${index + 1}: ${item.name || 'Unknown'} - ${errorMessage}`);
         errorCount++;
       }
     }
@@ -172,7 +181,7 @@ export function useSubcontractorsImport() {
     } else {
       toast({
         title: "Import Failed", 
-        description: errorCount > 0 ? `All ${errorCount} items failed to import. Please check the data format.` : "No items could be imported.",
+        description: errorCount > 0 ? `All ${errorCount} items failed to import. Please check the data format and ensure rating values are between 0-5.` : "No items could be imported.",
         variant: "destructive"
       });
     }
@@ -188,8 +197,8 @@ export function useSubcontractorsImport() {
 
   const downloadTemplate = () => {
     const template = [
-      ['Business Name', 'Company Name', 'Representative Name', 'Commercial Registration', 'Tax Card No.', 'Email', 'Phone', 'Address'],
-      ['Sample Business', 'Sample Company Ltd.', 'John Doe', 'CR-001-2024', 'TAX-001-2024', 'john@example.com', '+20 100 123 4567', 'Sample Address']
+      ['Business Name', 'Company Name', 'Representative Name', 'Commercial Registration', 'Tax Card No.', 'Email', 'Phone', 'Address', 'Rating (0-5)'],
+      ['Sample Business', 'Sample Company Ltd.', 'John Doe', 'CR-001-2024', 'TAX-001-2024', 'john@example.com', '+20 100 123 4567', 'Sample Address', '5']
     ];
     
     const ws = XLSX.utils.aoa_to_sheet(template);

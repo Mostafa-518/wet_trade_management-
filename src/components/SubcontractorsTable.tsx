@@ -79,7 +79,8 @@ export function SubcontractorsTable({ onCreateNew, onViewDetail, onEdit, onDelet
           { key: 'taxCardNo', label: 'Tax Card No.' },
           { key: 'email', label: 'Email' },
           { key: 'phone', label: 'Phone' },
-          { key: 'address', label: 'Address' }
+          { key: 'address', label: 'Address' },
+          { key: 'rating', label: 'Rating (0-5)' }
         ]}
         onImport={handleImport}
       />
