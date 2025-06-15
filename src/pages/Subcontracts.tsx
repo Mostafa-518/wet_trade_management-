@@ -12,10 +12,11 @@ export function Subcontracts() {
   const navigate = useNavigate();
   const [showStepper, setShowStepper] = useState(false);
   const { trades, tradeItems, responsibilities } = useData();
-  const { addSubcontract } = useSubcontracts(trades, tradeItems, responsibilities);
+  const { addSubcontract, isLoading } = useSubcontracts(trades, tradeItems, responsibilities);
   const { toast } = useToast();
   const { profile } = useAuth();
   const canModify = profile?.role !== 'viewer';
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const handleCreateNew = () => {
     if (!canModify) return;
@@ -27,11 +28,12 @@ export function Subcontracts() {
   };
 
   const handleSaveSubcontract = async (data: any) => {
+    setSaveError(null);
     try {
       await addSubcontract(data);
       setShowStepper(false);
-    } catch (error) {
-      // Error handling is already done in the hook
+    } catch (error: any) {
+      setSaveError(error instanceof Error ? error.message : 'Unknown error');
     }
   };
 
@@ -45,9 +47,16 @@ export function Subcontracts() {
   }
 
   return (
-    <SubcontractTable 
-      onCreateNew={canModify ? handleCreateNew : undefined}
-      onViewDetail={handleViewDetail}
-    />
+    <div>
+      {saveError && (
+        <div className="py-2 px-4 bg-red-100 text-red-800 rounded relative mb-3">
+          <span className="font-semibold">Error:</span> {saveError}
+        </div>
+      )}
+      <SubcontractTable 
+        onCreateNew={canModify ? handleCreateNew : undefined}
+        onViewDetail={handleViewDetail}
+      />
+    </div>
   );
 }
