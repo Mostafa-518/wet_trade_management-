@@ -258,7 +258,6 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
                 <TableHead>
                   <TableSelectionCheckbox checked={allSelected} onCheckedChange={toggleAll} ariaLabel="Select all projects"/>
                 </TableHead>
-                <TableHead>ID</TableHead>
                 <TableHead>Project Name</TableHead>
                 <TableHead>Project Code</TableHead>
                 <TableHead>Location</TableHead>
@@ -275,7 +274,6 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
                       ariaLabel={`Select project ${project.name}`}
                     />
                   </TableCell>
-                  <TableCell className="font-medium">{project.id}</TableCell>
                   <TableCell>{project.name}</TableCell>
                   <TableCell>{project.code}</TableCell>
                   <TableCell>{project.location}</TableCell>
