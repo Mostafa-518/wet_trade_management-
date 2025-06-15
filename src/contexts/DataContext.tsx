@@ -32,6 +32,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     addTrade,
     updateTrade,
     deleteTrade,
+    bulkDeleteTrades,
     isLoading: tradesLoading
   } = useTrades();
 
@@ -40,6 +41,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     addTradeItem,
     updateTradeItem,
     deleteTradeItem,
+    bulkDeleteTradeItems,
     isLoading: tradeItemsLoading
   } = useTradeItems();
 
@@ -80,12 +82,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     addTrade,
     updateTrade,
     deleteTrade,
+    bulkDeleteTrades,
     
     // Trade Items
     tradeItems,
     addTradeItem,
     updateTradeItem,
     deleteTradeItem,
+    bulkDeleteTradeItems,
     
     // Responsibilities
     responsibilities,
