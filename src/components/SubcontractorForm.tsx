@@ -3,17 +3,11 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+import { Form } from '@/components/ui/form';
 import { Subcontractor, SubcontractorFormData } from '@/types/subcontractor';
+import { SubcontractorFormHeader } from './subcontractor-form/SubcontractorFormHeader';
+import { SubcontractorFormFields } from './subcontractor-form/SubcontractorFormFields';
+import { SubcontractorFormActions } from './subcontractor-form/SubcontractorFormActions';
 
 const formSchema = z.object({
   name: z.string().min(1, 'Business name is required'),
@@ -51,125 +45,12 @@ export function SubcontractorForm({ subcontractor, onSubmit, onCancel }: Subcont
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">
-          {subcontractor ? 'Edit Subcontractor' : 'Add New Subcontractor'}
-        </h2>
-        <p className="text-muted-foreground">
-          {subcontractor ? 'Update the subcontractor information below.' : 'Fill in the details to add a new subcontractor.'}
-        </p>
-      </div>
+      <SubcontractorFormHeader subcontractor={subcontractor} />
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Business Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter business name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="companyName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Company Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter company name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="representativeName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Representative Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter representative name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="commercialRegistration"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Commercial Registration</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter commercial registration" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="taxCardNo"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tax Card No.</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter tax card number" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="Enter email address" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter phone number" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <div className="flex gap-4 pt-4">
-            <Button type="submit" className="flex-1">
-              {subcontractor ? 'Update Subcontractor' : 'Add Subcontractor'}
-            </Button>
-            <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
-              Cancel
-            </Button>
-          </div>
+          <SubcontractorFormFields control={form.control} />
+          <SubcontractorFormActions subcontractor={subcontractor} onCancel={onCancel} />
         </form>
       </Form>
     </div>
