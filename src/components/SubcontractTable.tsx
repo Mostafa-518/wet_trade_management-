@@ -14,6 +14,7 @@ interface SubcontractTableProps {
 
 export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTableProps) {
   const {
+    subcontracts,
     filteredData,
     searchTerm,
     showAdvancedSearch,
@@ -54,6 +55,7 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
         searchTerm={searchTerm}
         onSimpleSearch={handleSimpleSearch}
         onAdvancedSearch={handleAdvancedSearch}
+        subcontracts={subcontracts}
       />
 
       <SubcontractTableContent
