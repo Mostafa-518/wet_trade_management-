@@ -11,19 +11,23 @@ interface SearchCondition {
 export function useSubcontractSearch(subcontracts: Subcontract[]) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredData, setFilteredData] = useState(subcontracts);
+  const [advancedSearchConditions, setAdvancedSearchConditions] = useState<SearchCondition[]>([]);
   const { getProjectName, getProjectCode, getSubcontractorName } = useSubcontractHelpers();
 
   // Update filtered data when subcontracts change
   useEffect(() => {
-    if (!searchTerm.trim()) {
-      setFilteredData(subcontracts);
-    } else {
+    if (advancedSearchConditions.length > 0) {
+      handleAdvancedSearch(advancedSearchConditions);
+    } else if (searchTerm.trim()) {
       handleSimpleSearch(searchTerm);
+    } else {
+      setFilteredData(subcontracts);
     }
-  }, [subcontracts, searchTerm]);
+  }, [subcontracts]);
 
   const handleSimpleSearch = (value: string) => {
     setSearchTerm(value);
+    setAdvancedSearchConditions([]); // Clear advanced search when using simple search
     
     if (!value.trim()) {
       setFilteredData(subcontracts);
@@ -67,6 +71,8 @@ export function useSubcontractSearch(subcontracts: Subcontract[]) {
 
   const handleAdvancedSearch = (conditions: SearchCondition[]) => {
     console.log('Advanced search triggered with conditions:', conditions);
+    setAdvancedSearchConditions(conditions);
+    setSearchTerm(''); // Clear simple search when using advanced search
     
     if (conditions.length === 0) {
       setFilteredData(subcontracts);
@@ -85,9 +91,8 @@ export function useSubcontractSearch(subcontracts: Subcontract[]) {
           case 'contractId':
             return item.contractId.toLowerCase().includes(conditionLower);
           case 'project':
-            return projectName.toLowerCase().includes(conditionLower);
-          case 'projectCode':
-            return projectCode.toLowerCase().includes(conditionLower);
+            return projectName.toLowerCase().includes(conditionLower) ||
+                   projectCode.toLowerCase().includes(conditionLower);
           case 'subcontractor':
             return subcontractorName.toLowerCase().includes(conditionLower);
           case 'trade':
@@ -112,6 +117,8 @@ export function useSubcontractSearch(subcontracts: Subcontract[]) {
         }
       });
     });
+    
+    console.log('Filtered results:', filtered.length, 'out of', subcontracts.length);
     setFilteredData(filtered);
   };
 
