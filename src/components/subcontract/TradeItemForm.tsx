@@ -45,16 +45,23 @@ export function TradeItemForm({ currentTradeItem, setCurrentTradeItem, onAddItem
     }
   }, [currentTradeItem.item, currentTradeItem.trade, tradeItems, validTrades, setCurrentTradeItem]);
 
-  // Calculate total when quantity or unit price changes
+  // Calculate total when quantity, unit price, or wastage changes
   useEffect(() => {
     const quantity = currentTradeItem.quantity || 0;
     const unitPrice = currentTradeItem.unitPrice || 0;
-    const total = quantity * unitPrice;
+    const wastagePercentage = currentTradeItem.wastagePercentage || 0;
+    
+    // Calculate base total
+    const baseTotal = quantity * unitPrice;
+    
+    // Apply wastage percentage
+    const wastageAmount = baseTotal * (wastagePercentage / 100);
+    const total = baseTotal + wastageAmount;
     
     if (currentTradeItem.total !== total) {
       setCurrentTradeItem(prev => ({ ...prev, total }));
     }
-  }, [currentTradeItem.quantity, currentTradeItem.unitPrice, currentTradeItem.total, setCurrentTradeItem]);
+  }, [currentTradeItem.quantity, currentTradeItem.unitPrice, currentTradeItem.wastagePercentage, currentTradeItem.total, setCurrentTradeItem]);
 
   return (
     <div className="space-y-4">
@@ -148,6 +155,7 @@ export function TradeItemForm({ currentTradeItem, setCurrentTradeItem, onAddItem
             value={currentTradeItem.wastagePercentage ?? ''}
             min={0}
             max={100}
+            step={0.1}
             onChange={(e) => {
               let value = Math.max(0, Math.min(100, Number(e.target.value) || 0));
               setCurrentTradeItem(prev => ({ ...prev, wastagePercentage: value }));
@@ -156,8 +164,8 @@ export function TradeItemForm({ currentTradeItem, setCurrentTradeItem, onAddItem
           />
         </div>
 
-        <div>
-          <Label>Total</Label>
+        <div className="md:col-span-2">
+          <Label>Total (including wastage)</Label>
           <Input 
             value={currentTradeItem.total?.toLocaleString() || '0'} 
             disabled

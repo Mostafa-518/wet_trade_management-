@@ -1,14 +1,38 @@
-
 import { Subcontract, TradeItem } from '@/types/subcontract';
 
 // This utility maps a DB row to the frontend Subcontract type.
 export function mapSubcontractToFrontend(dbRow: any): Subcontract {
+  console.log('Mapping DB row to frontend:', dbRow);
+  
   // Fallbacks for required fields
   const contractType = dbRow.contractType || dbRow.contract_type || 'subcontract';
   const addendumNumber = dbRow.addendumNumber || dbRow.addendum_number || undefined;
   const parentSubcontractId = dbRow.parentSubcontractId || dbRow.parent_subcontract_id || undefined;
 
-  // --- NEW FIX: Map responsibilities to an array of names (strings), not objects ---
+  // Map trade items from database format to frontend format
+  let tradeItems: TradeItem[] = [];
+  if (dbRow.tradeItems && Array.isArray(dbRow.tradeItems)) {
+    tradeItems = dbRow.tradeItems.map((dbTradeItem: any) => {
+      console.log('Processing trade item:', dbTradeItem);
+      
+      // Handle nested trade_items structure from Supabase joins
+      const tradeItemData = dbTradeItem.trade_items || dbTradeItem;
+      const tradeData = tradeItemData?.trades || {};
+      
+      return {
+        id: dbTradeItem.id || crypto.randomUUID(),
+        trade: tradeData.name || tradeItemData?.trade || 'Unknown Trade',
+        item: tradeItemData?.name || 'Unknown Item',
+        unit: tradeItemData?.unit || 'Each',
+        quantity: dbTradeItem.quantity || 0,
+        unitPrice: dbTradeItem.unit_price || 0,
+        total: dbTradeItem.total_price || 0,
+        wastagePercentage: dbTradeItem.wastage_percentage || 0
+      };
+    });
+  }
+
+  // Map responsibilities to an array of names (strings), not objects
   let responsibilities: string[] = [];
   if (dbRow.responsibilities && Array.isArray(dbRow.responsibilities)) {
     responsibilities = dbRow.responsibilities
@@ -25,12 +49,12 @@ export function mapSubcontractToFrontend(dbRow: any): Subcontract {
       .filter(Boolean);
   }
 
-  return {
+  const mapped = {
     id: dbRow.id,
-    contractId: dbRow.contractId || dbRow.contract_number || '', // adapt as needed
+    contractId: dbRow.contractId || dbRow.contract_number || '',
     project: dbRow.project || dbRow.project_id || '',
     subcontractor: dbRow.subcontractor || dbRow.subcontractor_id || '',
-    tradeItems: dbRow.tradeItems || [],
+    tradeItems,
     responsibilities,
     totalValue: dbRow.totalValue || dbRow.total_value || 0,
     status: dbRow.status || 'draft',
@@ -44,6 +68,9 @@ export function mapSubcontractToFrontend(dbRow: any): Subcontract {
     addendumNumber,
     parentSubcontractId,
   };
+
+  console.log('Mapped subcontract:', mapped);
+  return mapped;
 }
 
 /**
@@ -67,4 +94,3 @@ export function findResponsibilityId(responsibilities: any[], responsibilityName
     (resp) => resp.name === responsibilityName
   )?.id;
 }
-

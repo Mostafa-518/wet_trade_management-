@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -143,7 +142,7 @@ export function SubcontractTableContent({
                   <TableRow 
                     key={`${contract.id}-${item.id}`}
                     className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => onViewDetail(contract.contractId)}
+                    onClick={() => onViewDetail(contract.id)}
                   >
                     {idx === 0 && (
                       <>
@@ -182,7 +181,11 @@ export function SubcontractTableContent({
                     <TableCell>{item.item || '-'}</TableCell>
                     <TableCell className="text-right">{item.quantity ?? '-'} {item.unit || ''}</TableCell>
                     <TableCell className="text-right">{formatCurrency(item.unitPrice ?? 0)}</TableCell>
-                    <TableCell className="text-right">{item.wastagePercentage !== undefined ? `${item.wastagePercentage}%` : '0%'}</TableCell>
+                    <TableCell className="text-right">
+                      <span className={`${(item.wastagePercentage || 0) > 0 ? 'text-orange-600 font-medium' : ''}`}>
+                        {item.wastagePercentage !== undefined ? `${item.wastagePercentage}%` : '0%'}
+                      </span>
+                    </TableCell>
                     <TableCell className="text-right font-medium">{formatCurrency(item.total ?? 0)}</TableCell>
                     {idx === 0 && (
                       <>
@@ -191,7 +194,7 @@ export function SubcontractTableContent({
                         </TableCell>
                         <TableCell rowSpan={contract.tradeItems.length} onClick={(e) => e.stopPropagation()}>
                           <SubcontractTableActions
-                            contractId={contract.contractId}
+                            contractId={contract.id}
                             onView={onViewDetail}
                             onEdit={() => onEdit(contract)}
                             onDelete={async () => {
@@ -211,7 +214,7 @@ export function SubcontractTableContent({
                 <TableRow 
                   key={contract.id}
                   className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => onViewDetail(contract.contractId)}
+                  onClick={() => onViewDetail(contract.id)}
                 >
                   <TableCell onClick={e => e.stopPropagation()}>
                     <TableSelectionCheckbox
@@ -236,7 +239,7 @@ export function SubcontractTableContent({
                   <TableCell>{formatResponsibilities(contract.responsibilities)}</TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <SubcontractTableActions
-                      contractId={contract.contractId}
+                      contractId={contract.id}
                       onView={onViewDetail}
                       onEdit={() => onEdit(contract)}
                       onDelete={async () => {
@@ -257,4 +260,3 @@ export function SubcontractTableContent({
     </div>
   );
 }
-
