@@ -53,6 +53,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     isLoading: responsibilitiesLoading
   } = useResponsibilities();
 
+  // Pass the dependencies directly to useSubcontracts
   const {
     subcontracts,
     addSubcontract,
@@ -60,7 +61,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     deleteSubcontract,
     deleteManySubcontracts,
     isLoading: subcontractsLoading
-  } = useSubcontracts(trades, tradeItems);
+  } = useSubcontracts(trades, tradeItems, responsibilities, projects);
 
   const isLoading = projectsLoading || subcontractorsLoading || responsibilitiesLoading || tradesLoading || tradeItemsLoading || subcontractsLoading;
 

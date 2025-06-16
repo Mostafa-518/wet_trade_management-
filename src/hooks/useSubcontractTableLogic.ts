@@ -1,5 +1,4 @@
 
-import { useSubcontracts } from '@/hooks/useSubcontracts';
 import { useData } from '@/contexts/DataContext';
 import { useSubcontractHelpers } from './subcontract/useSubcontractHelpers';
 import { useSubcontractSearch } from './subcontract/useSubcontractSearch';
@@ -7,8 +6,7 @@ import { useSubcontractSelection } from './subcontract/useSubcontractSelection';
 import { useSubcontractEditing } from './subcontract/useSubcontractEditing';
 
 export function useSubcontractTableLogic() {
-  const { trades, tradeItems, responsibilities, projects } = useData();
-  const { subcontracts, updateSubcontract, deleteSubcontract, deleteManySubcontracts, isLoading } = useSubcontracts(trades, tradeItems, responsibilities, projects);
+  const { subcontracts, updateSubcontract, deleteSubcontract, deleteManySubcontracts, isLoading } = useData();
   
   const { getProjectName, getProjectCode, getSubcontractorName } = useSubcontractHelpers();
   

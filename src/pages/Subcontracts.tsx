@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SubcontractTable } from '@/components/SubcontractTable';
 import { SubcontractStepper } from '@/components/SubcontractStepper';
-import { useSubcontracts } from '@/hooks/useSubcontracts';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useData } from '@/contexts/DataContext';
@@ -11,8 +10,7 @@ import { useData } from '@/contexts/DataContext';
 export function Subcontracts() {
   const navigate = useNavigate();
   const [showStepper, setShowStepper] = useState(false);
-  const { trades, tradeItems, responsibilities, projects } = useData();
-  const { addSubcontract } = useSubcontracts(trades, tradeItems, responsibilities, projects);
+  const { addSubcontract } = useData();
   const { toast } = useToast();
   const { profile } = useAuth();
   const canModify = profile?.role !== 'viewer';
