@@ -73,26 +73,37 @@ export function useUserMutations() {
 
   const updateUserMutation = useMutation({
     mutationFn: async ({ id, userData }: { id: string; userData: any }) => {
-      return await UserService.update(id, {
+      console.log('Updating user with ID:', id, 'Data:', userData);
+      
+      // Map the form data to the correct database field names
+      const updateData = {
         full_name: userData.name,
         email: userData.email,
         role: userData.role,
         phone: userData.phone,
         avatar_url: userData.avatar
-      });
+      };
+      
+      console.log('Mapped update data:', updateData);
+      
+      const result = await UserService.update(id, updateData);
+      console.log('Update result:', result);
+      
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('User update successful:', data);
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast({
         title: "User updated",
         description: "The user has been successfully updated.",
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Update user mutation error:', error);
       toast({
         title: "Error",
-        description: "Failed to update user",
+        description: error.message || "Failed to update user",
         variant: "destructive"
       });
     }
