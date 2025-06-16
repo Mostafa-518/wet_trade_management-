@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { subcontractService } from '@/services';
 import { Subcontract } from '@/types/subcontract';
 import { useToast } from '@/hooks/use-toast';
-import { mapSubcontractToFrontend } from '@/utils/subcontractMapping';
+import { mapSubcontractToFrontend } from '@/utils/subcontract';
 import {
   createSubcontractWithTradeItems,
   updateSubcontractWithTradeItems,

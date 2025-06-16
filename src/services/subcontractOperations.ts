@@ -9,7 +9,7 @@ import {
   validateAddendumFormat,
   validateSubcontractFormat,
   getNextAddendumNumber
-} from '@/utils/subcontractMapping';
+} from '@/utils/subcontract';
 import { useToast } from '@/hooks/use-toast';
 
 export const createSubcontractWithTradeItems = async (
