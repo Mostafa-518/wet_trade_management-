@@ -29,7 +29,7 @@ export const validateRow = (row: SubcontractImportData, index: number): string[]
 
   // Numeric validations - handle both string and number types from Excel
   const qtyValue = row['QTY'];
-  if (qtyValue !== undefined && qtyValue !== null && qtyValue !== '') {
+  if (qtyValue !== undefined && qtyValue !== null && String(qtyValue).trim() !== '') {
     const qty = Number(qtyValue);
     if (isNaN(qty) || qty < 0) {
       errors.push('QTY must be a non-negative number');
@@ -37,7 +37,7 @@ export const validateRow = (row: SubcontractImportData, index: number): string[]
   }
   
   const rateValue = row['Rate'];
-  if (rateValue !== undefined && rateValue !== null && rateValue !== '') {
+  if (rateValue !== undefined && rateValue !== null && String(rateValue).trim() !== '') {
     const rate = Number(rateValue);
     if (isNaN(rate) || rate < 0) {
       errors.push('Rate must be a non-negative number');
@@ -45,7 +45,7 @@ export const validateRow = (row: SubcontractImportData, index: number): string[]
   }
   
   const wastageValue = row['wastage'];
-  if (wastageValue !== undefined && wastageValue !== null && wastageValue !== '') {
+  if (wastageValue !== undefined && wastageValue !== null && String(wastageValue).trim() !== '') {
     const wastage = Number(wastageValue);
     if (isNaN(wastage) || wastage < 0 || wastage > 100) {
       errors.push('Wastage must be a number between 0 and 100');
