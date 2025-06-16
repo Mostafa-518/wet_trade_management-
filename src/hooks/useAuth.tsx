@@ -80,15 +80,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async (email: string, password: string) => {
     console.log('AuthProvider: Sign in attempt for:', email);
     try {
-      const result = await AuthService.signIn(email, password);
-      if (result.error) {
-        console.error('AuthProvider: Sign in error:', result.error);
-        return { error: result.error };
+      const { data, error } = await AuthService.signIn(email, password);
+      if (error) {
+        console.error('AuthProvider: Sign in error:', error);
+        return { error };
       }
-      setUser(result.user);
-      setSession(result.session);
-      if (result.user) {
-        await fetchUserProfile(result.user.id);
+      setUser(data.user);
+      setSession(data.session);
+      if (data.user) {
+        await fetchUserProfile(data.user.id);
       }
       return { error: null };
     } catch (error) {
@@ -100,10 +100,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, password: string, fullName?: string) => {
     console.log('AuthProvider: Sign up attempt for:', email, 'with fullName:', fullName);
     try {
-      const result = await AuthService.signUp(email, password, fullName);
-      if (result.error) {
-        console.error('AuthProvider: Sign up error:', result.error);
-        return { error: result.error };
+      const { data, error } = await AuthService.signUp(email, password, fullName);
+      if (error) {
+        console.error('AuthProvider: Sign up error:', error);
+        return { error };
       }
       // Note: user profile will be created automatically by the database trigger
       console.log('AuthProvider: Sign up successful, user profile should be created automatically');
