@@ -1,174 +1,157 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { AuthService } from '@/services';
+import { User, Session } from '@supabase/supabase-js';
+import { AuthService } from '@/services/authService';
 import { UserProfile } from '@/services/types';
-import { useToast } from '@/hooks/use-toast';
 
 interface AuthContextType {
-  user: any;
+  user: User | null;
+  session: Session | null;
   profile: UserProfile | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, fullName?: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
-  updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
+  updateProfile: (updates: Partial<UserProfile>) => Promise<UserProfile | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
 
   useEffect(() => {
-    console.log('AuthProvider useEffect starting');
+    console.log('AuthProvider: Setting up auth state listener...');
     
-    // Set up auth state listener first
-    const { data: { subscription } } = AuthService.onAuthStateChange(async (user) => {
-      console.log('Auth state changed, user:', user);
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = AuthService.onAuthStateChange((user) => {
+      console.log('AuthProvider: Auth state changed:', { user });
       setUser(user);
       
       if (user) {
-        // Use setTimeout to avoid potential deadlock
-        setTimeout(async () => {
-          try {
-            const userProfile = await AuthService.getUserProfile();
-            console.log('Fetched user profile:', userProfile);
-            setProfile(userProfile);
-          } catch (error: any) {
-            console.error('Error fetching user profile:', error);
-          }
+        // Defer profile fetch to avoid blocking
+        setTimeout(() => {
+          fetchUserProfile(user.id);
         }, 0);
       } else {
         setProfile(null);
+        setSession(null);
       }
       setLoading(false);
     });
 
-    // Then get initial session
-    const getInitialSession = async () => {
-      try {
-        console.log('Getting initial session...');
-        const session = await AuthService.getSession();
-        console.log('Initial session:', session);
-        
-        if (session?.user) {
-          setUser(session.user);
-          const userProfile = await AuthService.getUserProfile();
-          setProfile(userProfile);
-        }
-      } catch (error: any) {
-        console.error('Error getting initial session:', error);
-        // Don't throw here, just log the error
-      } finally {
-        setLoading(false);
+    // THEN check for existing session
+    AuthService.getSession().then(({ session }) => {
+      console.log('AuthProvider: Initial session:', { session });
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
       }
-    };
-
-    getInitialSession();
+      setLoading(false);
+    }).catch((error) => {
+      console.error('AuthProvider: Error getting initial session:', error);
+      setLoading(false);
+    });
 
     return () => {
-      console.log('Cleaning up auth subscription');
+      console.log('AuthProvider: Cleaning up auth subscription...');
       subscription.unsubscribe();
     };
   }, []);
 
-  const signIn = async (email: string, password: string) => {
-    console.log('useAuth.signIn called');
-    
+  const fetchUserProfile = async (userId: string) => {
     try {
-      await AuthService.signIn(email, password);
-      toast({
-        title: "Success",
-        description: "Successfully signed in!"
-      });
-    } catch (error: any) {
-      console.error('SignIn error in useAuth:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to sign in. Please check your Supabase configuration.",
-        variant: "destructive"
-      });
-      throw error;
+      console.log('AuthProvider: Fetching user profile for:', userId);
+      const userProfile = await AuthService.getUserProfile();
+      console.log('AuthProvider: User profile fetched:', userProfile);
+      setProfile(userProfile);
+    } catch (error) {
+      console.error('AuthProvider: Error fetching user profile:', error);
+      // Don't set profile to null here - the user might just not have a profile yet
+      // The trigger should create it automatically for new users
+    }
+  };
+
+  const signIn = async (email: string, password: string) => {
+    console.log('AuthProvider: Sign in attempt for:', email);
+    try {
+      const { user, session, error } = await AuthService.signIn(email, password);
+      if (error) {
+        console.error('AuthProvider: Sign in error:', error);
+        return { error };
+      }
+      setUser(user);
+      setSession(session);
+      if (user) {
+        await fetchUserProfile(user.id);
+      }
+      return { error: null };
+    } catch (error) {
+      console.error('AuthProvider: Sign in catch:', error);
+      return { error };
     }
   };
 
   const signUp = async (email: string, password: string, fullName?: string) => {
-    console.log('useAuth.signUp called');
-    
+    console.log('AuthProvider: Sign up attempt for:', email, 'with fullName:', fullName);
     try {
-      await AuthService.signUp(email, password, fullName);
-      toast({
-        title: "Success",
-        description: "Account created successfully! Please check your email to verify your account."
-      });
-    } catch (error: any) {
-      console.error('SignUp error in useAuth:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create account. Please check your Supabase configuration.",
-        variant: "destructive"
-      });
-      throw error;
+      const { user, session, error } = await AuthService.signUp(email, password, fullName);
+      if (error) {
+        console.error('AuthProvider: Sign up error:', error);
+        return { error };
+      }
+      // Note: user profile will be created automatically by the database trigger
+      console.log('AuthProvider: Sign up successful, user profile should be created automatically');
+      return { error: null };
+    } catch (error) {
+      console.error('AuthProvider: Sign up catch:', error);
+      return { error };
     }
   };
 
   const signOut = async () => {
-    console.log('useAuth.signOut called');
-    
+    console.log('AuthProvider: Sign out attempt...');
     try {
       await AuthService.signOut();
-      toast({
-        title: "Success",
-        description: "Successfully signed out!"
-      });
-    } catch (error: any) {
-      console.error('SignOut error in useAuth:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to sign out",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const updateProfile = async (updates: Partial<UserProfile>) => {
-    console.log('useAuth.updateProfile called');
-    
-    try {
-      const updatedProfile = await AuthService.updateProfile(updates);
-      setProfile(updatedProfile);
-      toast({
-        title: "Success",
-        description: "Profile updated successfully!"
-      });
-    } catch (error: any) {
-      console.error('UpdateProfile error in useAuth:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update profile",
-        variant: "destructive"
-      });
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+    } catch (error) {
+      console.error('AuthProvider: Sign out error:', error);
       throw error;
     }
   };
 
-  const value = {
+  const updateProfile = async (updates: Partial<UserProfile>) => {
+    console.log('AuthProvider: Update profile attempt:', updates);
+    try {
+      const updatedProfile = await AuthService.updateProfile(updates);
+      setProfile(updatedProfile);
+      return updatedProfile;
+    } catch (error) {
+      console.error('AuthProvider: Update profile error:', error);
+      throw error;
+    }
+  };
+
+  const contextValue: AuthContextType = {
     user,
+    session,
     profile,
     loading,
     signIn,
     signUp,
     signOut,
-    updateProfile
+    updateProfile,
   };
 
-  console.log('AuthProvider rendering with:', { user: !!user, profile: !!profile, loading });
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
