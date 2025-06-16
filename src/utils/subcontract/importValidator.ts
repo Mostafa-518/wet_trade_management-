@@ -27,23 +27,26 @@ export const validateRow = (row: SubcontractImportData, index: number): string[]
     }
   }
 
-  // Numeric validations - be more lenient
-  if (row['QTY'] !== undefined && row['QTY'] !== null && row['QTY'] !== '') {
-    const qty = Number(row['QTY']);
+  // Numeric validations - handle both string and number types from Excel
+  const qtyValue = row['QTY'];
+  if (qtyValue !== undefined && qtyValue !== null && qtyValue !== '') {
+    const qty = Number(qtyValue);
     if (isNaN(qty) || qty < 0) {
       errors.push('QTY must be a non-negative number');
     }
   }
   
-  if (row['Rate'] !== undefined && row['Rate'] !== null && row['Rate'] !== '') {
-    const rate = Number(row['Rate']);
+  const rateValue = row['Rate'];
+  if (rateValue !== undefined && rateValue !== null && rateValue !== '') {
+    const rate = Number(rateValue);
     if (isNaN(rate) || rate < 0) {
       errors.push('Rate must be a non-negative number');
     }
   }
   
-  if (row['wastage'] !== undefined && row['wastage'] !== null && row['wastage'] !== '') {
-    const wastage = Number(row['wastage']);
+  const wastageValue = row['wastage'];
+  if (wastageValue !== undefined && wastageValue !== null && wastageValue !== '') {
+    const wastage = Number(wastageValue);
     if (isNaN(wastage) || wastage < 0 || wastage > 100) {
       errors.push('Wastage must be a number between 0 and 100');
     }
