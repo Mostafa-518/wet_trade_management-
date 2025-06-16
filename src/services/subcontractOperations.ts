@@ -12,15 +12,17 @@ export const createSubcontractWithTradeItems = async (
   existingContracts: Subcontract[] = [],
   projects: any[] = []
 ) => {
-  console.log('Adding subcontract with data:', data);
+  console.log('Creating subcontract with data:', data);
 
   if (!data.project || !data.subcontractor) {
+    const error = new Error('Project and subcontractor are required');
+    console.error('Validation error:', error);
     toast({
       title: "Project & Subcontractor missing",
       description: "You must select a Project and Subcontractor.",
       variant: "destructive"
     });
-    throw new Error('Project and subcontractor are required');
+    throw error;
   }
 
   // Generate contract ID if not provided or is temporary
@@ -29,12 +31,14 @@ export const createSubcontractWithTradeItems = async (
     // Find project to get its code
     const project = projects.find(p => p.id === data.project);
     if (!project || !project.code) {
+      const error = new Error('Project code is required for contract ID generation');
+      console.error('Project code error:', error);
       toast({
         title: "Project Code Missing",
         description: "The selected project doesn't have a valid project code.",
         variant: "destructive"
       });
-      throw new Error('Project code is required for contract ID generation');
+      throw error;
     }
     
     try {
@@ -47,15 +51,18 @@ export const createSubcontractWithTradeItems = async (
       
       // Validate uniqueness
       if (!validateContractIdUniqueness(contractId, existingContracts)) {
+        const error = new Error('Contract ID conflict detected');
+        console.error('Contract ID conflict:', error);
         toast({
           title: "Contract ID Conflict",
           description: "Generated contract ID already exists. Please try again.",
           variant: "destructive"
         });
-        throw new Error('Contract ID conflict detected');
+        throw error;
       }
       
     } catch (error) {
+      console.error('Contract ID generation error:', error);
       toast({
         title: "Contract ID Generation Failed",
         description: error instanceof Error ? error.message : "Could not generate contract ID",
@@ -68,25 +75,32 @@ export const createSubcontractWithTradeItems = async (
   // Validate contract ID format
   if (data.contractType === 'ADD') {
     if (!contractId.match(/^.+-ADD\d{2}$/)) {
+      const error = new Error('Invalid addendum contract ID format');
+      console.error('Format validation error:', error);
       toast({
         title: "Invalid Addendum Format",
         description: "Addendum contract ID must follow format: [parent-contract-id]-ADDXX",
         variant: "destructive"
       });
-      throw new Error('Invalid addendum contract ID format');
+      throw error;
     }
   } else {
-    if (!contractId.match(/^ID-\d{4}-\d{4}$/)) {
+    // For regular subcontracts: ID-XXXX-XXXX
+    const project = projects.find(p => p.id === data.project);
+    const expectedPattern = new RegExp(`^ID-${project?.code}-\\d{4}$`);
+    if (!contractId.match(expectedPattern)) {
+      const error = new Error('Invalid contract ID format');
+      console.error('Format validation error:', error);
       toast({
         title: "Invalid Contract Format",
-        description: "Contract ID must follow format: ID-XXXX-XXXX",
+        description: `Contract ID must follow format: ID-${project?.code}-XXXX`,
         variant: "destructive"
       });
-      throw new Error('Invalid contract ID format');
+      throw error;
     }
   }
 
-  // Added all fields needed for contract type/addendum
+  // Create the subcontract payload with proper null handling
   const subcontractPayload = {
     contract_number: contractId,
     project_id: data.project,
@@ -97,8 +111,8 @@ export const createSubcontractWithTradeItems = async (
     end_date: data.endDate,
     description: data.description || '',
     contract_type: data.contractType || 'subcontract',
-    addendum_number: data.contractType === 'ADD' ? (data.addendumNumber ?? null) : null,
-    parent_subcontract_id: data.contractType === 'ADD' ? (data.parentSubcontractId ?? null) : null,
+    addendum_number: data.contractType === 'ADD' ? (data.addendumNumber || null) : null,
+    parent_subcontract_id: data.contractType === 'ADD' ? (data.parentSubcontractId || null) : null,
     date_of_issuing: data.dateOfIssuing || null,
   };
 
@@ -107,6 +121,7 @@ export const createSubcontractWithTradeItems = async (
   let createdSubcontract;
   try {
     createdSubcontract = await subcontractService.create(subcontractPayload);
+    console.log('Subcontract created successfully:', createdSubcontract);
   } catch (error) {
     console.error("Error creating subcontract in Supabase:", error);
     toast({
@@ -189,13 +204,7 @@ export const createSubcontractWithTradeItems = async (
     }
   }
 
-  // Show toast and return for success
-  toast({
-    title: "Success",
-    description: "Subcontract created successfully.",
-    variant: "default"
-  });
-
+  console.log('Subcontract creation completed successfully');
   return createdSubcontract;
 };
 

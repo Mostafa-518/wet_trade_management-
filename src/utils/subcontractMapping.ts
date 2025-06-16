@@ -1,3 +1,4 @@
+
 import { Subcontract, TradeItem } from '@/types/subcontract';
 
 // This utility maps a DB row to the frontend Subcontract type.
@@ -65,8 +66,8 @@ export function mapSubcontractToFrontend(dbRow: any): Subcontract {
     createdAt: dbRow.createdAt || dbRow.created_at || '',
     updatedAt: dbRow.updatedAt || dbRow.updated_at || '',
     contractType,
-    addendumNumber: addendumNumber || undefined,
-    parentSubcontractId: parentSubcontractId || undefined,
+    addendumNumber: addendumNumber === null ? undefined : addendumNumber,
+    parentSubcontractId: parentSubcontractId === null ? undefined : parentSubcontractId,
   };
 
   console.log('Mapped subcontract:', mapped);

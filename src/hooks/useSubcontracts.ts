@@ -31,17 +31,14 @@ export function useSubcontracts(trades: any[] = [], tradeItems: any[] = [], resp
   const addSubcontract = async (data: Partial<Subcontract>) => {
     console.log('Adding subcontract with data:', data);
     try {
-      await createSubcontractWithTradeItems(data, trades, tradeItems, toast, responsibilities, subcontracts, projects);
+      const result = await createSubcontractWithTradeItems(data, trades, tradeItems, toast, responsibilities, subcontracts, projects);
       console.log('Subcontract created successfully, refetching data...');
       await refetchSubcontracts();
       toast({ title: "Success", description: "Subcontract created successfully" });
+      return result;
     } catch (error) {
       console.error('Error adding subcontract:', error);
-      toast({ 
-        title: "Error", 
-        description: `Failed to add subcontract: ${error instanceof Error ? error.message : 'Unknown error'}`, 
-        variant: "destructive" 
-      });
+      // Don't show duplicate toast since createSubcontractWithTradeItems already shows error toasts
       throw error;
     }
   };
