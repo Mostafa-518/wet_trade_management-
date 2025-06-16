@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -53,6 +54,11 @@ export function SubcontractTableContent({
       currency: 'EGP',
       minimumFractionDigits: 0
     }).format(amount ?? 0);
+  };
+
+  // Calculate total without wastage: QTY * Rate only
+  const calculateTotalWithoutWastage = (quantity: number, unitPrice: number) => {
+    return (quantity || 0) * (unitPrice || 0);
   };
 
   // Ensure responsibilities come as a comma separated string, safe against object/array forms
@@ -111,14 +117,10 @@ export function SubcontractTableContent({
             <TableHead>Date of Issuing</TableHead>
             <TableHead>Project Name</TableHead>
             <TableHead>Subcontractor Company</TableHead>
-            <TableHead>Type of Contract</TableHead>
-            <TableHead>Addendum Number</TableHead>
-            <TableHead>Parent Subcontract</TableHead>
             <TableHead>Trades</TableHead>
             <TableHead>Items</TableHead>
             <TableHead>QTY</TableHead>
             <TableHead>Rate</TableHead>
-            <TableHead>Wastage%</TableHead>
             <TableHead>Total Amount</TableHead>
             <TableHead>Responsibilities</TableHead>
             <TableHead>Actions</TableHead>
@@ -127,7 +129,7 @@ export function SubcontractTableContent({
         <TableBody>
           {filteredData.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={16} className="text-center py-8">
+              <TableCell colSpan={12} className="text-center py-8">
                 <div className="text-muted-foreground">
                   {searchTerm || showAdvancedSearch ? 'No subcontracts found matching your search.' : 'No subcontracts found.'}
                 </div>
@@ -165,28 +167,16 @@ export function SubcontractTableContent({
                         <TableCell rowSpan={contract.tradeItems.length}>
                           {getSubcontractorName(contract.subcontractor)}
                         </TableCell>
-                        <TableCell rowSpan={contract.tradeItems.length}>
-                          {contract.contractType === "ADD" ? "Addendum" : "Subcontract"}
-                        </TableCell>
-                        <TableCell rowSpan={contract.tradeItems.length}>
-                          {contract.contractType === "ADD" ? (contract.addendumNumber || '-') : '-'}
-                        </TableCell>
-                        <TableCell rowSpan={contract.tradeItems.length}>
-                          {contract.contractType === "ADD" ? (contract.parentSubcontractId || '-') : '-'}
-                        </TableCell>
                       </>
                     )}
-                    {/* Trades, Items, QTY, Rate, Wastage, Total */}
+                    {/* Trades, Items, QTY, Rate, Total (without wastage) */}
                     <TableCell>{item.trade || '-'}</TableCell>
                     <TableCell>{item.item || '-'}</TableCell>
                     <TableCell className="text-right">{item.quantity ?? '-'} {item.unit || ''}</TableCell>
                     <TableCell className="text-right">{formatCurrency(item.unitPrice ?? 0)}</TableCell>
-                    <TableCell className="text-right">
-                      <span className={`${(item.wastagePercentage || 0) > 0 ? 'text-orange-600 font-medium' : ''}`}>
-                        {item.wastagePercentage !== undefined ? `${item.wastagePercentage}%` : '0%'}
-                      </span>
+                    <TableCell className="text-right font-medium">
+                      {formatCurrency(calculateTotalWithoutWastage(item.quantity ?? 0, item.unitPrice ?? 0))}
                     </TableCell>
-                    <TableCell className="text-right font-medium">{formatCurrency(item.total ?? 0)}</TableCell>
                     {idx === 0 && (
                       <>
                         <TableCell rowSpan={contract.tradeItems.length}>
@@ -227,10 +217,6 @@ export function SubcontractTableContent({
                   <TableCell>{formatDate(contract.dateOfIssuing)}</TableCell>
                   <TableCell>{getProjectName(contract.project)}</TableCell>
                   <TableCell>{getSubcontractorName(contract.subcontractor)}</TableCell>
-                  <TableCell>{contract.contractType === "ADD" ? "Addendum" : "Subcontract"}</TableCell>
-                  <TableCell>{contract.contractType === "ADD" ? (contract.addendumNumber || '-') : '-'}</TableCell>
-                  <TableCell>{contract.contractType === "ADD" ? (contract.parentSubcontractId || '-') : '-'}</TableCell>
-                  <TableCell className="text-muted-foreground">-</TableCell>
                   <TableCell className="text-muted-foreground">-</TableCell>
                   <TableCell className="text-muted-foreground">-</TableCell>
                   <TableCell className="text-muted-foreground">-</TableCell>

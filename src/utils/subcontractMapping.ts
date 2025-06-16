@@ -20,14 +20,19 @@ export function mapSubcontractToFrontend(dbRow: any): Subcontract {
       const tradeItemData = dbTradeItem.trade_items || dbTradeItem;
       const tradeData = tradeItemData?.trades || {};
       
+      const quantity = dbTradeItem.quantity || 0;
+      const unitPrice = dbTradeItem.unit_price || 0;
+      // Calculate total WITHOUT wastage: just QTY * Rate
+      const total = quantity * unitPrice;
+      
       return {
         id: dbTradeItem.id || crypto.randomUUID(),
         trade: tradeData.name || tradeItemData?.trade || 'Unknown Trade',
         item: tradeItemData?.name || 'Unknown Item',
         unit: tradeItemData?.unit || 'Each',
-        quantity: dbTradeItem.quantity || 0,
-        unitPrice: dbTradeItem.unit_price || 0,
-        total: dbTradeItem.total_price || 0,
+        quantity,
+        unitPrice,
+        total, // This excludes wastage
         wastagePercentage: dbTradeItem.wastage_percentage || 0
       };
     });
@@ -50,6 +55,9 @@ export function mapSubcontractToFrontend(dbRow: any): Subcontract {
       .filter(Boolean);
   }
 
+  // Calculate total value without wastage
+  const totalValue = tradeItems.reduce((sum, item) => sum + (item.total || 0), 0);
+
   const mapped = {
     id: dbRow.id,
     contractId: dbRow.contractId || dbRow.contract_number || '',
@@ -57,7 +65,7 @@ export function mapSubcontractToFrontend(dbRow: any): Subcontract {
     subcontractor: dbRow.subcontractor || dbRow.subcontractor_id || '',
     tradeItems,
     responsibilities,
-    totalValue: dbRow.totalValue || dbRow.total_value || 0,
+    totalValue, // Calculated without wastage
     status: dbRow.status || 'draft',
     startDate: dbRow.startDate || dbRow.start_date || '',
     endDate: dbRow.endDate || dbRow.end_date || '',

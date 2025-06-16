@@ -8,6 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { X } from 'lucide-react';
 import { Subcontract } from '@/types/subcontract';
 import { useData } from '@/contexts/DataContext';
+import { ParentSubcontractSelector } from './ParentSubcontractSelector';
+import { useSubcontractHelpers } from '@/hooks/subcontract/useSubcontractHelpers';
 
 interface SubcontractEditModalProps {
   subcontract: Subcontract;
@@ -17,7 +19,9 @@ interface SubcontractEditModalProps {
 }
 
 export function SubcontractEditModal({ subcontract, open, onClose, onSave }: SubcontractEditModalProps) {
-  const { projects, subcontractors } = useData();
+  const { projects, subcontractors, subcontracts } = useData();
+  const { getProjectName, getSubcontractorName } = useSubcontractHelpers();
+  
   const [formData, setFormData] = useState({
     contractId: '',
     project: '',
@@ -27,7 +31,9 @@ export function SubcontractEditModal({ subcontract, open, onClose, onSave }: Sub
     startDate: '',
     endDate: '',
     dateOfIssuing: '',
-    description: ''
+    description: '',
+    contractType: 'subcontract' as 'subcontract' | 'ADD',
+    parentSubcontractId: ''
   });
 
   // Filter out projects and subcontractors with empty or invalid IDs
@@ -36,16 +42,23 @@ export function SubcontractEditModal({ subcontract, open, onClose, onSave }: Sub
 
   useEffect(() => {
     if (subcontract) {
+      // Calculate total value without wastage
+      const calculatedTotal = subcontract.tradeItems?.reduce((total, item) => {
+        return total + ((item.quantity || 0) * (item.unitPrice || 0));
+      }, 0) || 0;
+
       setFormData({
         contractId: subcontract.contractId || '',
         project: subcontract.project || '',
         subcontractor: subcontract.subcontractor || '',
         status: subcontract.status || 'draft',
-        totalValue: subcontract.totalValue || 0,
+        totalValue: calculatedTotal,
         startDate: subcontract.startDate || '',
         endDate: subcontract.endDate || '',
         dateOfIssuing: subcontract.dateOfIssuing || '',
-        description: subcontract.description || ''
+        description: subcontract.description || '',
+        contractType: subcontract.contractType || 'subcontract',
+        parentSubcontractId: subcontract.parentSubcontractId || ''
       });
     }
   }, [subcontract]);
@@ -85,6 +98,32 @@ export function SubcontractEditModal({ subcontract, open, onClose, onSave }: Sub
                 placeholder="Enter contract ID"
               />
             </div>
+
+            <div>
+              <Label htmlFor="contractType">Contract Type</Label>
+              <Select
+                value={formData.contractType}
+                onValueChange={(value: 'subcontract' | 'ADD') => setFormData(prev => ({ ...prev, contractType: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="subcontract">Subcontract</SelectItem>
+                  <SelectItem value="ADD">Addendum</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {formData.contractType === 'ADD' && (
+              <ParentSubcontractSelector
+                subcontracts={subcontracts}
+                value={formData.parentSubcontractId}
+                onChange={(parentId) => setFormData(prev => ({ ...prev, parentSubcontractId: parentId }))}
+                getProjectName={getProjectName}
+                getSubcontractorName={getSubcontractorName}
+              />
+            )}
 
             <div>
               <Label htmlFor="project">Project</Label>
@@ -144,14 +183,18 @@ export function SubcontractEditModal({ subcontract, open, onClose, onSave }: Sub
             </div>
 
             <div>
-              <Label htmlFor="totalValue">Total Value</Label>
+              <Label htmlFor="totalValue">Total Value (Calculated without wastage)</Label>
               <Input
                 id="totalValue"
                 type="number"
                 value={formData.totalValue}
-                onChange={(e) => setFormData(prev => ({ ...prev, totalValue: Number(e.target.value) }))}
-                placeholder="Enter total value"
+                readOnly
+                className="bg-gray-50"
+                placeholder="Auto-calculated from trade items"
               />
+              <p className="text-sm text-muted-foreground mt-1">
+                This value is calculated as QTY × Rate for all trade items (excluding wastage)
+              </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
