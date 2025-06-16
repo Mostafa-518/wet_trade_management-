@@ -72,41 +72,42 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const isLoading = projectsLoading || subcontractorsLoading || responsibilitiesLoading || tradesLoading || tradeItemsLoading || subcontractsLoading;
 
+  // Always provide a valid context value
   const value: DataContextType = {
     // Projects
-    projects,
+    projects: projects || [],
     addProject,
     updateProject,
     deleteProject,
     
     // Subcontractors
-    subcontractors,
+    subcontractors: subcontractors || [],
     addSubcontractor,
     updateSubcontractor,
     deleteSubcontractor,
     
     // Trades
-    trades,
+    trades: trades || [],
     addTrade,
     updateTrade,
     deleteTrade,
     bulkDeleteTrades,
     
     // Trade Items
-    tradeItems,
+    tradeItems: tradeItems || [],
     addTradeItem,
     updateTradeItem,
     deleteTradeItem,
     bulkDeleteTradeItems,
     
     // Responsibilities
-    responsibilities,
+    responsibilities: responsibilities || [],
     addResponsibility,
     updateResponsibility,
     deleteResponsibility,
     
     // Subcontracts
-    subcontracts,
+    subcontracts: subcontracts || [],
     addSubcontract,
     updateSubcontract,
     deleteSubcontract,
