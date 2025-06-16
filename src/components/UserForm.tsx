@@ -37,7 +37,7 @@ type UserFormData = z.infer<typeof userSchema>;
 
 interface UserFormProps {
   user?: User;
-  onSubmit: (data: UserFormData) => void;
+  onSubmit: (data: UserFormData) => Promise<void>;
   onCancel: () => void;
 }
 
@@ -48,15 +48,21 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
       name: user?.name || '',
       email: user?.email || '',
       role: user?.role || 'viewer',
-      department: user?.department || '',
+      department: user?.department || 'General',
       status: user?.status || 'active',
       phone: user?.phone || '',
       password: '',
     },
   });
 
-  const handleSubmit = (data: UserFormData) => {
-    onSubmit(data);
+  const handleSubmit = async (data: UserFormData) => {
+    console.log('UserForm: Submitting data:', data);
+    try {
+      await onSubmit(data);
+      console.log('UserForm: Submit successful');
+    } catch (error) {
+      console.error('UserForm: Submit error:', error);
+    }
   };
 
   return (
@@ -177,7 +183,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
                   </FormControl>
                   <FormMessage />
                   <p className="text-xs text-muted-foreground">
-                    Leave empty to use default password. User should change it on first login.
+                    Leave empty to use default password (TempPassword123!). User should change it on first login.
                   </p>
                 </FormItem>
               )}
@@ -189,8 +195,11 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
           </Button>
-          <Button type="submit">
-            {user ? 'Update User' : 'Create User'}
+          <Button type="submit" disabled={form.formState.isSubmitting}>
+            {form.formState.isSubmitting 
+              ? (user ? 'Updating...' : 'Creating...') 
+              : (user ? 'Update User' : 'Create User')
+            }
           </Button>
         </div>
       </form>

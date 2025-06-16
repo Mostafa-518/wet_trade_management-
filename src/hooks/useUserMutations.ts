@@ -12,9 +12,12 @@ export function useUserMutations() {
     mutationFn: async (userData: any) => {
       console.log('Creating new user with data:', userData);
       
+      // Generate a default password if none provided
+      const password = userData.password || 'TempPassword123!';
+      
       const { data, error } = await supabase.auth.signUp({
         email: userData.email,
-        password: userData.password || 'TempPassword123!',
+        password: password,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
@@ -25,15 +28,17 @@ export function useUserMutations() {
 
       if (error) {
         console.error('Error creating user:', error);
-        throw error;
+        throw new Error(error.message);
       }
 
       console.log('User created:', data.user);
 
       if (data.user) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Wait a bit for the trigger to create the profile
+        await new Promise(resolve => setTimeout(resolve, 2000));
         
         try {
+          // Update the profile with additional data
           await UserService.update(data.user.id, {
             full_name: userData.name,
             role: userData.role,
@@ -42,6 +47,7 @@ export function useUserMutations() {
           console.log('Profile updated with additional data');
         } catch (updateError) {
           console.warn('Could not update additional profile data:', updateError);
+          // Still consider this a success since the user was created
         }
       }
 
@@ -58,7 +64,7 @@ export function useUserMutations() {
       console.error('Create user mutation error:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to create user",
+        description: error.message || "Failed to create user. Please check the email and try again.",
         variant: "destructive"
       });
     }
@@ -81,6 +87,7 @@ export function useUserMutations() {
       });
     },
     onError: (error) => {
+      console.error('Update user mutation error:', error);
       toast({
         title: "Error",
         description: "Failed to update user",
@@ -101,6 +108,7 @@ export function useUserMutations() {
       });
     },
     onError: (error: any) => {
+      console.error('Delete user mutation error:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to delete user",
