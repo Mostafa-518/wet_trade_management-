@@ -1,3 +1,4 @@
+
 import { subcontractService, subcontractTradeItemService, subcontractResponsibilityService } from '@/services';
 import { Subcontract } from '@/types/subcontract';
 import { 
@@ -6,7 +7,8 @@ import {
   generateContractId, 
   validateContractIdUniqueness,
   validateAddendumFormat,
-  validateSubcontractFormat
+  validateSubcontractFormat,
+  getNextAddendumNumber
 } from '@/utils/subcontractMapping';
 import { useToast } from '@/hooks/use-toast';
 
@@ -34,45 +36,70 @@ export const createSubcontractWithTradeItems = async (
 
   // Generate contract ID if not provided or is temporary
   let contractId = data.contractId;
+  let addendumNumber: string | undefined;
+  
   if (!contractId || contractId.startsWith('SC-')) {
-    // Find project to get its code
-    const project = projects.find(p => p.id === data.project);
-    if (!project || !project.code) {
-      const error = new Error('Project code is required for contract ID generation');
-      console.error('Project code error:', error);
-      toast({
-        title: "Project Code Missing",
-        description: "The selected project doesn't have a valid project code.",
-        variant: "destructive"
-      });
-      throw error;
-    }
-    
-    try {
-      contractId = await generateContractId(
-        data.contractType || 'subcontract',
-        project.code,
-        data.parentSubcontractId,
-        existingContracts
-      );
-      
-      // Validate uniqueness
-      if (!validateContractIdUniqueness(contractId, existingContracts)) {
-        const error = new Error('Contract ID conflict detected');
-        console.error('Contract ID conflict:', error);
+    if (data.contractType === 'ADD') {
+      // For addendums, we need the parent contract
+      if (!data.parentSubcontractId) {
+        const error = new Error('Parent contract is required for addendums');
+        console.error('Parent contract error:', error);
         toast({
-          title: "Contract ID Conflict",
-          description: "Generated contract ID already exists. Please try again.",
+          title: "Parent Contract Missing",
+          description: "Please select a parent contract for this addendum.",
+          variant: "destructive"
+        });
+        throw error;
+      }
+
+      // Find parent contract to get its contract_number
+      const parentContract = existingContracts.find(c => c.id === data.parentSubcontractId);
+      if (!parentContract) {
+        const error = new Error('Parent contract not found');
+        console.error('Parent contract not found:', error);
+        toast({
+          title: "Parent Contract Not Found",
+          description: "The selected parent contract could not be found.",
+          variant: "destructive"
+        });
+        throw error;
+      }
+
+      // Get next addendum number and generate contract ID
+      const nextAddendumNumber = await getNextAddendumNumber(parentContract.contractId, existingContracts);
+      contractId = `${parentContract.contractId}-ADD${nextAddendumNumber}`;
+      addendumNumber = nextAddendumNumber;
+      
+      console.log('Generated addendum ID:', contractId, 'with addendum number:', addendumNumber);
+    } else {
+      // For regular subcontracts
+      const project = projects.find(p => p.id === data.project);
+      if (!project || !project.code) {
+        const error = new Error('Project code is required for contract ID generation');
+        console.error('Project code error:', error);
+        toast({
+          title: "Project Code Missing",
+          description: "The selected project doesn't have a valid project code.",
           variant: "destructive"
         });
         throw error;
       }
       
-    } catch (error) {
-      console.error('Contract ID generation error:', error);
+      contractId = await generateContractId(
+        'subcontract',
+        project.code,
+        undefined,
+        existingContracts
+      );
+    }
+    
+    // Validate uniqueness
+    if (!validateContractIdUniqueness(contractId, existingContracts)) {
+      const error = new Error('Contract ID conflict detected');
+      console.error('Contract ID conflict:', error);
       toast({
-        title: "Contract ID Generation Failed",
-        description: error instanceof Error ? error.message : "Could not generate contract ID",
+        title: "Contract ID Conflict",
+        description: "Generated contract ID already exists. Please try again.",
         variant: "destructive"
       });
       throw error;
@@ -86,27 +113,27 @@ export const createSubcontractWithTradeItems = async (
       console.error('Format validation error:', error);
       toast({
         title: "Invalid Addendum Format",
-        description: "Addendum contract ID must follow format: [parent-contract-id]-ADDXX",
+        description: "Addendum contract ID must follow format: [parent-contract-number]-ADDXX",
         variant: "destructive"
       });
       throw error;
     }
   } else {
-    // For regular subcontracts: ID-XXXX-XXXX
+    // For regular subcontracts
     const project = projects.find(p => p.id === data.project);
-    if (!validateSubcontractFormat(contractId, project?.code || '')) {
+    if (project && !validateSubcontractFormat(contractId, project.code)) {
       const error = new Error('Invalid contract ID format');
       console.error('Format validation error:', error);
       toast({
         title: "Invalid Contract Format",
-        description: `Contract ID must follow format: ID-${project?.code}-XXXX`,
+        description: `Contract ID must follow format: ID-${project.code}-XXXX`,
         variant: "destructive"
       });
       throw error;
     }
   }
 
-  // Create the subcontract payload with proper null handling
+  // Create the subcontract payload with proper addendum number handling
   const subcontractPayload = {
     contract_number: contractId,
     project_id: data.project,
@@ -117,7 +144,7 @@ export const createSubcontractWithTradeItems = async (
     end_date: data.endDate,
     description: data.description || '',
     contract_type: data.contractType || 'subcontract',
-    addendum_number: data.contractType === 'ADD' ? (data.addendumNumber || null) : null,
+    addendum_number: data.contractType === 'ADD' ? addendumNumber : null,
     parent_subcontract_id: data.contractType === 'ADD' ? (data.parentSubcontractId || null) : null,
     date_of_issuing: data.dateOfIssuing || null,
   };

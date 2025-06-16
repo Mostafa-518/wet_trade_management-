@@ -245,6 +245,29 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
     return formData.tradeItems.reduce((sum, item) => sum + item.total, 0);
   };
 
+  // Get preview of generated addendum ID for display
+  const getAddendumPreview = () => {
+    if (formData.contractType === 'ADD' && formData.parentSubcontractId) {
+      const parentContract = Array.isArray(subcontracts) 
+        ? subcontracts.find(sc => sc.id === formData.parentSubcontractId)
+        : null;
+      
+      if (parentContract) {
+        // Find existing addendums for this parent
+        const existingAddendums = Array.isArray(subcontracts)
+          ? subcontracts.filter(sc => 
+              sc.parentSubcontractId === formData.parentSubcontractId && 
+              sc.contractType === 'ADD'
+            )
+          : [];
+        
+        const nextNumber = (existingAddendums.length + 1).toString().padStart(2, '0');
+        return `${parentContract.contractId}-ADD${nextNumber}`;
+      }
+    }
+    return null;
+  };
+
   // Extra fields for contract type/addendum in Review Step
   const renderContractExtras = (
     <div className="grid grid-cols-1 gap-4">
@@ -292,8 +315,13 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
                   ))
               : null}
           </select>
+          {getAddendumPreview() && (
+            <p className="text-sm text-blue-600 mt-1 font-medium">
+              Generated ID will be: {getAddendumPreview()}
+            </p>
+          )}
           <p className="text-sm text-gray-500 mt-1">
-            Contract ID will be automatically generated as: [parent-contract-id]-ADDXX
+            Format: [parent-contract-number]-ADDXX (e.g., ID-0504-0001-ADD01)
           </p>
         </div>
       )}
