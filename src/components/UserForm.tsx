@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -29,6 +30,7 @@ const userSchema = z.object({
   department: z.string().min(1, 'Department is required'),
   status: z.enum(['active', 'inactive', 'suspended']),
   phone: z.string().optional(),
+  password: z.string().min(6, 'Password must be at least 6 characters').optional(),
 });
 
 type UserFormData = z.infer<typeof userSchema>;
@@ -49,6 +51,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
       department: user?.department || '',
       status: user?.status || 'active',
       phone: user?.phone || '',
+      password: '',
     },
   });
 
@@ -161,6 +164,25 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
               </FormItem>
             )}
           />
+
+          {!user && (
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Temporary Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="Enter temporary password" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                  <p className="text-xs text-muted-foreground">
+                    Leave empty to use default password. User should change it on first login.
+                  </p>
+                </FormItem>
+              )}
+            />
+          )}
         </div>
 
         <div className="flex justify-end gap-4">

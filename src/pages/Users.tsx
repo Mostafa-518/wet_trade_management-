@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { UserService } from '@/services/userService';
 import { User } from '@/types/user';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 export function Users() {
   const location = useLocation();
@@ -50,28 +51,53 @@ export function Users() {
     }
   });
 
-  // Create user mutation
+  // Create user mutation - use Supabase auth to create user, then profile will be auto-created
   const createUserMutation = useMutation({
     mutationFn: async (userData: any) => {
-      return await UserService.create({
-        id: crypto.randomUUID(),
-        full_name: userData.name,
+      console.log('Creating new user with data:', userData);
+      
+      // Create user in Supabase Auth
+      const { data, error } = await supabase.auth.admin.createUser({
         email: userData.email,
-        role: userData.role,
-        phone: userData.phone
+        password: userData.password || 'TempPassword123!', // Default password, user should change it
+        email_confirm: true,
+        user_metadata: {
+          full_name: userData.name
+        }
       });
+
+      if (error) {
+        console.error('Error creating auth user:', error);
+        throw error;
+      }
+
+      console.log('Auth user created:', data.user);
+
+      // Update the user profile with additional info
+      if (data.user) {
+        const profileUpdate = await UserService.update(data.user.id, {
+          full_name: userData.name,
+          email: userData.email,
+          role: userData.role,
+          phone: userData.phone
+        });
+        console.log('Profile updated:', profileUpdate);
+      }
+
+      return data.user;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast({
         title: "User created",
-        description: "The new user has been successfully created.",
+        description: "The new user has been successfully created with a temporary password.",
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error('Create user mutation error:', error);
       toast({
         title: "Error",
-        description: "Failed to create user",
+        description: error.message || "Failed to create user",
         variant: "destructive"
       });
     }
@@ -106,7 +132,10 @@ export function Users() {
   // Delete user mutation
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      return await UserService.delete(userId);
+      // Delete from Supabase Auth (this will cascade to profile)
+      const { error } = await supabase.auth.admin.deleteUser(userId);
+      if (error) throw error;
+      return userId;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
@@ -115,10 +144,10 @@ export function Users() {
         description: "The user has been successfully deleted.",
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
         title: "Error",
-        description: "Failed to delete user",
+        description: error.message || "Failed to delete user",
         variant: "destructive"
       });
     }
