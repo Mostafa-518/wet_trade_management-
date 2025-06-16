@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,13 +9,13 @@ import { TradeItemForm } from '@/components/subcontract/TradeItemForm';
 import { TradeItemsList } from '@/components/subcontract/TradeItemsList';
 import { ResponsibilitiesStep } from '@/components/subcontract/ResponsibilitiesStep';
 import { DocumentsReviewStep } from '@/components/subcontract/DocumentsReviewStep';
-import { useSubcontracts } from '@/hooks/useSubcontracts';
+import { useData } from '@/contexts/DataContext';
 import { StepperProgress } from '@/components/subcontract/StepperProgress';
 import { StepperNavigation } from '@/components/subcontract/StepperNavigation';
 
 export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps) {
   const { toast } = useToast();
-  const { subcontracts } = useSubcontracts();
+  const { subcontracts } = useData();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
     project: '',
@@ -67,6 +66,16 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
           toast({
             title: "Missing Information",
             description: "Please select both project and subcontractor",
+            variant: "destructive"
+          });
+          return false;
+        }
+        
+        // Additional validation for addendum
+        if (formData.contractType === 'ADD' && !formData.parentSubcontractId) {
+          toast({
+            title: "Missing Parent Contract",
+            description: "Please select a parent subcontract for this addendum",
             variant: "destructive"
           });
           return false;
@@ -182,6 +191,16 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
       return;
     }
 
+    // Additional validation for addendum
+    if (formData.contractType === 'ADD' && !formData.parentSubcontractId) {
+      toast({
+        title: "Invalid Addendum",
+        description: "Parent subcontract must be selected for addendum",
+        variant: "destructive"
+      });
+      return;
+    }
+
     // Compose data as expected by backend - contract ID will be auto-generated
     const subcontractData = {
       contractId: '', // Will be auto-generated based on type and project
@@ -207,14 +226,14 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
       await onSave(subcontractData);
       toast({
         title: "Success",
-        description: "Subcontract saved and will appear in the table."
+        description: `${formData.contractType === 'ADD' ? 'Addendum' : 'Subcontract'} saved and will appear in the table.`
       });
       onClose(); // Close the modal/stepper after save
     } catch (err: any) {
       console.error('Error saving subcontract:', err);
       toast({
         title: "Save failed",
-        description: err?.message || "Could not save subcontract.",
+        description: err?.message || `Could not save ${formData.contractType === 'ADD' ? 'addendum' : 'subcontract'}.`,
         variant: "destructive"
       });
     } finally {
@@ -249,49 +268,34 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
         </select>
       </div>
       {formData.contractType === 'ADD' && (
-        <>
-          <div>
-            <label className="block font-medium mb-1">Addendum Number</label>
-            <input
-              type="text"
-              className="border rounded px-3 py-2 w-full"
-              value={formData.addendumNumber || ''}
-              onChange={e =>
-                setFormData(prev => ({
-                  ...prev,
-                  addendumNumber: e.target.value
-                }))
-              }
-              placeholder="Enter addendum number"
-              required={formData.contractType === 'ADD'}
-            />
-          </div>
-          <div>
-            <label className="block font-medium mb-1">Parent Subcontract</label>
-            <select
-              className="border rounded px-3 py-2 w-full"
-              value={formData.parentSubcontractId || ''}
-              onChange={e =>
-                setFormData(prev => ({
-                  ...prev,
-                  parentSubcontractId: e.target.value
-                }))
-              }
-              required={formData.contractType === 'ADD'}
-            >
-              <option value="">Select parent subcontract...</option>
-              {Array.isArray(subcontracts)
-                ? subcontracts
-                    .filter(sc => sc.contractType === 'subcontract') // Only allow "main" contracts
-                    .map(sc => (
-                      <option key={sc.id} value={sc.id}>
-                        {sc.contractId} - {sc.description}
-                      </option>
-                    ))
-                : null}
-            </select>
-          </div>
-        </>
+        <div>
+          <label className="block font-medium mb-1">Parent Subcontract *</label>
+          <select
+            className="border rounded px-3 py-2 w-full"
+            value={formData.parentSubcontractId || ''}
+            onChange={e =>
+              setFormData(prev => ({
+                ...prev,
+                parentSubcontractId: e.target.value
+              }))
+            }
+            required={formData.contractType === 'ADD'}
+          >
+            <option value="">Select parent subcontract...</option>
+            {Array.isArray(subcontracts)
+              ? subcontracts
+                  .filter(sc => sc.contractType === 'subcontract') // Only allow "main" contracts
+                  .map(sc => (
+                    <option key={sc.id} value={sc.id}>
+                      {sc.contractId} - {sc.description}
+                    </option>
+                  ))
+              : null}
+          </select>
+          <p className="text-sm text-gray-500 mt-1">
+            Contract ID will be automatically generated as: [parent-contract-id]-ADDXX
+          </p>
+        </div>
       )}
     </div>
   );
@@ -356,7 +360,9 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
       <Card className="w-full max-w-6xl max-h-[90vh] overflow-auto">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Create New Subcontract</CardTitle>
+            <CardTitle>
+              Create New {formData.contractType === 'ADD' ? 'Addendum' : 'Subcontract'}
+            </CardTitle>
             <Button variant="ghost" size="sm" onClick={onClose}>
               <X className="h-4 w-4" />
             </Button>

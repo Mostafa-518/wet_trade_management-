@@ -1,6 +1,13 @@
 import { subcontractService, subcontractTradeItemService, subcontractResponsibilityService } from '@/services';
 import { Subcontract } from '@/types/subcontract';
-import { findTradeItemId, findResponsibilityId, generateContractId, validateContractIdUniqueness } from '@/utils/subcontractMapping';
+import { 
+  findTradeItemId, 
+  findResponsibilityId, 
+  generateContractId, 
+  validateContractIdUniqueness,
+  validateAddendumFormat,
+  validateSubcontractFormat
+} from '@/utils/subcontractMapping';
 import { useToast } from '@/hooks/use-toast';
 
 export const createSubcontractWithTradeItems = async (
@@ -74,7 +81,7 @@ export const createSubcontractWithTradeItems = async (
 
   // Validate contract ID format
   if (data.contractType === 'ADD') {
-    if (!contractId.match(/^.+-ADD\d{2}$/)) {
+    if (!validateAddendumFormat(contractId)) {
       const error = new Error('Invalid addendum contract ID format');
       console.error('Format validation error:', error);
       toast({
@@ -87,8 +94,7 @@ export const createSubcontractWithTradeItems = async (
   } else {
     // For regular subcontracts: ID-XXXX-XXXX
     const project = projects.find(p => p.id === data.project);
-    const expectedPattern = new RegExp(`^ID-${project?.code}-\\d{4}$`);
-    if (!contractId.match(expectedPattern)) {
+    if (!validateSubcontractFormat(contractId, project?.code || '')) {
       const error = new Error('Invalid contract ID format');
       console.error('Format validation error:', error);
       toast({

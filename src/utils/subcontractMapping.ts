@@ -114,7 +114,16 @@ export async function generateContractId(
       throw new Error('Parent contract ID is required for addendums');
     }
     
-    // Find existing addendums for this parent contract
+    // Find the parent contract to get its contract ID
+    const parentContract = existingContracts.find(contract => contract.id === parentContractId);
+    if (!parentContract) {
+      throw new Error('Parent contract not found');
+    }
+    
+    const parentContractNumber = parentContract.contractId;
+    console.log('Parent contract number:', parentContractNumber);
+    
+    // Find existing addendums for this parent contract using the parent's contract ID
     const existingAddendums = existingContracts.filter(
       contract => contract.parentSubcontractId === parentContractId && contract.contractType === 'ADD'
     );
@@ -123,7 +132,7 @@ export async function generateContractId(
     
     // Generate next addendum number (ADD01, ADD02, etc.)
     const nextAddendumNumber = (existingAddendums.length + 1).toString().padStart(2, '0');
-    const generatedId = `${parentContractId}-ADD${nextAddendumNumber}`;
+    const generatedId = `${parentContractNumber}-ADD${nextAddendumNumber}`;
     
     console.log('Generated addendum ID:', generatedId);
     return generatedId;
@@ -168,4 +177,22 @@ export function validateContractIdUniqueness(
   const isDuplicate = existingContracts.some(contract => contract.contractId === contractId);
   console.log('Contract ID uniqueness check:', { contractId, isDuplicate: isDuplicate });
   return !isDuplicate;
+}
+
+/**
+ * Validates addendum contract ID format
+ * Expected format: [parent-contract-id]-ADDXX (e.g., ID-0504-0001-ADD01)
+ */
+export function validateAddendumFormat(contractId: string): boolean {
+  const addendumPattern = /^.+-ADD\d{2}$/;
+  return addendumPattern.test(contractId);
+}
+
+/**
+ * Validates regular subcontract ID format
+ * Expected format: ID-[project-code]-XXXX (e.g., ID-0504-0001)
+ */
+export function validateSubcontractFormat(contractId: string, projectCode: string): boolean {
+  const subcontractPattern = new RegExp(`^ID-${projectCode}-\\d{4}$`);
+  return subcontractPattern.test(contractId);
 }
