@@ -161,9 +161,9 @@ export function useSubcontractsImport() {
           continue;
         }
 
-        // Find subcontractor ID
+        // Find subcontractor ID - using companyName instead of company_name
         const subcontractor = subcontractors.find(s => 
-          s.company_name?.toLowerCase() === row['Subcontractor Company'].toLowerCase()
+          s.companyName?.toLowerCase() === row['Subcontractor Company'].toLowerCase()
         );
         if (!subcontractor) {
           errorCount++;
@@ -199,7 +199,7 @@ export function useSubcontractsImport() {
           startDate: new Date().toISOString().split('T')[0],
           endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           dateOfIssuing: row['Date of Issuing'] ? new Date(row['Date of Issuing']).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-          description: `Imported subcontract for ${project.name} with ${subcontractor.company_name}`,
+          description: `Imported subcontract for ${project.name} with ${subcontractor.companyName}`,
           contractType: (row['Type of contract'] as 'subcontract' | 'ADD') || 'subcontract'
         };
 
