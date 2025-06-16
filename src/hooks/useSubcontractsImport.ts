@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import * as XLSX from 'xlsx';
 import { useToast } from '@/hooks/use-toast';
@@ -70,11 +69,19 @@ export function useSubcontractsImport() {
       const workbook = XLSX.read(data, { type: 'array' });
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet) as SubcontractImportData[];
+      
+      console.log('Raw worksheet:', worksheet);
+      
+      // Parse as array of arrays first to handle merged cells better
+      const rawData = XLSX.utils.sheet_to_json(worksheet, { 
+        header: 1,
+        defval: '',
+        raw: false
+      });
 
-      console.log('Parsed Excel data:', jsonData);
+      console.log('Raw data as arrays:', rawData);
 
-      if (jsonData.length === 0) {
+      if (rawData.length === 0) {
         toast({
           title: "Empty file",
           description: "The Excel file appears to be empty",
@@ -83,8 +90,49 @@ export function useSubcontractsImport() {
         return;
       }
 
+      // Find header row and convert to objects
+      const headerRow = rawData[0] as string[];
+      console.log('Header row:', headerRow);
+      
+      const dataRows = rawData.slice(1) as any[][];
+      console.log('Data rows:', dataRows);
+
+      // Map array data to objects with proper headers
+      const mappedData: SubcontractImportData[] = dataRows
+        .filter(row => row && row.length > 0 && row.some(cell => cell && String(cell).trim()))
+        .map(row => {
+          const mapped: any = {};
+          
+          // Map based on column positions (adjust indices based on your Excel structure)
+          mapped['Date of Issuing'] = String(row[0] || '').trim();
+          mapped['Project Name'] = String(row[1] || '').trim();
+          mapped['Subcontractor Company'] = String(row[2] || '').trim();
+          mapped['Type of contract'] = String(row[3] || '').trim();
+          mapped['Trades'] = String(row[4] || '').trim();
+          mapped['Items'] = String(row[5] || '').trim();
+          mapped['QTY'] = parseFloat(row[6]) || 0;
+          mapped['Rate'] = parseFloat(row[7]) || 0;
+          mapped['wastage'] = parseFloat(row[8]) || 0;
+          mapped['Responsibilities'] = String(row[9] || '').trim();
+          
+          return mapped as SubcontractImportData;
+        });
+
+      console.log('Mapped data before processing merged cells:', mappedData);
+
+      if (mappedData.length === 0) {
+        toast({
+          title: "No valid data",
+          description: "Could not find valid data rows in the Excel file",
+          variant: "destructive"
+        });
+        return;
+      }
+
       // Process merged cells - fill empty cells with previous values
-      const processedData = processExcelMergedCells(jsonData);
+      const processedData = processExcelMergedCells(mappedData);
+      
+      console.log('Processed data after handling merged cells:', processedData);
       
       setImportData(processedData);
       setShowPreview(true);
@@ -97,7 +145,7 @@ export function useSubcontractsImport() {
       console.error('Error parsing Excel file:', error);
       toast({
         title: "Error parsing file",
-        description: "Could not read the Excel file. Please check the format.",
+        description: `Could not read the Excel file: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive"
       });
     } finally {
