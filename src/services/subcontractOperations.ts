@@ -1,7 +1,6 @@
-
 import { subcontractService, subcontractTradeItemService, subcontractResponsibilityService } from '@/services';
 import { Subcontract } from '@/types/subcontract';
-import { findTradeItemId, findResponsibilityId, generateContractId } from '@/utils/subcontractMapping';
+import { findTradeItemId, findResponsibilityId, generateContractId, validateContractIdUniqueness } from '@/utils/subcontractMapping';
 import { useToast } from '@/hooks/use-toast';
 
 export const createSubcontractWithTradeItems = async (
@@ -10,7 +9,8 @@ export const createSubcontractWithTradeItems = async (
   tradeItems: any[],
   toast: ReturnType<typeof useToast>['toast'],
   responsibilities: any[] = [],
-  existingContracts: Subcontract[] = []
+  existingContracts: Subcontract[] = [],
+  projects: any[] = []
 ) => {
   console.log('Adding subcontract with data:', data);
 
@@ -23,21 +23,38 @@ export const createSubcontractWithTradeItems = async (
     throw new Error('Project and subcontractor are required');
   }
 
-  // Generate contract ID if not provided
+  // Generate contract ID if not provided or is temporary
   let contractId = data.contractId;
   if (!contractId || contractId.startsWith('SC-')) {
     // Find project to get its code
-    const project = data.project; // This should be project ID
-    // For demo purposes, using a 4-digit code. In production, you'd fetch from project data
-    const projectCode = '0504'; // This should come from the actual project
+    const project = projects.find(p => p.id === data.project);
+    if (!project || !project.code) {
+      toast({
+        title: "Project Code Missing",
+        description: "The selected project doesn't have a valid project code.",
+        variant: "destructive"
+      });
+      throw new Error('Project code is required for contract ID generation');
+    }
     
     try {
       contractId = await generateContractId(
         data.contractType || 'subcontract',
-        projectCode,
+        project.code,
         data.parentSubcontractId,
         existingContracts
       );
+      
+      // Validate uniqueness
+      if (!validateContractIdUniqueness(contractId, existingContracts)) {
+        toast({
+          title: "Contract ID Conflict",
+          description: "Generated contract ID already exists. Please try again.",
+          variant: "destructive"
+        });
+        throw new Error('Contract ID conflict detected');
+      }
+      
     } catch (error) {
       toast({
         title: "Contract ID Generation Failed",
@@ -45,6 +62,27 @@ export const createSubcontractWithTradeItems = async (
         variant: "destructive"
       });
       throw error;
+    }
+  }
+
+  // Validate contract ID format
+  if (data.contractType === 'ADD') {
+    if (!contractId.match(/^.+-ADD\d{2}$/)) {
+      toast({
+        title: "Invalid Addendum Format",
+        description: "Addendum contract ID must follow format: [parent-contract-id]-ADDXX",
+        variant: "destructive"
+      });
+      throw new Error('Invalid addendum contract ID format');
+    }
+  } else {
+    if (!contractId.match(/^ID-\d{4}-\d{4}$/)) {
+      toast({
+        title: "Invalid Contract Format",
+        description: "Contract ID must follow format: ID-XXXX-XXXX",
+        variant: "destructive"
+      });
+      throw new Error('Invalid contract ID format');
     }
   }
 
@@ -104,7 +142,7 @@ export const createSubcontractWithTradeItems = async (
         quantity: item.quantity,
         unit_price: item.unitPrice,
         total_price: item.total,
-        wastage_percentage: item.wastagePercentage ?? 0 // Fixed: ensure wastage is saved
+        wastage_percentage: item.wastagePercentage ?? 0
       };
     }).filter(item => item.trade_item_id);
 
@@ -200,7 +238,7 @@ export const updateSubcontractWithTradeItems = async (
           quantity: item.quantity,
           unit_price: item.unitPrice,
           total_price: item.total,
-          wastage_percentage: item.wastagePercentage ?? 0 // Fixed: ensure wastage is updated
+          wastage_percentage: item.wastagePercentage ?? 0
         };
       }).filter(item => item.trade_item_id);
 

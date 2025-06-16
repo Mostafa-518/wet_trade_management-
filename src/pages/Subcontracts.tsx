@@ -11,8 +11,8 @@ import { useData } from '@/contexts/DataContext';
 export function Subcontracts() {
   const navigate = useNavigate();
   const [showStepper, setShowStepper] = useState(false);
-  const { trades, tradeItems, responsibilities } = useData();
-  const { addSubcontract } = useSubcontracts(trades, tradeItems, responsibilities);
+  const { trades, tradeItems, responsibilities, projects } = useData();
+  const { addSubcontract } = useSubcontracts(trades, tradeItems, responsibilities, projects);
   const { toast } = useToast();
   const { profile } = useAuth();
   const canModify = profile?.role !== 'viewer';

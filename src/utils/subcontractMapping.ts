@@ -28,7 +28,7 @@ export function mapSubcontractToFrontend(dbRow: any): Subcontract {
         quantity: dbTradeItem.quantity || 0,
         unitPrice: dbTradeItem.unit_price || 0,
         total: dbTradeItem.total_price || 0,
-        wastagePercentage: dbTradeItem.wastage_percentage || 0 // Fixed: ensure wastage is mapped correctly
+        wastagePercentage: dbTradeItem.wastage_percentage || 0
       };
     });
   }
@@ -98,6 +98,8 @@ export function findResponsibilityId(responsibilities: any[], responsibilityName
 
 /**
  * Generates a unique contract ID based on the contract type and project
+ * Format: ID-[project-code]-XXXX for subcontracts
+ * Format: [parent-contract-id]-ADDXX for addendums
  */
 export async function generateContractId(
   contractType: 'subcontract' | 'ADD',
@@ -105,6 +107,8 @@ export async function generateContractId(
   parentContractId?: string,
   existingContracts: Subcontract[] = []
 ): Promise<string> {
+  console.log('Generating contract ID:', { contractType, projectCode, parentContractId });
+  
   if (contractType === 'ADD') {
     if (!parentContractId) {
       throw new Error('Parent contract ID is required for addendums');
@@ -115,19 +119,28 @@ export async function generateContractId(
       contract => contract.parentSubcontractId === parentContractId && contract.contractType === 'ADD'
     );
     
-    // Generate next addendum number
+    console.log('Existing addendums for parent:', existingAddendums.length);
+    
+    // Generate next addendum number (ADD01, ADD02, etc.)
     const nextAddendumNumber = (existingAddendums.length + 1).toString().padStart(2, '0');
-    return `${parentContractId}-ADD${nextAddendumNumber}`;
+    const generatedId = `${parentContractId}-ADD${nextAddendumNumber}`;
+    
+    console.log('Generated addendum ID:', generatedId);
+    return generatedId;
   } else {
     // For regular subcontracts: ID-[project-code]-XXXX
+    // Find existing subcontracts for this project
+    const projectPattern = `ID-${projectCode}-`;
     const projectContracts = existingContracts.filter(
-      contract => contract.contractId.startsWith(`ID-${projectCode}-`) && contract.contractType === 'subcontract'
+      contract => contract.contractId.startsWith(projectPattern) && contract.contractType === 'subcontract'
     );
     
-    // Find the highest sequential number
+    console.log('Existing contracts for project:', projectContracts.length);
+    
+    // Find the highest sequential number for this project
     let maxNumber = 0;
     projectContracts.forEach(contract => {
-      const match = contract.contractId.match(/ID-\d{4}-(\d{4})$/);
+      const match = contract.contractId.match(new RegExp(`ID-${projectCode}-(\\d{4})$`));
       if (match) {
         const number = parseInt(match[1], 10);
         if (number > maxNumber) {
@@ -136,7 +149,23 @@ export async function generateContractId(
       }
     });
     
+    // Generate next sequential number
     const nextNumber = (maxNumber + 1).toString().padStart(4, '0');
-    return `ID-${projectCode}-${nextNumber}`;
+    const generatedId = `ID-${projectCode}-${nextNumber}`;
+    
+    console.log('Generated subcontract ID:', generatedId);
+    return generatedId;
   }
+}
+
+/**
+ * Validates that a contract ID is unique among existing contracts
+ */
+export function validateContractIdUniqueness(
+  contractId: string,
+  existingContracts: Subcontract[]
+): boolean {
+  const isDuplicate = existingContracts.some(contract => contract.contractId === contractId);
+  console.log('Contract ID uniqueness check:', { contractId, isDuplicate: isDuplicate });
+  return !isDuplicate;
 }

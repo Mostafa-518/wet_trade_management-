@@ -7,8 +7,8 @@ import { useSubcontractSelection } from './subcontract/useSubcontractSelection';
 import { useSubcontractEditing } from './subcontract/useSubcontractEditing';
 
 export function useSubcontractTableLogic() {
-  const { trades, tradeItems, responsibilities } = useData();
-  const { subcontracts, updateSubcontract, deleteSubcontract, deleteManySubcontracts, isLoading } = useSubcontracts(trades, tradeItems, responsibilities);
+  const { trades, tradeItems, responsibilities, projects } = useData();
+  const { subcontracts, updateSubcontract, deleteSubcontract, deleteManySubcontracts, isLoading } = useSubcontracts(trades, tradeItems, responsibilities, projects);
   
   const { getProjectName, getProjectCode, getSubcontractorName } = useSubcontractHelpers();
   
