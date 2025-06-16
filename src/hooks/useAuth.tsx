@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { AuthService } from '@/services/authService';
@@ -80,11 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async (email: string, password: string) => {
     console.log('AuthProvider: Sign in attempt for:', email);
     try {
-      const { data, error } = await AuthService.signIn(email, password);
-      if (error) {
-        console.error('AuthProvider: Sign in error:', error);
-        return { error };
-      }
+      const data = await AuthService.signIn(email, password);
       setUser(data.user);
       setSession(data.session);
       if (data.user) {
@@ -100,11 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, password: string, fullName?: string) => {
     console.log('AuthProvider: Sign up attempt for:', email, 'with fullName:', fullName);
     try {
-      const { data, error } = await AuthService.signUp(email, password, fullName);
-      if (error) {
-        console.error('AuthProvider: Sign up error:', error);
-        return { error };
-      }
+      const data = await AuthService.signUp(email, password, fullName);
       // Note: user profile will be created automatically by the database trigger
       console.log('AuthProvider: Sign up successful, user profile should be created automatically');
       return { error: null };
