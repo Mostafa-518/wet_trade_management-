@@ -80,11 +80,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async (email: string, password: string) => {
     console.log('AuthProvider: Sign in attempt for:', email);
     try {
-      const data = await AuthService.signIn(email, password);
-      setUser(data.user);
-      setSession(data.session);
-      if (data.user) {
-        await fetchUserProfile(data.user.id);
+      const { user, session } = await AuthService.signIn(email, password);
+      setUser(user);
+      setSession(session);
+      if (user) {
+        await fetchUserProfile(user.id);
       }
       return { error: null };
     } catch (error) {
@@ -96,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, password: string, fullName?: string) => {
     console.log('AuthProvider: Sign up attempt for:', email, 'with fullName:', fullName);
     try {
-      const data = await AuthService.signUp(email, password, fullName);
+      const { user, session } = await AuthService.signUp(email, password, fullName);
       // Note: user profile will be created automatically by the database trigger
       console.log('AuthProvider: Sign up successful, user profile should be created automatically');
       return { error: null };

@@ -6,7 +6,6 @@ import * as z from 'zod';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
@@ -17,7 +16,6 @@ const profileSchema = z.object({
   full_name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
   phone: z.string().optional(),
-  bio: z.string().max(500, 'Bio must be less than 500 characters').optional(),
 });
 
 // Password form validation schema
@@ -46,7 +44,6 @@ export function ProfileSettings() {
       full_name: profile?.full_name || '',
       email: profile?.email || user?.email || '',
       phone: profile?.phone || '',
-      bio: profile?.bio || '',
     },
   });
 
@@ -67,9 +64,6 @@ export function ProfileSettings() {
         full_name: data.full_name,
         email: data.email,
         phone: data.phone,
-        // Note: bio field would need to be added to the user_profiles table
-        // For now, we'll comment it out
-        // bio: data.bio,
       });
       
       toast({
@@ -172,24 +166,6 @@ export function ProfileSettings() {
                       <FormLabel>Phone Number (Optional)</FormLabel>
                       <FormControl>
                         <Input placeholder="Enter your phone number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={profileForm.control}
-                  name="bio"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Bio (Optional)</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Tell us about yourself"
-                          className="min-h-[100px]"
-                          {...field}
-                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
