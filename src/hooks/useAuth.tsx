@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // THEN check for existing session
     AuthService.getSession().then((sessionResponse) => {
       console.log('AuthProvider: Initial session response:', { sessionResponse });
-      const session = sessionResponse?.data?.session || sessionResponse;
+      const session = sessionResponse;
       console.log('AuthProvider: Extracted session:', { session });
       setSession(session);
       setUser(session?.user ?? null);
@@ -83,8 +83,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     console.log('AuthProvider: Sign in attempt for:', email);
     try {
       const result = await AuthService.signIn(email, password);
-      const user = result?.user || result?.data?.user;
-      const session = result?.session || result?.data?.session;
+      const user = result?.user;
+      const session = result?.session;
       setUser(user);
       setSession(session);
       if (user) {
