@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,7 +38,7 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
     quantity: 0,
     unitPrice: 0,
     total: 0,
-    wastagePercentage: 0 // Fixed: initialize wastage percentage
+    wastagePercentage: 0
   });
 
   const steps = [
@@ -116,7 +117,7 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
       quantity: currentTradeItem.quantity!,
       unitPrice: currentTradeItem.unitPrice!,
       total: currentTradeItem.total!,
-      wastagePercentage: currentTradeItem.wastagePercentage || 0 // Fixed: include wastage percentage
+      wastagePercentage: currentTradeItem.wastagePercentage || 0
     };
 
     console.log('Adding new trade item:', newItem);
@@ -133,7 +134,7 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
       quantity: 0,
       unitPrice: 0,
       total: 0,
-      wastagePercentage: 0 // Fixed: reset wastage percentage
+      wastagePercentage: 0
     });
 
     toast({
@@ -192,12 +193,14 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
       status: 'draft' as const,
       startDate: new Date().toISOString().split('T')[0],
       endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      dateOfIssuing: formData.dateOfIssuing ?? new Date().toISOString().split('T')[0],
+      dateOfIssuing: formData.dateOfIssuing || new Date().toISOString().split('T')[0],
       description: `${formData.contractType === 'ADD' ? 'Addendum' : 'Subcontract'} for ${formData.project} with ${formData.subcontractor}`,
       contractType: formData.contractType || 'subcontract',
-      addendumNumber: formData.contractType === 'ADD' ? formData.addendumNumber : undefined,
-      parentSubcontractId: formData.contractType === 'ADD' ? formData.parentSubcontractId : undefined
+      addendumNumber: formData.contractType === 'ADD' ? (formData.addendumNumber || undefined) : undefined,
+      parentSubcontractId: formData.contractType === 'ADD' ? (formData.parentSubcontractId || undefined) : undefined
     };
+
+    console.log('Final subcontract data before save:', subcontractData);
 
     try {
       setIsSaving(true);
@@ -206,15 +209,16 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
         title: "Success",
         description: "Subcontract saved and will appear in the table."
       });
-      setIsSaving(false);
       onClose(); // Close the modal/stepper after save
     } catch (err: any) {
-      setIsSaving(false);
+      console.error('Error saving subcontract:', err);
       toast({
         title: "Save failed",
         description: err?.message || "Could not save subcontract.",
         variant: "destructive"
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -251,7 +255,7 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
             <input
               type="text"
               className="border rounded px-3 py-2 w-full"
-              value={formData.addendumNumber ?? ''}
+              value={formData.addendumNumber || ''}
               onChange={e =>
                 setFormData(prev => ({
                   ...prev,
@@ -266,7 +270,7 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
             <label className="block font-medium mb-1">Parent Subcontract</label>
             <select
               className="border rounded px-3 py-2 w-full"
-              value={formData.parentSubcontractId ?? ''}
+              value={formData.parentSubcontractId || ''}
               onChange={e =>
                 setFormData(prev => ({
                   ...prev,
@@ -327,7 +331,7 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
                   <input
                     type="date"
                     className="border rounded px-3 py-2 w-full"
-                    value={formData.dateOfIssuing ?? ''}
+                    value={formData.dateOfIssuing || ''}
                     onChange={e =>
                       setFormData(prev => ({
                         ...prev,

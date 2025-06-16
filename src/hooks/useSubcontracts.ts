@@ -17,6 +17,7 @@ export function useSubcontracts(trades: any[] = [], tradeItems: any[] = [], resp
   const { data: subcontractsRaw = [], refetch: refetchSubcontracts, isLoading: subcontractsLoading } = useQuery({
     queryKey: ['subcontracts'],
     queryFn: async () => {
+      console.log('Fetching subcontracts from database...');
       const data = await subcontractService.getWithTradeItems();
       console.log('Raw subcontracts from database:', data);
       return data;
@@ -28,8 +29,10 @@ export function useSubcontracts(trades: any[] = [], tradeItems: any[] = [], resp
   const subcontracts = subcontractsRaw.map(mapSubcontractToFrontend);
 
   const addSubcontract = async (data: Partial<Subcontract>) => {
+    console.log('Adding subcontract with data:', data);
     try {
       await createSubcontractWithTradeItems(data, trades, tradeItems, toast, responsibilities, subcontracts, projects);
+      console.log('Subcontract created successfully, refetching data...');
       await refetchSubcontracts();
       toast({ title: "Success", description: "Subcontract created successfully" });
     } catch (error) {
