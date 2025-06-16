@@ -5,7 +5,9 @@ import { SubcontractTableHeader } from './subcontract/SubcontractTableHeader';
 import { SubcontractTableSearch } from './subcontract/SubcontractTableSearch';
 import { SubcontractTableContent } from './subcontract/SubcontractTableContent';
 import { SubcontractTableSummary } from './subcontract/SubcontractTableSummary';
+import { ImportPreviewDialog } from '@/components/ImportPreviewDialog';
 import { useSubcontractTableLogic } from '@/hooks/useSubcontractTableLogic';
+import { useSubcontractsImport } from '@/hooks/useSubcontractsImport';
 
 interface SubcontractTableProps {
   onCreateNew?: () => void;
@@ -36,6 +38,16 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
     setEditingSubcontract,
   } = useSubcontractTableLogic();
 
+  const {
+    isImporting,
+    importData,
+    showPreview,
+    setShowPreview,
+    handleFileUpload,
+    processImport,
+    downloadTemplate
+  } = useSubcontractsImport();
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -49,7 +61,11 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
 
   return (
     <div className="space-y-4">
-      <SubcontractTableHeader onCreateNew={onCreateNew} />
+      <SubcontractTableHeader 
+        onCreateNew={onCreateNew}
+        onFileUpload={handleFileUpload}
+        onDownloadTemplate={downloadTemplate}
+      />
 
       <SubcontractTableSearch
         searchTerm={searchTerm}
@@ -84,6 +100,36 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
           onClose={() => setEditingSubcontract(null)}
           onSave={handleSaveEdit}
         />
+      )}
+
+      <ImportPreviewDialog
+        open={showPreview}
+        onClose={() => setShowPreview(false)}
+        data={importData}
+        columns={[
+          { key: 'Date of Issuing', label: 'Date of Issuing' },
+          { key: 'Project Name', label: 'Project Name' },
+          { key: 'Subcontractor Company', label: 'Subcontractor Company' },
+          { key: 'Type of contract', label: 'Type of Contract' },
+          { key: 'Trades', label: 'Trades' },
+          { key: 'Items', label: 'Items' },
+          { key: 'QTY', label: 'Quantity' },
+          { key: 'Rate', label: 'Rate' },
+          { key: 'wastage', label: 'Wastage %' },
+          { key: 'Responsibilities', label: 'Responsibilities' }
+        ]}
+        onImport={processImport}
+      />
+
+      {isImporting && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              <span>Processing import...</span>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
