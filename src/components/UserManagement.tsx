@@ -40,7 +40,8 @@ export function UserManagement() {
           department: 'General',
           status: 'active' as const,
           createdAt: user.created_at,
-          lastLogin: user.updated_at
+          lastLogin: user.last_login,
+          avatar: user.avatar_url
         };
       });
     }
@@ -113,7 +114,7 @@ export function UserManagement() {
       <UserDetailView
         user={selectedUser}
         onBack={handleDetailBack}
-        onEdit={canModify ? handleEditUser : undefined}
+        onEdit={canModify ? handleEditUser : () => {}}
       />
     );
   }

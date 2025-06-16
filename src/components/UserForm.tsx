@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -21,6 +21,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { AvatarUpload } from '@/components/AvatarUpload';
 import { User } from '@/types/user';
 
 const userSchema = z.object({
@@ -31,6 +32,7 @@ const userSchema = z.object({
   status: z.enum(['active', 'inactive', 'suspended']),
   phone: z.string().optional(),
   password: z.string().min(6, 'Password must be at least 6 characters').optional(),
+  avatar: z.string().optional(),
 });
 
 type UserFormData = z.infer<typeof userSchema>;
@@ -42,6 +44,8 @@ interface UserFormProps {
 }
 
 export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(user?.avatar || null);
+
   const form = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
     defaultValues: {
@@ -52,13 +56,18 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
       status: user?.status || 'active',
       phone: user?.phone || '',
       password: '',
+      avatar: user?.avatar || '',
     },
   });
 
   const handleSubmit = async (data: UserFormData) => {
     console.log('UserForm: Submitting data:', data);
     try {
-      await onSubmit(data);
+      const submitData = {
+        ...data,
+        avatar: avatarUrl || undefined,
+      };
+      await onSubmit(submitData);
       console.log('UserForm: Submit successful');
     } catch (error) {
       console.error('UserForm: Submit error:', error);
@@ -68,7 +77,16 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Avatar Upload Section */}
+        <div className="flex justify-center">
+          <AvatarUpload
+            currentAvatar={avatarUrl || undefined}
+            name={form.watch('name') || 'User'}
+            onAvatarChange={setAvatarUrl}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
           <FormField
             control={form.control}
             name="name"
@@ -176,7 +194,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
               control={form.control}
               name="password"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="md:col-span-2">
                   <FormLabel>Temporary Password</FormLabel>
                   <FormControl>
                     <Input type="password" placeholder="Enter temporary password" {...field} />
@@ -191,11 +209,11 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
           )}
         </div>
 
-        <div className="flex justify-end gap-4">
-          <Button type="button" variant="outline" onClick={onCancel}>
+        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
+          <Button type="button" variant="outline" onClick={onCancel} className="w-full sm:w-auto">
             Cancel
           </Button>
-          <Button type="submit" disabled={form.formState.isSubmitting}>
+          <Button type="submit" disabled={form.formState.isSubmitting} className="w-full sm:w-auto">
             {form.formState.isSubmitting 
               ? (user ? 'Updating...' : 'Creating...') 
               : (user ? 'Update User' : 'Create User')

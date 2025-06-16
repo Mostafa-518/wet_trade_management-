@@ -38,11 +38,12 @@ export function useUserMutations() {
         await new Promise(resolve => setTimeout(resolve, 2000));
         
         try {
-          // Update the profile with additional data
+          // Update the profile with additional data including avatar
           await UserService.update(data.user.id, {
             full_name: userData.name,
             role: userData.role,
-            phone: userData.phone
+            phone: userData.phone,
+            avatar_url: userData.avatar
           });
           console.log('Profile updated with additional data');
         } catch (updateError) {
@@ -76,7 +77,8 @@ export function useUserMutations() {
         full_name: userData.name,
         email: userData.email,
         role: userData.role,
-        phone: userData.phone
+        phone: userData.phone,
+        avatar_url: userData.avatar
       });
     },
     onSuccess: () => {
