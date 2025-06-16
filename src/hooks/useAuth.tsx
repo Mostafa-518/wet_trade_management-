@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { AuthService } from '@/services/authService';
@@ -43,8 +44,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     // THEN check for existing session
-    AuthService.getSession().then(({ data: { session } }) => {
-      console.log('AuthProvider: Initial session:', { session });
+    AuthService.getSession().then((sessionResponse) => {
+      console.log('AuthProvider: Initial session response:', { sessionResponse });
+      const session = sessionResponse?.data?.session || sessionResponse;
+      console.log('AuthProvider: Extracted session:', { session });
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -79,7 +82,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async (email: string, password: string) => {
     console.log('AuthProvider: Sign in attempt for:', email);
     try {
-      const { user, session } = await AuthService.signIn(email, password);
+      const result = await AuthService.signIn(email, password);
+      const user = result?.user || result?.data?.user;
+      const session = result?.session || result?.data?.session;
       setUser(user);
       setSession(session);
       if (user) {
@@ -95,7 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, password: string, fullName?: string) => {
     console.log('AuthProvider: Sign up attempt for:', email, 'with fullName:', fullName);
     try {
-      const { user, session } = await AuthService.signUp(email, password, fullName);
+      const result = await AuthService.signUp(email, password, fullName);
       // Note: user profile will be created automatically by the database trigger
       console.log('AuthProvider: Sign up successful, user profile should be created automatically');
       return { error: null };
