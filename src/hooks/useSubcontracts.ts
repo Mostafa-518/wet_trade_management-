@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { subcontractService } from '@/services';
 import { Subcontract } from '@/types/subcontract';
@@ -9,7 +8,7 @@ import {
   updateSubcontractWithTradeItems,
   deleteSubcontractWithTradeItems,
   deleteManySubcontractsWithTradeItems
-} from '@/services/subcontractOperations';
+} from '@/services/subcontract';
 
 export function useSubcontracts(trades: any[] = [], tradeItems: any[] = [], responsibilities: any[] = [], projects: any[] = []) {
   const { toast } = useToast();
