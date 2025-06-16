@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, ArrowRight, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { FormData, TradeItem, SubcontractStepperProps } from '@/types/subcontract';
 import { ProjectSubcontractorStep } from '@/components/subcontract/ProjectSubcontractorStep';
@@ -36,7 +36,8 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
     unit: '',
     quantity: 0,
     unitPrice: 0,
-    total: 0
+    total: 0,
+    wastagePercentage: 0 // Fixed: initialize wastage percentage
   });
 
   const steps = [
@@ -114,7 +115,8 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
       unit: currentTradeItem.unit!,
       quantity: currentTradeItem.quantity!,
       unitPrice: currentTradeItem.unitPrice!,
-      total: currentTradeItem.total!
+      total: currentTradeItem.total!,
+      wastagePercentage: currentTradeItem.wastagePercentage || 0 // Fixed: include wastage percentage
     };
 
     console.log('Adding new trade item:', newItem);
@@ -130,7 +132,8 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
       unit: '',
       quantity: 0,
       unitPrice: 0,
-      total: 0
+      total: 0,
+      wastagePercentage: 0 // Fixed: reset wastage percentage
     });
 
     toast({
@@ -178,9 +181,9 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
       return;
     }
 
-    // Compose data as expected by backend:
+    // Compose data as expected by backend - contract ID will be auto-generated
     const subcontractData = {
-      contractId: `SC-${Date.now()}`,
+      contractId: '', // Will be auto-generated based on type and project
       project: formData.project,
       subcontractor: formData.subcontractor,
       tradeItems: formData.tradeItems,
@@ -190,7 +193,7 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
       startDate: new Date().toISOString().split('T')[0],
       endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       dateOfIssuing: formData.dateOfIssuing ?? new Date().toISOString().split('T')[0],
-      description: `Subcontract for ${formData.project} with ${formData.subcontractor}`,
+      description: `${formData.contractType === 'ADD' ? 'Addendum' : 'Subcontract'} for ${formData.project} with ${formData.subcontractor}`,
       contractType: formData.contractType || 'subcontract',
       addendumNumber: formData.contractType === 'ADD' ? formData.addendumNumber : undefined,
       parentSubcontractId: formData.contractType === 'ADD' ? formData.parentSubcontractId : undefined

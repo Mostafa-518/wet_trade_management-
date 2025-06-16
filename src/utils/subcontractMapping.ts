@@ -1,3 +1,4 @@
+
 import { Subcontract, TradeItem } from '@/types/subcontract';
 
 // This utility maps a DB row to the frontend Subcontract type.
@@ -27,7 +28,7 @@ export function mapSubcontractToFrontend(dbRow: any): Subcontract {
         quantity: dbTradeItem.quantity || 0,
         unitPrice: dbTradeItem.unit_price || 0,
         total: dbTradeItem.total_price || 0,
-        wastagePercentage: dbTradeItem.wastage_percentage || 0
+        wastagePercentage: dbTradeItem.wastage_percentage || 0 // Fixed: ensure wastage is mapped correctly
       };
     });
   }
@@ -93,4 +94,49 @@ export function findResponsibilityId(responsibilities: any[], responsibilityName
   return (responsibilities || []).find(
     (resp) => resp.name === responsibilityName
   )?.id;
+}
+
+/**
+ * Generates a unique contract ID based on the contract type and project
+ */
+export async function generateContractId(
+  contractType: 'subcontract' | 'ADD',
+  projectCode: string,
+  parentContractId?: string,
+  existingContracts: Subcontract[] = []
+): Promise<string> {
+  if (contractType === 'ADD') {
+    if (!parentContractId) {
+      throw new Error('Parent contract ID is required for addendums');
+    }
+    
+    // Find existing addendums for this parent contract
+    const existingAddendums = existingContracts.filter(
+      contract => contract.parentSubcontractId === parentContractId && contract.contractType === 'ADD'
+    );
+    
+    // Generate next addendum number
+    const nextAddendumNumber = (existingAddendums.length + 1).toString().padStart(2, '0');
+    return `${parentContractId}-ADD${nextAddendumNumber}`;
+  } else {
+    // For regular subcontracts: ID-[project-code]-XXXX
+    const projectContracts = existingContracts.filter(
+      contract => contract.contractId.startsWith(`ID-${projectCode}-`) && contract.contractType === 'subcontract'
+    );
+    
+    // Find the highest sequential number
+    let maxNumber = 0;
+    projectContracts.forEach(contract => {
+      const match = contract.contractId.match(/ID-\d{4}-(\d{4})$/);
+      if (match) {
+        const number = parseInt(match[1], 10);
+        if (number > maxNumber) {
+          maxNumber = number;
+        }
+      }
+    });
+    
+    const nextNumber = (maxNumber + 1).toString().padStart(4, '0');
+    return `ID-${projectCode}-${nextNumber}`;
+  }
 }

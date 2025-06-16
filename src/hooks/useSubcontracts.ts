@@ -24,9 +24,12 @@ export function useSubcontracts(trades: any[] = [], tradeItems: any[] = [], resp
     staleTime: 5 * 60 * 1000,
   });
 
+  // Map database fields to frontend expected format
+  const subcontracts = subcontractsRaw.map(mapSubcontractToFrontend);
+
   const addSubcontract = async (data: Partial<Subcontract>) => {
     try {
-      await createSubcontractWithTradeItems(data, trades, tradeItems, toast, responsibilities);
+      await createSubcontractWithTradeItems(data, trades, tradeItems, toast, responsibilities, subcontracts);
       await refetchSubcontracts();
       toast({ title: "Success", description: "Subcontract created successfully" });
     } catch (error) {
@@ -75,9 +78,6 @@ export function useSubcontracts(trades: any[] = [], tradeItems: any[] = [], resp
       throw error;
     }
   };
-
-  // Map database fields to frontend expected format
-  const subcontracts = subcontractsRaw.map(mapSubcontractToFrontend);
 
   console.log('Final mapped subcontracts:', subcontracts);
 

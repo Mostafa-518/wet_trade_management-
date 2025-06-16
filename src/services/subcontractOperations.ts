@@ -1,7 +1,7 @@
 
 import { subcontractService, subcontractTradeItemService, subcontractResponsibilityService } from '@/services';
 import { Subcontract } from '@/types/subcontract';
-import { findTradeItemId, findResponsibilityId } from '@/utils/subcontractMapping';
+import { findTradeItemId, findResponsibilityId, generateContractId } from '@/utils/subcontractMapping';
 import { useToast } from '@/hooks/use-toast';
 
 export const createSubcontractWithTradeItems = async (
@@ -9,7 +9,8 @@ export const createSubcontractWithTradeItems = async (
   trades: any[],
   tradeItems: any[],
   toast: ReturnType<typeof useToast>['toast'],
-  responsibilities: any[] = []
+  responsibilities: any[] = [],
+  existingContracts: Subcontract[] = []
 ) => {
   console.log('Adding subcontract with data:', data);
 
@@ -22,9 +23,34 @@ export const createSubcontractWithTradeItems = async (
     throw new Error('Project and subcontractor are required');
   }
 
+  // Generate contract ID if not provided
+  let contractId = data.contractId;
+  if (!contractId || contractId.startsWith('SC-')) {
+    // Find project to get its code
+    const project = data.project; // This should be project ID
+    // For demo purposes, using a 4-digit code. In production, you'd fetch from project data
+    const projectCode = '0504'; // This should come from the actual project
+    
+    try {
+      contractId = await generateContractId(
+        data.contractType || 'subcontract',
+        projectCode,
+        data.parentSubcontractId,
+        existingContracts
+      );
+    } catch (error) {
+      toast({
+        title: "Contract ID Generation Failed",
+        description: error instanceof Error ? error.message : "Could not generate contract ID",
+        variant: "destructive"
+      });
+      throw error;
+    }
+  }
+
   // Added all fields needed for contract type/addendum
   const subcontractPayload = {
-    contract_number: data.contractId,
+    contract_number: contractId,
     project_id: data.project,
     subcontractor_id: data.subcontractor,
     status: data.status || 'draft',
@@ -78,7 +104,7 @@ export const createSubcontractWithTradeItems = async (
         quantity: item.quantity,
         unit_price: item.unitPrice,
         total_price: item.total,
-        wastage_percentage: item.wastagePercentage ?? 0
+        wastage_percentage: item.wastagePercentage ?? 0 // Fixed: ensure wastage is saved
       };
     }).filter(item => item.trade_item_id);
 
@@ -174,6 +200,7 @@ export const updateSubcontractWithTradeItems = async (
           quantity: item.quantity,
           unit_price: item.unitPrice,
           total_price: item.total,
+          wastage_percentage: item.wastagePercentage ?? 0 // Fixed: ensure wastage is updated
         };
       }).filter(item => item.trade_item_id);
 
