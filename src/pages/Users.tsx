@@ -51,37 +51,47 @@ export function Users() {
     }
   });
 
-  // Create user mutation - use Supabase auth to create user, then profile will be auto-created
+  // Create user mutation - use normal signup, then update profile
   const createUserMutation = useMutation({
     mutationFn: async (userData: any) => {
       console.log('Creating new user with data:', userData);
       
-      // Create user in Supabase Auth
-      const { data, error } = await supabase.auth.admin.createUser({
+      // Use regular signup since admin functions require service role
+      const { data, error } = await supabase.auth.signUp({
         email: userData.email,
-        password: userData.password || 'TempPassword123!', // Default password, user should change it
-        email_confirm: true,
-        user_metadata: {
-          full_name: userData.name
+        password: userData.password || 'TempPassword123!',
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            full_name: userData.name
+          }
         }
       });
 
       if (error) {
-        console.error('Error creating auth user:', error);
+        console.error('Error creating user:', error);
         throw error;
       }
 
-      console.log('Auth user created:', data.user);
+      console.log('User created:', data.user);
 
-      // Update the user profile with additional info
+      // The user profile will be created automatically by the database trigger
+      // If we need to update additional fields, we can do it here
       if (data.user) {
-        const profileUpdate = await UserService.update(data.user.id, {
-          full_name: userData.name,
-          email: userData.email,
-          role: userData.role,
-          phone: userData.phone
-        });
-        console.log('Profile updated:', profileUpdate);
+        // Wait a moment for the trigger to create the profile
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        try {
+          await UserService.update(data.user.id, {
+            full_name: userData.name,
+            role: userData.role,
+            phone: userData.phone
+          });
+          console.log('Profile updated with additional data');
+        } catch (updateError) {
+          console.warn('Could not update additional profile data:', updateError);
+          // Don't throw here as the user was created successfully
+        }
       }
 
       return data.user;
@@ -90,7 +100,7 @@ export function Users() {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast({
         title: "User created",
-        description: "The new user has been successfully created with a temporary password.",
+        description: "The new user has been successfully created. They will receive a confirmation email.",
       });
     },
     onError: (error: any) => {
@@ -132,16 +142,15 @@ export function Users() {
   // Delete user mutation
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      // Delete from Supabase Auth (this will cascade to profile)
-      const { error } = await supabase.auth.admin.deleteUser(userId);
-      if (error) throw error;
-      return userId;
+      // Since we can't use admin functions, we'll just delete the profile
+      // In production, you'd want to implement this via an edge function with service role
+      return await UserService.delete(userId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast({
-        title: "User deleted",
-        description: "The user has been successfully deleted.",
+        title: "User profile deleted",
+        description: "The user profile has been successfully deleted.",
       });
     },
     onError: (error: any) => {
