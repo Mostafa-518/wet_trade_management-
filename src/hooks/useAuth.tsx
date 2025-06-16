@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { AuthService } from '@/services/authService';
@@ -43,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     // THEN check for existing session
-    AuthService.getSession().then(({ session }) => {
+    AuthService.getSession().then(({ data: { session } }) => {
       console.log('AuthProvider: Initial session:', { session });
       setSession(session);
       setUser(session?.user ?? null);

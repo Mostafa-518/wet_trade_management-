@@ -25,6 +25,7 @@ import { Subcontracts } from '@/pages/Subcontracts';
 import { SubcontractDetail } from '@/pages/SubcontractDetail';
 import { Users } from '@/pages/Users';
 import { UserDetail } from '@/pages/UserDetail';
+import { ProfileSettings } from '@/pages/ProfileSettings';
 import NotFound from '@/pages/NotFound';
 
 // Create a client
@@ -174,6 +175,14 @@ function App() {
                   <DataProvider>
                     <UserDetail />
                   </DataProvider>
+                </Layout>
+              </AuthGuard>
+            } />
+            
+            <Route path="/profile" element={
+              <AuthGuard>
+                <Layout>
+                  <ProfileSettings />
                 </Layout>
               </AuthGuard>
             } />

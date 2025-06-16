@@ -20,7 +20,8 @@ import {
   Menu,
   X,
   LogOut,
-  User as UserIcon
+  User as UserIcon,
+  Settings
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -172,6 +173,11 @@ export function Layout({ children }: LayoutProps) {
                       )}
                     </div>
                   </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate('/profile')}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    Profile Settings
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="mr-2 h-4 w-4" />
