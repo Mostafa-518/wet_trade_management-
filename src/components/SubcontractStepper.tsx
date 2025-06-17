@@ -92,14 +92,7 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
         }
         return true;
       case 3:
-        if (formData.responsibilities.length === 0) {
-          toast({
-            title: "Missing Information",
-            description: "Please select at least one responsibility",
-            variant: "destructive"
-          });
-          return false;
-        }
+        // Responsibilities are now optional - no validation needed
         return true;
       default:
         return true;
@@ -245,7 +238,6 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
     return formData.tradeItems.reduce((sum, item) => sum + item.total, 0);
   };
 
-  // Get preview of generated addendum ID for display
   const getAddendumPreview = () => {
     if (formData.contractType === 'ADD' && formData.parentSubcontractId) {
       const parentContract = Array.isArray(subcontracts) 
@@ -268,7 +260,6 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
     return null;
   };
 
-  // Extra fields for contract type/addendum in Review Step
   const renderContractExtras = (
     <div className="grid grid-cols-1 gap-4">
       <div>

@@ -26,9 +26,9 @@ export function ResponsibilitiesStep({ formData, setFormData }: Responsibilities
   return (
     <div className="space-y-4">
       <div>
-        <Label>Assign Responsibilities</Label>
+        <Label>Assign Responsibilities (Optional)</Label>
         <p className="text-sm text-muted-foreground mb-3">
-          Select all responsibilities that apply to this subcontract
+          Select responsibilities that apply to this subcontract. You can skip this step if no specific responsibilities are needed.
         </p>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
           {responsibilities.map(resp => (
@@ -51,6 +51,11 @@ export function ResponsibilitiesStep({ formData, setFormData }: Responsibilities
               </Badge>
             ))}
           </div>
+        )}
+        {formData.responsibilities.length === 0 && (
+          <p className="text-sm text-gray-500 mt-3 italic">
+            No responsibilities selected. You can proceed without selecting any responsibilities.
+          </p>
         )}
       </div>
     </div>
