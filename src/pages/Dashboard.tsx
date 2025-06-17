@@ -35,45 +35,47 @@ export function Dashboard() {
 
   // Calculate KPI metrics
   const totalSubcontracts = reportData.totalSubcontracts;
-  const totalValue = reportData.tableData.reduce((sum, item) => sum + item.totalAmount, 0);
-  const totalQuantity = reportData.tableData.reduce((sum, item) => sum + item.totalQuantity, 0);
+  const totalValue = reportData.tableData.reduce((sum, item) => sum + (Number(item.totalAmount) || 0), 0);
+  const totalQuantity = reportData.tableData.reduce((sum, item) => sum + (Number(item.totalQuantity) || 0), 0);
 
   // Prepare data for charts
   const projectData = reportData.tableData.reduce((acc, item) => {
     // This is a simplified approach - in reality you'd need project mapping
     const project = 'Various Projects'; // Placeholder since we don't have direct project mapping in tableData
     const existing = acc.find(p => p.name === project);
+    const itemAmount = Number(item.totalAmount) || 0;
     if (existing) {
-      existing.value += item.totalAmount;
+      existing.value += itemAmount;
       existing.count += 1;
     } else {
-      acc.push({ name: project, value: item.totalAmount, count: 1 });
+      acc.push({ name: project, value: itemAmount, count: 1 });
     }
     return acc;
-  }, []);
+  }, [] as Array<{ name: string; value: number; count: number }>);
 
   // Top items by frequency
   const topItems = reportData.tableData
-    .sort((a, b) => b.count - a.count)
+    .sort((a, b) => (Number(b.count) || 0) - (Number(a.count) || 0))
     .slice(0, 10)
     .map(item => ({
       name: item.item.length > 20 ? item.item.substring(0, 20) + '...' : item.item,
-      count: item.count
+      count: Number(item.count) || 0
     }));
 
   // Average rate per unit
   const unitRates = reportData.tableData.reduce((acc, item) => {
     const existing = acc.find(u => u.unit === item.unit);
+    const rate = Number(item.averageRate) || 0;
     if (existing) {
-      existing.totalRate += item.averageRate;
+      existing.totalRate += rate;
       existing.count += 1;
     } else {
-      acc.push({ unit: item.unit, totalRate: item.averageRate, count: 1 });
+      acc.push({ unit: item.unit, totalRate: rate, count: 1 });
     }
     return acc;
-  }, []).map(item => ({
+  }, [] as Array<{ unit: string; totalRate: number; count: number }>).map(item => ({
     unit: item.unit || 'N/A',
-    averageRate: item.totalRate / item.count
+    averageRate: item.count > 0 ? item.totalRate / item.count : 0
   })).slice(0, 10);
 
   // Inclusion analysis
@@ -106,6 +108,20 @@ export function Dashboard() {
   ];
 
   const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#8dd1e1'];
+
+  // Custom tooltip formatter with proper type checking
+  const formatTooltipValue = (value: any, name: string) => {
+    const numValue = Number(value);
+    if (isNaN(numValue)) return [value, name];
+    
+    if (name === 'Value' || name === 'Value (EGP)') {
+      return [`EGP ${(numValue / 1000).toFixed(0)}K`, name];
+    }
+    if (name === 'Avg Rate') {
+      return [`EGP ${numValue.toFixed(2)}`, name];
+    }
+    return [numValue.toString(), name];
+  };
 
   return (
     <div className="space-y-6">
@@ -179,7 +195,7 @@ export function Dashboard() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
                     <YAxis />
-                    <Tooltip formatter={(value) => [`EGP ${(value / 1000).toFixed(0)}K`, 'Value']} />
+                    <Tooltip formatter={formatTooltipValue} />
                     <Legend />
                     <Line type="monotone" dataKey="value" stroke="#82ca9d" name="Value (EGP)" />
                   </LineChart>
@@ -201,7 +217,7 @@ export function Dashboard() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <Tooltip formatter={(value) => [`EGP ${(value / 1000).toFixed(0)}K`, 'Value']} />
+                    <Tooltip formatter={formatTooltipValue} />
                     <Bar dataKey="value" fill="#8884d8" />
                   </BarChart>
                 </ResponsiveContainer>
@@ -238,7 +254,7 @@ export function Dashboard() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
                     <YAxis />
-                    <Tooltip formatter={(value) => [`EGP ${(value / 1000).toFixed(0)}K`, 'Value']} />
+                    <Tooltip formatter={formatTooltipValue} />
                     <Bar dataKey="value" fill="#ffc658" />
                   </BarChart>
                 </ResponsiveContainer>
@@ -265,7 +281,7 @@ export function Dashboard() {
                         <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value) => [`EGP ${(value / 1000).toFixed(0)}K`, 'Value']} />
+                    <Tooltip formatter={formatTooltipValue} />
                   </PieChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -301,7 +317,7 @@ export function Dashboard() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="unit" />
                     <YAxis />
-                    <Tooltip formatter={(value) => [`EGP ${value.toFixed(2)}`, 'Avg Rate']} />
+                    <Tooltip formatter={formatTooltipValue} />
                     <Bar dataKey="averageRate" fill="#ff7c7c" />
                   </BarChart>
                 </ResponsiveContainer>
