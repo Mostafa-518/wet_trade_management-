@@ -1,3 +1,4 @@
+
 import { subcontractService, subcontractTradeItemService, subcontractResponsibilityService } from '@/services';
 import { Subcontract } from '@/types/subcontract';
 import { 
@@ -11,6 +12,9 @@ import {
 } from '@/utils/subcontract';
 import { useToast } from '@/hooks/use-toast';
 
+// Track generated IDs within the session to prevent duplicates during batch imports
+const sessionGeneratedIds = new Set<string>();
+
 export const createSubcontractWithTradeItems = async (
   data: Partial<Subcontract>,
   trades: any[],
@@ -22,6 +26,7 @@ export const createSubcontractWithTradeItems = async (
 ) => {
   console.log('Creating subcontract with data:', data);
   console.log('Existing contracts count:', existingContracts.length);
+  console.log('Session generated IDs:', Array.from(sessionGeneratedIds));
 
   if (!data.project || !data.subcontractor) {
     const error = new Error('Project and subcontractor are required');
@@ -38,7 +43,7 @@ export const createSubcontractWithTradeItems = async (
   let contractId = data.contractId;
   let addendumNumber: string | undefined;
   
-  if (!contractId || contractId.startsWith('SC-') || contractId === '') {
+  if (!contractId || contractId.startsWith('SC-') || contractId.startsWith('TEMP-') || contractId === '') {
     if (data.contractType === 'ADD') {
       // For addendums, we need the parent contract
       if (!data.parentSubcontractId) {
@@ -85,18 +90,25 @@ export const createSubcontractWithTradeItems = async (
         throw error;
       }
       
+      // Generate contract ID with session tracking
       contractId = await generateContractId(
         'subcontract',
         project.code,
         undefined,
-        existingContracts
+        existingContracts,
+        sessionGeneratedIds
       );
       
       console.log('Generated regular contract ID:', contractId);
     }
     
-    // Validate uniqueness
-    if (!validateContractIdUniqueness(contractId, existingContracts)) {
+    // Validate uniqueness against both DB and session
+    const allExistingIds = new Set([
+      ...existingContracts.map(c => c.contractId).filter(Boolean),
+      ...sessionGeneratedIds
+    ]);
+    
+    if (allExistingIds.has(contractId)) {
       const error = new Error('Contract ID conflict detected');
       console.error('Contract ID conflict:', error);
       toast({
@@ -106,6 +118,9 @@ export const createSubcontractWithTradeItems = async (
       });
       throw error;
     }
+    
+    // Add to session tracking
+    sessionGeneratedIds.add(contractId);
   }
 
   // Validate contract ID format
@@ -157,7 +172,12 @@ export const createSubcontractWithTradeItems = async (
   try {
     createdSubcontract = await subcontractService.create(subcontractPayload);
     console.log('Subcontract created successfully:', createdSubcontract);
+    
+    // Add the actual contract ID to our result for tracking
+    createdSubcontract.contractId = contractId;
   } catch (error) {
+    // Remove from session tracking if creation failed
+    sessionGeneratedIds.delete(contractId);
     console.error("Error creating subcontract in Supabase:", error);
     toast({
       title: "Save Failed",
@@ -241,4 +261,10 @@ export const createSubcontractWithTradeItems = async (
 
   console.log('Subcontract creation completed successfully');
   return createdSubcontract;
+};
+
+// Clear session tracking when needed (e.g., after successful batch import)
+export const clearSessionGeneratedIds = () => {
+  sessionGeneratedIds.clear();
+  console.log('Session generated IDs cleared');
 };

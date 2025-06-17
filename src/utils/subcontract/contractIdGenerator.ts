@@ -51,10 +51,12 @@ export async function generateContractId(
   contractType: 'subcontract' | 'ADD',
   projectCode: string,
   parentSubcontractId?: string,
-  existingContracts: Subcontract[] = []
+  existingContracts: Subcontract[] = [],
+  generatedIdsInSession: Set<string> = new Set()
 ): Promise<string> {
   console.log('Generating contract ID:', { contractType, projectCode, parentSubcontractId });
   console.log('Existing contracts for ID generation:', existingContracts.length);
+  console.log('Generated IDs in session:', Array.from(generatedIdsInSession));
   
   if (contractType === 'ADD') {
     if (!parentSubcontractId) {
@@ -78,27 +80,38 @@ export async function generateContractId(
     return generatedId;
   } else {
     // For regular subcontracts: ID-[project-code]-XXXX
-    // Find existing subcontracts for this project
+    // Find existing subcontracts for this project (including both DB and session)
     const projectPattern = `ID-${projectCode}-`;
-    const projectContracts = existingContracts.filter(
-      contract => contract.contractId && 
-                  contract.contractId.startsWith(projectPattern) && 
-                  contract.contractType === 'subcontract'
-    );
     
-    console.log('Existing contracts for project:', projectContracts.length);
-    console.log('Project contracts:', projectContracts.map(c => c.contractId));
+    // Get all existing contract IDs for this project
+    const allProjectContractIds = new Set<string>();
+    
+    // Add existing contracts from database
+    existingContracts.forEach(contract => {
+      if (contract.contractId && 
+          contract.contractId.startsWith(projectPattern) && 
+          contract.contractType === 'subcontract') {
+        allProjectContractIds.add(contract.contractId);
+      }
+    });
+    
+    // Add contracts generated in this session
+    generatedIdsInSession.forEach(contractId => {
+      if (contractId.startsWith(projectPattern)) {
+        allProjectContractIds.add(contractId);
+      }
+    });
+    
+    console.log('All project contract IDs:', Array.from(allProjectContractIds));
     
     // Find the highest sequential number for this project
     let maxNumber = 0;
-    projectContracts.forEach(contract => {
-      if (contract.contractId) {
-        const match = contract.contractId.match(new RegExp(`^ID-${projectCode.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}-(\\d{4})$`));
-        if (match) {
-          const number = parseInt(match[1], 10);
-          if (number > maxNumber) {
-            maxNumber = number;
-          }
+    allProjectContractIds.forEach(contractId => {
+      const match = contractId.match(new RegExp(`^ID-${projectCode.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}-(\\d{4})$`));
+      if (match) {
+        const number = parseInt(match[1], 10);
+        if (number > maxNumber) {
+          maxNumber = number;
         }
       }
     });

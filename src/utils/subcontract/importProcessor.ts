@@ -14,6 +14,7 @@ export const processImportData = async (
   let successCount = 0;
   let errorCount = 0;
   const errors: string[] = [];
+  const generatedContractIds = new Set<string>(); // Track IDs generated in this session
 
   console.log('Starting import process with data:', data);
   console.log('Available projects:', projects.map(p => ({ id: p.id, name: p.name, code: p.code })));
@@ -170,7 +171,26 @@ export const processImportData = async (
         }
       }
 
-      // Create subcontract data with auto-generated contract ID
+      // Generate unique contract ID for this import session
+      let attempts = 0;
+      let uniqueContractId = '';
+      const maxAttempts = 100; // Prevent infinite loops
+      
+      do {
+        attempts++;
+        if (attempts > maxAttempts) {
+          throw new Error(`Failed to generate unique contract ID after ${maxAttempts} attempts`);
+        }
+        
+        // Generate contract ID (this will be auto-generated based on existing contracts in DB)
+        // We'll let the creation service handle this and track the generated ID
+        uniqueContractId = `TEMP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      } while (generatedContractIds.has(uniqueContractId));
+      
+      // Add to our tracking set
+      generatedContractIds.add(uniqueContractId);
+
+      // Create subcontract data - let the creation service auto-generate the actual contract ID
       const subcontractData = {
         project: project.id,
         subcontractor: subcontractor.id,
@@ -183,15 +203,21 @@ export const processImportData = async (
         dateOfIssuing: dateOfIssuing,
         description: `Imported ${contractType === 'ADD' ? 'addendum' : 'subcontract'} for ${project.name} with ${subcontractor.companyName}`,
         contractType: contractType,
-        // Don't set contractId here - let the creation service auto-generate it
+        // Don't set contractId here - let the creation service auto-generate it with proper sequential numbering
         parentSubcontractId: contractType === 'ADD' ? undefined : undefined // Will be handled in creation if needed
       };
 
       console.log('Final subcontract data:', subcontractData);
 
-      await addSubcontract(subcontractData);
+      const result = await addSubcontract(subcontractData);
+      
+      // Track the actual generated contract ID
+      if (result && result.contractId) {
+        generatedContractIds.add(result.contractId);
+        console.log(`Successfully imported contract: ${groupKey} with ID: ${result.contractId}`);
+      }
+      
       successCount++;
-      console.log(`Successfully imported contract: ${groupKey}`);
       
     } catch (error) {
       errorCount++;

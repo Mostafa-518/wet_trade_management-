@@ -5,6 +5,7 @@ import { useData } from '@/contexts/DataContext';
 import { parseExcelFile, validateExcelFile, createExcelTemplate } from '@/utils/excel/excelParser';
 import { mapRawDataToSubcontractData, processExcelMergedCells } from '@/utils/subcontract/dataMapper';
 import { processImportData } from '@/utils/subcontract/importProcessor';
+import { clearSessionGeneratedIds } from '@/services/subcontract/subcontractCreation';
 import * as XLSX from 'xlsx';
 
 export function useSubcontractsImport() {
@@ -114,8 +115,14 @@ export function useSubcontractsImport() {
     setShowPreview(false);
     
     try {
+      // Clear any previous session IDs before starting new import
+      clearSessionGeneratedIds();
+      
       await processImportData(data, addSubcontract, projects, subcontractors, toast);
       console.log('Import process completed successfully');
+      
+      // Clear session IDs after successful import
+      clearSessionGeneratedIds();
     } catch (error) {
       console.error('Import processing error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -124,6 +131,8 @@ export function useSubcontractsImport() {
         description: `An error occurred while processing the import: ${errorMessage}`,
         variant: "destructive"
       });
+      // Clear session IDs even on error to prevent issues with next import
+      clearSessionGeneratedIds();
     } finally {
       setIsImporting(false);
     }
