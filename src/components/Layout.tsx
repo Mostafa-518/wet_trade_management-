@@ -21,7 +21,8 @@ import {
   X,
   LogOut,
   User as UserIcon,
-  Settings
+  Settings,
+  FileBarChart
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -36,6 +37,7 @@ const navigationItems = [
   { name: 'Trades', href: '/trades', icon: Briefcase },
   { name: 'Subcontracts', href: '/subcontracts', icon: FileText },
   { name: 'Responsibilities', href: '/responsibilities', icon: UserCheck },
+  { name: 'Report', href: '/report', icon: FileBarChart },
   { name: 'Users', href: '/users', icon: UserIcon },
 ];
 
