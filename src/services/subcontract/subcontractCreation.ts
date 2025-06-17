@@ -1,4 +1,3 @@
-
 import { subcontractService, subcontractTradeItemService, subcontractResponsibilityService } from '@/services';
 import { Subcontract } from '@/types/subcontract';
 import { 
@@ -22,6 +21,7 @@ export const createSubcontractWithTradeItems = async (
   projects: any[] = []
 ) => {
   console.log('Creating subcontract with data:', data);
+  console.log('Existing contracts count:', existingContracts.length);
 
   if (!data.project || !data.subcontractor) {
     const error = new Error('Project and subcontractor are required');
@@ -38,7 +38,7 @@ export const createSubcontractWithTradeItems = async (
   let contractId = data.contractId;
   let addendumNumber: string | undefined;
   
-  if (!contractId || contractId.startsWith('SC-')) {
+  if (!contractId || contractId.startsWith('SC-') || contractId === '') {
     if (data.contractType === 'ADD') {
       // For addendums, we need the parent contract
       if (!data.parentSubcontractId) {
@@ -54,12 +54,12 @@ export const createSubcontractWithTradeItems = async (
 
       // Find parent contract to get its contract_number
       const parentContract = existingContracts.find(c => c.id === data.parentSubcontractId);
-      if (!parentContract) {
-        const error = new Error('Parent contract not found');
+      if (!parentContract || !parentContract.contractId) {
+        const error = new Error('Parent contract not found or missing contract ID');
         console.error('Parent contract not found:', error);
         toast({
           title: "Parent Contract Not Found",
-          description: "The selected parent contract could not be found.",
+          description: "The selected parent contract could not be found or is missing a contract ID.",
           variant: "destructive"
         });
         throw error;
@@ -91,6 +91,8 @@ export const createSubcontractWithTradeItems = async (
         undefined,
         existingContracts
       );
+      
+      console.log('Generated regular contract ID:', contractId);
     }
     
     // Validate uniqueness
@@ -121,7 +123,7 @@ export const createSubcontractWithTradeItems = async (
   } else {
     // For regular subcontracts
     const project = projects.find(p => p.id === data.project);
-    if (project && !validateSubcontractFormat(contractId, project.code)) {
+    if (project && project.code && !validateSubcontractFormat(contractId, project.code)) {
       const error = new Error('Invalid contract ID format');
       console.error('Format validation error:', error);
       toast({

@@ -15,7 +15,7 @@ export async function getNextAddendumNumber(
   const addendumPattern = new RegExp(`^${parentContractNumber.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}-ADD(\\d{2})$`);
   
   const existingAddendums = existingContracts.filter(contract => {
-    const match = contract.contractId.match(addendumPattern);
+    const match = contract.contractId && contract.contractId.match(addendumPattern);
     return match && contract.contractType === 'ADD';
   });
   
@@ -24,11 +24,13 @@ export async function getNextAddendumNumber(
   // Find the highest addendum number
   let maxAddendumNumber = 0;
   existingAddendums.forEach(contract => {
-    const match = contract.contractId.match(addendumPattern);
-    if (match) {
-      const addendumNum = parseInt(match[1], 10);
-      if (addendumNum > maxAddendumNumber) {
-        maxAddendumNumber = addendumNum;
+    if (contract.contractId) {
+      const match = contract.contractId.match(addendumPattern);
+      if (match) {
+        const addendumNum = parseInt(match[1], 10);
+        if (addendumNum > maxAddendumNumber) {
+          maxAddendumNumber = addendumNum;
+        }
       }
     }
   });
@@ -52,6 +54,7 @@ export async function generateContractId(
   existingContracts: Subcontract[] = []
 ): Promise<string> {
   console.log('Generating contract ID:', { contractType, projectCode, parentSubcontractId });
+  console.log('Existing contracts for ID generation:', existingContracts.length);
   
   if (contractType === 'ADD') {
     if (!parentSubcontractId) {
@@ -60,8 +63,8 @@ export async function generateContractId(
     
     // Find the parent contract to get its contract_number
     const parentContract = existingContracts.find(contract => contract.id === parentSubcontractId);
-    if (!parentContract) {
-      throw new Error('Parent contract not found');
+    if (!parentContract || !parentContract.contractId) {
+      throw new Error('Parent contract not found or missing contract ID');
     }
     
     const parentContractNumber = parentContract.contractId;
@@ -78,19 +81,24 @@ export async function generateContractId(
     // Find existing subcontracts for this project
     const projectPattern = `ID-${projectCode}-`;
     const projectContracts = existingContracts.filter(
-      contract => contract.contractId.startsWith(projectPattern) && contract.contractType === 'subcontract'
+      contract => contract.contractId && 
+                  contract.contractId.startsWith(projectPattern) && 
+                  contract.contractType === 'subcontract'
     );
     
     console.log('Existing contracts for project:', projectContracts.length);
+    console.log('Project contracts:', projectContracts.map(c => c.contractId));
     
     // Find the highest sequential number for this project
     let maxNumber = 0;
     projectContracts.forEach(contract => {
-      const match = contract.contractId.match(new RegExp(`ID-${projectCode}-(\\d{4})$`));
-      if (match) {
-        const number = parseInt(match[1], 10);
-        if (number > maxNumber) {
-          maxNumber = number;
+      if (contract.contractId) {
+        const match = contract.contractId.match(new RegExp(`^ID-${projectCode.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}-(\\d{4})$`));
+        if (match) {
+          const number = parseInt(match[1], 10);
+          if (number > maxNumber) {
+            maxNumber = number;
+          }
         }
       }
     });

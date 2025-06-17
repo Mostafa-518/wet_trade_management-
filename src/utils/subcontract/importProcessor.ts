@@ -2,6 +2,7 @@
 import { useToast } from '@/hooks/use-toast';
 import { SubcontractImportData, groupByContract } from './dataMapper';
 import { validateRow, validateContractData } from './importValidator';
+import { generateContractId } from './contractIdGenerator';
 
 export const processImportData = async (
   data: SubcontractImportData[],
@@ -15,7 +16,7 @@ export const processImportData = async (
   const errors: string[] = [];
 
   console.log('Starting import process with data:', data);
-  console.log('Available projects:', projects.map(p => ({ id: p.id, name: p.name })));
+  console.log('Available projects:', projects.map(p => ({ id: p.id, name: p.name, code: p.code })));
   console.log('Available subcontractors:', subcontractors.map(s => ({ id: s.id, name: s.companyName })));
 
   // Group data by contract (same Date of Issuing, Project Name, Subcontractor Company, Type of contract)
@@ -53,6 +54,14 @@ export const processImportData = async (
         continue;
       }
 
+      // Check if project has a code
+      if (!project.code) {
+        errorCount++;
+        errors.push(`Contract "${groupKey}": Project "${projectName}" doesn't have a project code required for contract ID generation`);
+        console.error(`Project "${projectName}" missing code:`, project);
+        continue;
+      }
+
       // Find subcontractor ID with case-insensitive and flexible matching
       const subcontractorName = contractRow['Subcontractor Company'].trim();
       const subcontractor = subcontractors.find(s => 
@@ -67,7 +76,7 @@ export const processImportData = async (
         continue;
       }
 
-      console.log(`Found project: ${project.name} (ID: ${project.id})`);
+      console.log(`Found project: ${project.name} (ID: ${project.id}, Code: ${project.code})`);
       console.log(`Found subcontractor: ${subcontractor.companyName} (ID: ${subcontractor.id})`);
 
       // Process all trade items for this contract
@@ -161,7 +170,7 @@ export const processImportData = async (
         }
       }
 
-      // Create subcontract data
+      // Create subcontract data with auto-generated contract ID
       const subcontractData = {
         project: project.id,
         subcontractor: subcontractor.id,
@@ -173,7 +182,9 @@ export const processImportData = async (
         endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         dateOfIssuing: dateOfIssuing,
         description: `Imported ${contractType === 'ADD' ? 'addendum' : 'subcontract'} for ${project.name} with ${subcontractor.companyName}`,
-        contractType: contractType
+        contractType: contractType,
+        // Don't set contractId here - let the creation service auto-generate it
+        parentSubcontractId: contractType === 'ADD' ? undefined : undefined // Will be handled in creation if needed
       };
 
       console.log('Final subcontract data:', subcontractData);
