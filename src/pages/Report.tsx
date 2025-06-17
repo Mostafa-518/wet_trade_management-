@@ -17,54 +17,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useReportData } from '@/hooks/useReportData';
+import { Loader2 } from 'lucide-react';
 
 export function Report() {
-  // Dummy data for the report
-  const reportData = {
-    totalSubcontracts: 134,
-    currentSubcontracts: 1,
-    filters: {
-      month: 'All',
-      year: '2024',
-      location: 'Alamein',
-      wetTrade: 'Masonry',
-      projectName: 'GEM Touristic Walkway',
-      projectCode: '553'
-    }
-  };
+  const { reportData, filterOptions, updateFilter, isLoading } = useReportData();
 
-  const tableData = [
-    {
-      item: 'Brick Work Foundation',
-      averageRate: 45.50,
-      totalAmount: 45500,
-      wastage: 5,
-      accommodation: 'Yes',
-      transportation: 'Yes',
-      safety: 'Yes',
-      verticalTransportation: 'No'
-    },
-    {
-      item: 'Stone Cladding',
-      averageRate: 75.25,
-      totalAmount: 150500,
-      wastage: 3,
-      accommodation: 'No',
-      transportation: 'Yes',
-      safety: 'Yes',
-      verticalTransportation: 'Yes'
-    },
-    {
-      item: 'Concrete Block Work',
-      averageRate: 35.75,
-      totalAmount: 71500,
-      wastage: 7,
-      accommodation: 'Yes',
-      transportation: 'No',
-      safety: 'Yes',
-      verticalTransportation: 'No'
-    }
-  ];
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Loading report data...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -83,16 +49,21 @@ export function Report() {
           <CardContent>
             <div className="flex items-center space-x-2">
               <Badge variant="outline" className="bg-gray-50">
-                By Project
+                {reportData.filters.presentData}
               </Badge>
-              <Select defaultValue="by-project">
+              <Select 
+                value={reportData.filters.presentData} 
+                onValueChange={(value) => updateFilter('presentData', value)}
+              >
                 <SelectTrigger className="w-8 h-8 p-0 border-0">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="by-project">By Project</SelectItem>
-                  <SelectItem value="by-contractor">By Contractor</SelectItem>
-                  <SelectItem value="by-trade">By Trade</SelectItem>
+                  {filterOptions.presentDataOptions.map((option) => (
+                    <SelectItem key={option} value={option.toLowerCase().replace(' ', '-')}>
+                      {option}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -123,73 +94,116 @@ export function Report() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Month:</label>
-              <Select defaultValue="all">
+              <Select 
+                value={reportData.filters.month} 
+                onValueChange={(value) => updateFilter('month', value)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="january">January</SelectItem>
-                  <SelectItem value="february">February</SelectItem>
-                  <SelectItem value="march">March</SelectItem>
+                  {filterOptions.months.map((month) => (
+                    <SelectItem key={month} value={month.toLowerCase()}>
+                      {month}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Year:</label>
-              <Select defaultValue="2024">
+              <Select 
+                value={reportData.filters.year} 
+                onValueChange={(value) => updateFilter('year', value)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="2024">2024</SelectItem>
-                  <SelectItem value="2023">2023</SelectItem>
-                  <SelectItem value="2022">2022</SelectItem>
+                  {filterOptions.years.map((year) => (
+                    <SelectItem key={year} value={year}>
+                      {year}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Location of work:</label>
-              <Select defaultValue="alamein">
+              <Select 
+                value={reportData.filters.location} 
+                onValueChange={(value) => updateFilter('location', value)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="alamein">Alamein</SelectItem>
-                  <SelectItem value="cairo">Cairo</SelectItem>
-                  <SelectItem value="giza">Giza</SelectItem>
+                  {filterOptions.locations.map((location) => (
+                    <SelectItem key={location} value={location}>
+                      {location}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Wet trade:</label>
-              <Select defaultValue="masonry">
+              <Select 
+                value={reportData.filters.wetTrade} 
+                onValueChange={(value) => updateFilter('wetTrade', value)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="masonry">Masonry</SelectItem>
-                  <SelectItem value="concrete">Concrete</SelectItem>
-                  <SelectItem value="plumbing">Plumbing</SelectItem>
+                  {filterOptions.wetTrades.map((trade) => (
+                    <SelectItem key={trade} value={trade}>
+                      {trade}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Project Name:</label>
-              <div className="text-sm text-gray-700 p-2 bg-gray-50 rounded border">
-                GEM Touristic Walkway
-              </div>
+              <Select 
+                value={reportData.filters.projectName} 
+                onValueChange={(value) => updateFilter('projectName', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {filterOptions.projectNames.map((project) => (
+                    <SelectItem key={project} value={project}>
+                      {project}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Project Code:</label>
-              <div className="text-sm text-gray-700 p-2 bg-gray-50 rounded border">
-                553
-              </div>
+              <Select 
+                value={reportData.filters.projectCode} 
+                onValueChange={(value) => updateFilter('projectCode', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {filterOptions.projectCodes.map((code) => (
+                    <SelectItem key={code} value={code}>
+                      {code}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardContent>
@@ -201,7 +215,7 @@ export function Report() {
           <CardContent className="pt-6">
             <div className="text-center">
               <div className="text-lg font-semibold">
-                No. Of Subcontract: [1] Subcontract
+                No. Of Subcontract: [{reportData.currentSubcontracts}] Subcontract
               </div>
             </div>
           </CardContent>
@@ -233,47 +247,57 @@ export function Report() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {tableData.map((row, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium">{row.item}</TableCell>
-                    <TableCell>{row.averageRate.toFixed(2)}</TableCell>
-                    <TableCell>{row.totalAmount.toLocaleString()}</TableCell>
-                    <TableCell>{row.wastage}%</TableCell>
-                    <TableCell>
-                      <Badge variant={row.accommodation === 'Yes' ? 'default' : 'secondary'}>
-                        {row.accommodation}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={row.transportation === 'Yes' ? 'default' : 'secondary'}>
-                        {row.transportation}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={row.safety === 'Yes' ? 'default' : 'secondary'}>
-                        {row.safety}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={row.verticalTransportation === 'Yes' ? 'default' : 'secondary'}>
-                        {row.verticalTransportation}
-                      </Badge>
+                {reportData.tableData.length > 0 ? (
+                  reportData.tableData.map((row, index) => (
+                    <TableRow key={index}>
+                      <TableCell className="font-medium">{row.item}</TableCell>
+                      <TableCell>{row.averageRate.toFixed(2)}</TableCell>
+                      <TableCell>{row.totalAmount.toLocaleString()}</TableCell>
+                      <TableCell>{row.wastage}%</TableCell>
+                      <TableCell>
+                        <Badge variant={row.accommodation === 'Yes' ? 'default' : 'secondary'}>
+                          {row.accommodation}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={row.transportation === 'Yes' ? 'default' : 'secondary'}>
+                          {row.transportation}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={row.safety === 'Yes' ? 'default' : 'secondary'}>
+                          {row.safety}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={row.verticalTransportation === 'Yes' ? 'default' : 'secondary'}>
+                          {row.verticalTransportation}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                      No data available for the selected filters
                     </TableCell>
                   </TableRow>
-                ))}
-                {/* Empty rows to match the image */}
-                {[...Array(3)].map((_, index) => (
-                  <TableRow key={`empty-${index}`}>
-                    <TableCell>&nbsp;</TableCell>
-                    <TableCell>&nbsp;</TableCell>
-                    <TableCell>&nbsp;</TableCell>
-                    <TableCell>&nbsp;</TableCell>
-                    <TableCell>&nbsp;</TableCell>
-                    <TableCell>&nbsp;</TableCell>
-                    <TableCell>&nbsp;</TableCell>
-                    <TableCell>&nbsp;</TableCell>
-                  </TableRow>
-                ))}
+                )}
+                {/* Add empty rows if needed for consistent height */}
+                {reportData.tableData.length < 5 && 
+                  [...Array(5 - reportData.tableData.length)].map((_, index) => (
+                    <TableRow key={`empty-${index}`}>
+                      <TableCell>&nbsp;</TableCell>
+                      <TableCell>&nbsp;</TableCell>
+                      <TableCell>&nbsp;</TableCell>
+                      <TableCell>&nbsp;</TableCell>
+                      <TableCell>&nbsp;</TableCell>
+                      <TableCell>&nbsp;</TableCell>
+                      <TableCell>&nbsp;</TableCell>
+                      <TableCell>&nbsp;</TableCell>
+                    </TableRow>
+                  ))
+                }
               </TableBody>
             </Table>
           </div>

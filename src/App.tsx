@@ -163,7 +163,9 @@ function App() {
             <Route path="/report" element={
               <AuthGuard>
                 <Layout>
-                  <Report />
+                  <DataProvider>
+                    <Report />
+                  </DataProvider>
                 </Layout>
               </AuthGuard>
             } />
