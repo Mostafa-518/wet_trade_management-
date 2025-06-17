@@ -7,7 +7,7 @@ interface ReportFilters {
   month: string;
   year: string;
   location: string;
-  wetTrade: string;
+  trades: string;
   projectName: string;
   projectCode: string;
   presentData: string;
@@ -58,7 +58,7 @@ export function useReportData() {
     month: 'all',
     year: '2024',
     location: 'all',
-    wetTrade: 'all',
+    trades: 'all',
     projectName: 'all',
     projectCode: 'all',
     presentData: 'by-project'
@@ -120,8 +120,9 @@ export function useReportData() {
       .filter(Boolean)
     )];
     
-    const wetTrades = [...new Set(subcontracts
-      .flatMap(s => s.subcontract_trade_items?.map(item => item.trade_items?.trades?.category))
+    // Changed to use trade names instead of categories
+    const trades = [...new Set(subcontracts
+      .flatMap(s => s.subcontract_trade_items?.map(item => item.trade_items?.trades?.name))
       .filter(Boolean)
     )];
     
@@ -139,10 +140,10 @@ export function useReportData() {
       months,
       years: ['All', ...years],
       locations: ['All', ...locations],
-      wetTrades: ['All', ...wetTrades],
+      trades: ['All', ...trades],
       projectNames: ['All', ...projectNames],
       projectCodes: ['All', ...projectCodes],
-      presentDataOptions: ['By Project', 'By Contractor', 'By Trade']
+      presentDataOptions: ['By Project', 'By Location']
     };
   }, [subcontracts]);
 
@@ -167,26 +168,26 @@ export function useReportData() {
         }
       }
 
-      // Location filter
-      if (filters.location !== 'all' && filters.location !== 'All') {
+      // Location filter (only active when present data is by location)
+      if (filters.presentData === 'by-location' && filters.location !== 'all' && filters.location !== 'All') {
         if (subcontract.projects?.location !== filters.location) return false;
       }
 
-      // Wet trade filter
-      if (filters.wetTrade !== 'all' && filters.wetTrade !== 'All') {
+      // Trade filter (changed to use trade names)
+      if (filters.trades !== 'all' && filters.trades !== 'All') {
         const hasMatchingTrade = subcontract.subcontract_trade_items?.some(
-          item => item.trade_items?.trades?.category === filters.wetTrade
+          item => item.trade_items?.trades?.name === filters.trades
         );
         if (!hasMatchingTrade) return false;
       }
 
-      // Project name filter
-      if (filters.projectName !== 'all' && filters.projectName !== 'All') {
+      // Project name filter (only active when present data is by project)
+      if (filters.presentData === 'by-project' && filters.projectName !== 'all' && filters.projectName !== 'All') {
         if (subcontract.projects?.name !== filters.projectName) return false;
       }
 
-      // Project code filter
-      if (filters.projectCode !== 'all' && filters.projectCode !== 'All') {
+      // Project code filter (only active when present data is by project)
+      if (filters.presentData === 'by-project' && filters.projectCode !== 'all' && filters.projectCode !== 'All') {
         if (subcontract.projects?.code !== filters.projectCode) return false;
       }
 

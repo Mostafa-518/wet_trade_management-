@@ -32,6 +32,8 @@ export function Report() {
     );
   }
 
+  const isPresentDataByProject = reportData.filters.presentData === 'by-project';
+
   return (
     <div className="space-y-6">
       {/* Header Section */}
@@ -91,7 +93,7 @@ export function Report() {
       {/* Filter Section */}
       <Card>
         <CardContent className="pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Month:</label>
               <Select 
@@ -130,76 +132,83 @@ export function Report() {
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Location of work:</label>
-              <Select 
-                value={reportData.filters.location} 
-                onValueChange={(value) => updateFilter('location', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {filterOptions.locations.map((location) => (
-                    <SelectItem key={location} value={location}>
-                      {location}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Conditional filters based on Present Data selection */}
+            {!isPresentDataByProject && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Location of work:</label>
+                <Select 
+                  value={reportData.filters.location} 
+                  onValueChange={(value) => updateFilter('location', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filterOptions.locations.map((location) => (
+                      <SelectItem key={location} value={location}>
+                        {location}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {isPresentDataByProject && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Project Name:</label>
+                <Select 
+                  value={reportData.filters.projectName} 
+                  onValueChange={(value) => updateFilter('projectName', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filterOptions.projectNames.map((project) => (
+                      <SelectItem key={project} value={project}>
+                        {project}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {isPresentDataByProject && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Project Code:</label>
+                <Select 
+                  value={reportData.filters.projectCode} 
+                  onValueChange={(value) => updateFilter('projectCode', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filterOptions.projectCodes.map((code) => (
+                      <SelectItem key={code} value={code}>
+                        {code}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Wet trade:</label>
+              <label className="text-sm font-medium">Trades:</label>
               <Select 
-                value={reportData.filters.wetTrade} 
-                onValueChange={(value) => updateFilter('wetTrade', value)}
+                value={reportData.filters.trades} 
+                onValueChange={(value) => updateFilter('trades', value)}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {filterOptions.wetTrades.map((trade) => (
+                  {filterOptions.trades.map((trade) => (
                     <SelectItem key={trade} value={trade}>
                       {trade}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Project Name:</label>
-              <Select 
-                value={reportData.filters.projectName} 
-                onValueChange={(value) => updateFilter('projectName', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {filterOptions.projectNames.map((project) => (
-                    <SelectItem key={project} value={project}>
-                      {project}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Project Code:</label>
-              <Select 
-                value={reportData.filters.projectCode} 
-                onValueChange={(value) => updateFilter('projectCode', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {filterOptions.projectCodes.map((code) => (
-                    <SelectItem key={code} value={code}>
-                      {code}
                     </SelectItem>
                   ))}
                 </SelectContent>
