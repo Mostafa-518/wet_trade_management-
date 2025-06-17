@@ -1,7 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -155,45 +154,42 @@ export function Report() {
             )}
 
             {isPresentDataByProject && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Project Name:</label>
-                <Select 
-                  value={reportData.filters.projectName} 
-                  onValueChange={(value) => updateFilter('projectName', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filterOptions.projectNames.map((project) => (
-                      <SelectItem key={project} value={project}>
-                        {project}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {isPresentDataByProject && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Project Code:</label>
-                <Select 
-                  value={reportData.filters.projectCode} 
-                  onValueChange={(value) => updateFilter('projectCode', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filterOptions.projectCodes.map((code) => (
-                      <SelectItem key={code} value={code}>
-                        {code}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    {reportData.filters.projectFilterType === 'name' ? 'Project Name:' : 'Project Code:'}
+                  </label>
+                  <div className="flex gap-2">
+                    <Select 
+                      value={reportData.filters.projectFilterType === 'name' ? reportData.filters.projectName : reportData.filters.projectCode}
+                      onValueChange={(value) => updateFilter(reportData.filters.projectFilterType === 'name' ? 'projectName' : 'projectCode', value)}
+                    >
+                      <SelectTrigger className="flex-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(reportData.filters.projectFilterType === 'name' ? filterOptions.projectNames : filterOptions.projectCodes).map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select 
+                      value={reportData.filters.projectFilterType}
+                      onValueChange={(value) => updateFilter('projectFilterType', value)}
+                    >
+                      <SelectTrigger className="w-20">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="name">Name</SelectItem>
+                        <SelectItem value="code">Code</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </>
             )}
 
             <div className="space-y-2">
@@ -229,13 +225,6 @@ export function Report() {
             </div>
           </CardContent>
         </Card>
-      </div>
-
-      {/* Submit Button */}
-      <div className="flex justify-center">
-        <Button className="bg-green-500 hover:bg-green-600 text-white px-8 py-2">
-          Submit
-        </Button>
       </div>
 
       {/* Results Table */}

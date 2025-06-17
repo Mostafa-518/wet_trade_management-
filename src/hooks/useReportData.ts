@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useMemo } from 'react';
@@ -11,6 +10,7 @@ interface ReportFilters {
   projectName: string;
   projectCode: string;
   presentData: string;
+  projectFilterType: 'name' | 'code';
 }
 
 interface SubcontractWithDetails {
@@ -61,7 +61,8 @@ export function useReportData() {
     trades: 'all',
     projectName: 'all',
     projectCode: 'all',
-    presentData: 'by-project'
+    presentData: 'by-project',
+    projectFilterType: 'name'
   });
 
   // Fetch all subcontracts with related data
@@ -181,13 +182,13 @@ export function useReportData() {
         if (!hasMatchingTrade) return false;
       }
 
-      // Project name filter (only active when present data is by project)
-      if (filters.presentData === 'by-project' && filters.projectName !== 'all' && filters.projectName !== 'All') {
+      // Project name filter (only active when present data is by project and projectFilterType is 'name')
+      if (filters.presentData === 'by-project' && filters.projectFilterType === 'name' && filters.projectName !== 'all' && filters.projectName !== 'All') {
         if (subcontract.projects?.name !== filters.projectName) return false;
       }
 
-      // Project code filter (only active when present data is by project)
-      if (filters.presentData === 'by-project' && filters.projectCode !== 'all' && filters.projectCode !== 'All') {
+      // Project code filter (only active when present data is by project and projectFilterType is 'code')
+      if (filters.presentData === 'by-project' && filters.projectFilterType === 'code' && filters.projectCode !== 'all' && filters.projectCode !== 'All') {
         if (subcontract.projects?.code !== filters.projectCode) return false;
       }
 
@@ -246,7 +247,32 @@ export function useReportData() {
   }, [subcontracts, filteredSubcontracts, filters]);
 
   const updateFilter = (key: keyof ReportFilters, value: string) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    setFilters(prev => {
+      const newFilters = { ...prev, [key]: value };
+      
+      // When switching project filter type, reset the other project filter
+      if (key === 'projectFilterType') {
+        if (value === 'name') {
+          newFilters.projectCode = 'all';
+        } else if (value === 'code') {
+          newFilters.projectName = 'all';
+        }
+      }
+      
+      // When changing project name, switch to name filter type and reset code
+      if (key === 'projectName' && value !== 'all' && value !== 'All') {
+        newFilters.projectFilterType = 'name';
+        newFilters.projectCode = 'all';
+      }
+      
+      // When changing project code, switch to code filter type and reset name
+      if (key === 'projectCode' && value !== 'all' && value !== 'All') {
+        newFilters.projectFilterType = 'code';
+        newFilters.projectName = 'all';
+      }
+      
+      return newFilters;
+    });
   };
 
   return {
