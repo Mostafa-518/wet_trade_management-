@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useMemo } from 'react';
@@ -174,7 +175,7 @@ export function useReportData() {
         if (subcontract.projects?.location !== filters.location) return false;
       }
 
-      // Trade filter (changed to use trade names)
+      // Trade filter - FIXED: Check if ANY trade item in the subcontract matches the selected trade
       if (filters.trades !== 'all' && filters.trades !== 'All') {
         const hasMatchingTrade = subcontract.subcontract_trade_items?.some(
           item => item.trade_items?.trades?.name === filters.trades
@@ -196,7 +197,7 @@ export function useReportData() {
     });
   }, [subcontracts, filters]);
 
-  // Calculate report data
+  // Calculate report data - FIXED: Only include trade items that match the selected trade
   const reportData = useMemo(() => {
     const totalSubcontracts = subcontracts.length;
     const currentSubcontracts = filteredSubcontracts.length;
@@ -206,6 +207,13 @@ export function useReportData() {
     
     filteredSubcontracts.forEach(subcontract => {
       subcontract.subcontract_trade_items?.forEach(item => {
+        // FIXED: When trade filter is active, only include items from that trade
+        if (filters.trades !== 'all' && filters.trades !== 'All') {
+          if (item.trade_items?.trades?.name !== filters.trades) {
+            return; // Skip this item if it doesn't match the selected trade
+          }
+        }
+
         const itemName = item.trade_items?.name || 'Unknown Item';
         const existingItem = tradeItemsMap.get(itemName);
         
