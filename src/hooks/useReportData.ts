@@ -2,58 +2,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useMemo } from 'react';
-
-interface ReportFilters {
-  month: string;
-  year: string;
-  location: string;
-  trades: string;
-  projectName: string;
-  projectCode: string;
-  presentData: string;
-  projectFilterType: 'name' | 'code';
-  facilities: string[];
-}
-
-interface SubcontractWithDetails {
-  id: string;
-  contract_number: string;
-  total_value: number;
-  status: string;
-  project_id: string;
-  subcontractor_id: string;
-  date_of_issuing: string;
-  projects: {
-    name: string;
-    code: string;
-    location: string;
-  };
-  subcontractors: {
-    company_name: string;
-  };
-  subcontract_trade_items: Array<{
-    quantity: number;
-    unit_price: number;
-    total_price: number;
-    wastage_percentage: number;
-    trade_item_id: string;
-    trade_items: {
-      name: string;
-      unit: string;
-      trade_id: string;
-      trades: {
-        name: string;
-        category: string;
-      };
-    };
-  }>;
-  subcontract_responsibilities: Array<{
-    responsibility_id: string;
-    responsibilities: {
-      name: string;
-    };
-  }>;
-}
+import { 
+  ReportFilters, 
+  SubcontractWithDetails, 
+  ReportData 
+} from '@/types/report';
+import { generateFilterOptions } from '@/utils/report/filterOptions';
+import { filterSubcontracts } from '@/utils/report/subcontractFilter';
+import { processReportData } from '@/utils/report/reportDataProcessor';
 
 export function useReportData() {
   const [filters, setFilters] = useState<ReportFilters>({
@@ -110,201 +66,19 @@ export function useReportData() {
   });
 
   // Get filter options from data
-  const filterOptions = useMemo(() => {
-    const months = ['All', 'January', 'February', 'March', 'April', 'May', 'June', 
-                   'July', 'August', 'September', 'October', 'November', 'December'];
-    
-    const years = [...new Set(subcontracts
-      .map(s => s.date_of_issuing ? new Date(s.date_of_issuing).getFullYear().toString() : '2024')
-      .filter(Boolean)
-    )].sort();
-    
-    const locations = [...new Set(subcontracts
-      .map(s => s.projects?.location)
-      .filter(Boolean)
-    )];
-    
-    const trades = [...new Set(subcontracts
-      .flatMap(s => s.subcontract_trade_items?.map(item => item.trade_items?.trades?.name))
-      .filter(Boolean)
-    )];
-    
-    const projectNames = [...new Set(subcontracts
-      .map(s => s.projects?.name)
-      .filter(Boolean)
-    )];
-    
-    const projectCodes = [...new Set(subcontracts
-      .map(s => s.projects?.code)
-      .filter(Boolean)
-    )];
-
-    const facilities = [...new Set(subcontracts
-      .flatMap(s => s.subcontract_responsibilities?.map(resp => resp.responsibilities?.name))
-      .filter(Boolean)
-    )];
-
-    return {
-      months,
-      years: ['All', ...years],
-      locations: ['All', ...locations],
-      trades: ['All', ...trades],
-      projectNames: ['All', ...projectNames],
-      projectCodes: ['All', ...projectCodes],
-      presentDataOptions: ['By Project', 'By Location'],
-      facilities: ['All', ...facilities]
-    };
-  }, [subcontracts]);
+  const filterOptions = useMemo(() => generateFilterOptions(subcontracts), [subcontracts]);
 
   // Filter subcontracts based on current filters
-  const filteredSubcontracts = useMemo(() => {
-    console.log('=== STARTING FILTER PROCESS ===');
-    console.log('Applied filters:', filters);
-    console.log('Total subcontracts before filtering:', subcontracts.length);
-    
-    const filtered = subcontracts.filter(subcontract => {
-      console.log(`\n--- Processing Subcontract ${subcontract.contract_number} ---`);
-      
-      // Month filter
-      if (filters.month !== 'all' && filters.month !== 'All') {
-        const monthIndex = ['January', 'February', 'March', 'April', 'May', 'June',
-                           'July', 'August', 'September', 'October', 'November', 'December'].indexOf(filters.month);
-        if (monthIndex !== -1 && subcontract.date_of_issuing) {
-          const subcontractMonth = new Date(subcontract.date_of_issuing).getMonth();
-          if (subcontractMonth !== monthIndex) {
-            console.log(`❌ Month filter failed: expected ${filters.month}, got month ${subcontractMonth}`);
-            return false;
-          }
-        }
-      }
-
-      // Year filter
-      if (filters.year !== 'all' && filters.year !== 'All') {
-        if (subcontract.date_of_issuing) {
-          const subcontractYear = new Date(subcontract.date_of_issuing).getFullYear().toString();
-          if (subcontractYear !== filters.year) {
-            console.log(`❌ Year filter failed: expected ${filters.year}, got ${subcontractYear}`);
-            return false;
-          }
-        }
-      }
-
-      // Location filter (only active when present data is by location)
-      if (filters.presentData === 'by-location' && filters.location !== 'all' && filters.location !== 'All') {
-        if (subcontract.projects?.location !== filters.location) {
-          console.log(`❌ Location filter failed: expected ${filters.location}, got ${subcontract.projects?.location}`);
-          return false;
-        }
-      }
-
-      // Trade filter
-      if (filters.trades !== 'all' && filters.trades !== 'All') {
-        const hasMatchingTrade = subcontract.subcontract_trade_items?.some(
-          item => item.trade_items?.trades?.name === filters.trades
-        );
-        if (!hasMatchingTrade) {
-          console.log(`❌ Trade filter failed: no matching trade ${filters.trades}`);
-          return false;
-        }
-      }
-
-      // Facilities filter - COMPLETELY REWRITTEN
-      if (filters.facilities.length > 0) {
-        console.log(`🔍 Checking facilities filter. Selected facilities:`, filters.facilities);
-        
-        // Get all responsibility names for this subcontract
-        const subcontractFacilities = subcontract.subcontract_responsibilities
-          ?.map(resp => resp.responsibilities?.name)
-          .filter(name => name != null) || [];
-        
-        console.log(`Subcontract ${subcontract.contract_number} has facilities:`, subcontractFacilities);
-        
-        // Check if ANY of the selected facilities match ANY of the subcontract's facilities
-        const hasMatchingFacility = filters.facilities.some(selectedFacility => 
-          subcontractFacilities.includes(selectedFacility)
-        );
-        
-        console.log(`Has matching facility: ${hasMatchingFacility}`);
-        
-        if (!hasMatchingFacility) {
-          console.log(`❌ Facilities filter failed: no matching facilities found`);
-          return false;
-        } else {
-          console.log(`✅ Facilities filter passed`);
-        }
-      }
-
-      // Project name filter (only active when present data is by project and projectFilterType is 'name')
-      if (filters.presentData === 'by-project' && filters.projectFilterType === 'name' && filters.projectName !== 'all' && filters.projectName !== 'All') {
-        if (subcontract.projects?.name !== filters.projectName) {
-          console.log(`❌ Project name filter failed: expected ${filters.projectName}, got ${subcontract.projects?.name}`);
-          return false;
-        }
-      }
-
-      // Project code filter (only active when present data is by project and projectFilterType is 'code')
-      if (filters.presentData === 'by-project' && filters.projectFilterType === 'code' && filters.projectCode !== 'all' && filters.projectCode !== 'All') {
-        if (subcontract.projects?.code !== filters.projectCode) {
-          console.log(`❌ Project code filter failed: expected ${filters.projectCode}, got ${subcontract.projects?.code}`);
-          return false;
-        }
-      }
-
-      console.log(`✅ Subcontract ${subcontract.contract_number} passed all filters`);
-      return true;
-    });
-
-    console.log('\n=== FILTER RESULTS ===');
-    console.log('Filtered subcontracts count:', filtered.length);
-    console.log('Filtered subcontract IDs:', filtered.map(s => s.contract_number));
-    console.log('=== END FILTER PROCESS ===\n');
-    
-    return filtered;
-  }, [subcontracts, filters]);
+  const filteredSubcontracts = useMemo(() => 
+    filterSubcontracts(subcontracts, filters), 
+    [subcontracts, filters]
+  );
 
   // Calculate report data
-  const reportData = useMemo(() => {
+  const reportData = useMemo((): ReportData => {
     const totalSubcontracts = subcontracts.length;
     const currentSubcontracts = filteredSubcontracts.length;
-    
-    // Group trade items by item name for the table
-    const tradeItemsMap = new Map();
-    
-    filteredSubcontracts.forEach(subcontract => {
-      subcontract.subcontract_trade_items?.forEach(item => {
-        // When trade filter is active, only include items from that trade
-        if (filters.trades !== 'all' && filters.trades !== 'All') {
-          if (item.trade_items?.trades?.name !== filters.trades) {
-            return; // Skip this item if it doesn't match the selected trade
-          }
-        }
-
-        const itemName = item.trade_items?.name || 'Unknown Item';
-        const existingItem = tradeItemsMap.get(itemName);
-        
-        if (existingItem) {
-          existingItem.totalAmount += item.total_price || 0;
-          existingItem.totalQuantity += item.quantity || 0;
-          existingItem.count += 1;
-        } else {
-          tradeItemsMap.set(itemName, {
-            item: itemName,
-            averageRate: item.unit_price || 0,
-            totalAmount: item.total_price || 0,
-            totalQuantity: item.quantity || 0,
-            wastage: item.wastage_percentage || 0,
-            unit: item.trade_items?.unit || '',
-            count: 1
-          });
-        }
-      });
-    });
-
-    // Calculate average rates
-    const tableData = Array.from(tradeItemsMap.values()).map(item => ({
-      ...item,
-      averageRate: item.count > 0 ? item.totalAmount / item.totalQuantity : 0
-    }));
+    const tableData = processReportData(filteredSubcontracts, filters);
 
     return {
       totalSubcontracts,
