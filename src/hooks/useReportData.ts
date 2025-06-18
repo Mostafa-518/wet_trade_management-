@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useMemo } from 'react';
@@ -11,7 +12,7 @@ interface ReportFilters {
   projectCode: string;
   presentData: string;
   projectFilterType: 'name' | 'code';
-  facilities: string[]; // NEW: Array of selected facilities/responsibilities
+  facilities: string[];
 }
 
 interface SubcontractWithDetails {
@@ -64,7 +65,7 @@ export function useReportData() {
     projectCode: 'all',
     presentData: 'by-project',
     projectFilterType: 'name',
-    facilities: [] // NEW: Initialize empty facilities array
+    facilities: []
   });
 
   // Fetch all subcontracts with related data
@@ -123,7 +124,6 @@ export function useReportData() {
       .filter(Boolean)
     )];
     
-    // Changed to use trade names instead of categories
     const trades = [...new Set(subcontracts
       .flatMap(s => s.subcontract_trade_items?.map(item => item.trade_items?.trades?.name))
       .filter(Boolean)
@@ -139,7 +139,6 @@ export function useReportData() {
       .filter(Boolean)
     )];
 
-    // NEW: Get all available facilities/responsibilities
     const facilities = [...new Set(subcontracts
       .flatMap(s => s.subcontract_responsibilities?.map(resp => resp.responsibilities?.name))
       .filter(Boolean)
@@ -153,13 +152,16 @@ export function useReportData() {
       projectNames: ['All', ...projectNames],
       projectCodes: ['All', ...projectCodes],
       presentDataOptions: ['By Project', 'By Location'],
-      facilities: ['All', ...facilities] // NEW: Add facilities to filter options
+      facilities: ['All', ...facilities]
     };
   }, [subcontracts]);
 
   // Filter subcontracts based on current filters
   const filteredSubcontracts = useMemo(() => {
-    return subcontracts.filter(subcontract => {
+    console.log('Applying filters:', filters);
+    console.log('Total subcontracts before filtering:', subcontracts.length);
+    
+    const filtered = subcontracts.filter(subcontract => {
       // Month filter
       if (filters.month !== 'all') {
         const monthIndex = ['January', 'February', 'March', 'April', 'May', 'June',
@@ -183,7 +185,7 @@ export function useReportData() {
         if (subcontract.projects?.location !== filters.location) return false;
       }
 
-      // Trade filter - FIXED: Check if ANY trade item in the subcontract matches the selected trade
+      // Trade filter
       if (filters.trades !== 'all' && filters.trades !== 'All') {
         const hasMatchingTrade = subcontract.subcontract_trade_items?.some(
           item => item.trade_items?.trades?.name === filters.trades
@@ -191,17 +193,25 @@ export function useReportData() {
         if (!hasMatchingTrade) return false;
       }
 
-      // Facilities filter - Check if subcontract has any of the selected facilities
+      // Facilities filter - ENHANCED with debugging
       if (filters.facilities.length > 0 && !filters.facilities.includes('All')) {
         const subcontractFacilities = subcontract.subcontract_responsibilities?.map(
           resp => resp.responsibilities?.name
         ).filter(Boolean) || [];
         
+        console.log(`Subcontract ${subcontract.contract_number} facilities:`, subcontractFacilities);
+        console.log('Selected facilities filter:', filters.facilities);
+        
         const hasMatchingFacility = filters.facilities.some(
           facility => subcontractFacilities.includes(facility)
         );
         
-        if (!hasMatchingFacility) return false;
+        console.log(`Subcontract ${subcontract.contract_number} has matching facility:`, hasMatchingFacility);
+        
+        if (!hasMatchingFacility) {
+          console.log(`Filtering out subcontract ${subcontract.contract_number} - no matching facilities`);
+          return false;
+        }
       }
 
       // Project name filter (only active when present data is by project and projectFilterType is 'name')
@@ -216,9 +226,12 @@ export function useReportData() {
 
       return true;
     });
+
+    console.log('Filtered subcontracts count:', filtered.length);
+    return filtered;
   }, [subcontracts, filters]);
 
-  // Calculate report data - FIXED: Only include trade items that match the selected trade
+  // Calculate report data
   const reportData = useMemo(() => {
     const totalSubcontracts = subcontracts.length;
     const currentSubcontracts = filteredSubcontracts.length;
@@ -228,7 +241,7 @@ export function useReportData() {
     
     filteredSubcontracts.forEach(subcontract => {
       subcontract.subcontract_trade_items?.forEach(item => {
-        // FIXED: When trade filter is active, only include items from that trade
+        // When trade filter is active, only include items from that trade
         if (filters.trades !== 'all' && filters.trades !== 'All') {
           if (item.trade_items?.trades?.name !== filters.trades) {
             return; // Skip this item if it doesn't match the selected trade
@@ -271,6 +284,7 @@ export function useReportData() {
   }, [subcontracts, filteredSubcontracts, filters]);
 
   const updateFilter = (key: keyof ReportFilters, value: string | string[]) => {
+    console.log(`Updating filter ${key} to:`, value);
     setFilters(prev => {
       const newFilters = { ...prev, [key]: value };
       
@@ -295,6 +309,7 @@ export function useReportData() {
         newFilters.projectName = 'all';
       }
       
+      console.log('New filters state:', newFilters);
       return newFilters;
     });
   };
