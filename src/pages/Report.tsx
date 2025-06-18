@@ -1,23 +1,12 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DateRange } from 'react-day-picker';
-import { format } from 'date-fns';
 
 import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import {
   Table,
   TableBody,
@@ -28,39 +17,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer"
 import { useToast } from "@/hooks/use-toast"
 import { useData } from "@/contexts/DataContext";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Separator } from "@/components/ui/separator"
-import { Slider } from "@/components/ui/slider"
-import { Switch } from "@/components/ui/switch"
-import { ModeToggle } from "@/components/mode-toggle"
-import { Icons } from "@/components/icons"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
-import { Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator, CommandShortcut } from "@/components/ui/command"
-import { CalendarIcon, CheckCheck, ChevronsUpDown } from "lucide-react"
-import { cn } from "@/lib/utils"
 
 const Report = () => {
   const navigate = useNavigate();
@@ -77,18 +35,31 @@ const Report = () => {
   ]);
 
   const handleSubcontractClick = (item: any) => {
-    console.log('handleSubcontractClick called with item:', item);
+    console.log('=== REPORT: handleSubcontractClick called ===');
+    console.log('Clicked item:', item);
     
     // Build filter parameters based on the clicked item
     const filterParams = new URLSearchParams();
     
-    // Add basic filters
-    if (selectedMonth) filterParams.append('month', selectedMonth);
-    if (selectedYear) filterParams.append('year', selectedYear);
-    if (selectedLocation) filterParams.append('location', selectedLocation);
-    if (selectedTrades) filterParams.append('trades', selectedTrades);
+    // Add basic filters from form
+    if (selectedMonth) {
+      filterParams.append('month', selectedMonth);
+      console.log('Added month filter:', selectedMonth);
+    }
+    if (selectedYear) {
+      filterParams.append('year', selectedYear);
+      console.log('Added year filter:', selectedYear);
+    }
+    if (selectedLocation) {
+      filterParams.append('location', selectedLocation);
+      console.log('Added location filter:', selectedLocation);
+    }
+    if (selectedTrades) {
+      filterParams.append('trades', selectedTrades);
+      console.log('Added trades filter:', selectedTrades);
+    }
     
-    // Add specific filters based on the clicked item
+    // Add specific filters based on the clicked item - use the exact property names from the item
     if (item.project_name) {
       filterParams.append('projectName', item.project_name);
       console.log('Added projectName filter:', item.project_name);
@@ -105,6 +76,7 @@ const Report = () => {
     // Add facilities if they exist
     if (selectedFacilities && selectedFacilities.length > 0) {
       filterParams.append('facilities', selectedFacilities.join(','));
+      console.log('Added facilities filter:', selectedFacilities);
     }
     
     // Add present data filter
@@ -117,7 +89,10 @@ const Report = () => {
       filterParams.append('projectFilterType', projectFilterType);
     }
     
-    console.log('Final filter params:', filterParams.toString());
+    console.log('=== REPORT: Final filter params string ===');
+    console.log('Filter params string:', filterParams.toString());
+    console.log('=== REPORT: Navigating to subcontracts ===');
+    
     navigate(`/subcontracts?${filterParams.toString()}`);
   };
 
@@ -235,7 +210,18 @@ const Report = () => {
                 <TableCell>{item.project_name}</TableCell>
                 <TableCell>{item.project_code}</TableCell>
                 <TableCell>{item.subcontractor_name}</TableCell>
-                <TableCell>{item.total_contracts}</TableCell>
+                <TableCell>
+                  <Button 
+                    variant="link" 
+                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSubcontractClick(item);
+                    }}
+                  >
+                    No. of Subcontract: [{item.total_contracts}] Subcontract
+                  </Button>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
