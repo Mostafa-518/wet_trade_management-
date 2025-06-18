@@ -105,7 +105,7 @@ export function useSubcontractTableLogic(reportFilters?: any) {
         console.log(`Is responsibilities an array:`, Array.isArray(subcontract.responsibilities));
         
         // Handle different data structures for responsibilities
-        let responsibilityNames = [];
+        let responsibilityNames: string[] = [];
         
         if (!subcontract.responsibilities) {
           console.log(`❌ FACILITIES FILTER FAILED: No responsibilities property`);
@@ -121,10 +121,15 @@ export function useSubcontractTableLogic(reportFilters?: any) {
           
           // If first item is a string, assume all are strings
           if (typeof subcontract.responsibilities[0] === 'string') {
-            responsibilityNames = subcontract.responsibilities;
-          } else if (typeof subcontract.responsibilities[0] === 'object') {
+            responsibilityNames = subcontract.responsibilities as string[];
+          } else if (typeof subcontract.responsibilities[0] === 'object' && subcontract.responsibilities[0] !== null) {
             // If objects, try to extract name property
-            responsibilityNames = subcontract.responsibilities.map(resp => resp.name || resp.responsibility || resp).filter(Boolean);
+            responsibilityNames = subcontract.responsibilities.map(resp => {
+              if (typeof resp === 'object' && resp !== null) {
+                return (resp as any).name || (resp as any).responsibility || '';
+              }
+              return '';
+            }).filter(Boolean);
           }
         } else {
           console.log(`❌ FACILITIES FILTER FAILED: Responsibilities is not an array`);
