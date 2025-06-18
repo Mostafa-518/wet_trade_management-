@@ -1,14 +1,9 @@
 
 import React from 'react';
 import { Control } from 'react-hook-form';
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SubcontractorFormData } from '@/types/subcontractor';
 
 interface SubcontractorFormFieldsProps {
@@ -17,13 +12,13 @@ interface SubcontractorFormFieldsProps {
 
 export function SubcontractorFormFields({ control }: SubcontractorFormFieldsProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <FormField
         control={control}
         name="companyName"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Company Name</FormLabel>
+            <FormLabel>Company Name *</FormLabel>
             <FormControl>
               <Input placeholder="Enter company name" {...field} />
             </FormControl>
@@ -37,37 +32,9 @@ export function SubcontractorFormFields({ control }: SubcontractorFormFieldsProp
         name="representativeName"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Representative Name</FormLabel>
+            <FormLabel>Representative Name *</FormLabel>
             <FormControl>
               <Input placeholder="Enter representative name" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={control}
-        name="commercialRegistration"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Commercial Registration</FormLabel>
-            <FormControl>
-              <Input placeholder="Enter commercial registration" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={control}
-        name="taxCardNo"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Tax Card No.</FormLabel>
-            <FormControl>
-              <Input placeholder="Enter tax card number" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -79,7 +46,7 @@ export function SubcontractorFormFields({ control }: SubcontractorFormFieldsProp
         name="email"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Email</FormLabel>
+            <FormLabel>Email *</FormLabel>
             <FormControl>
               <Input type="email" placeholder="Enter email address" {...field} />
             </FormControl>
@@ -93,9 +60,37 @@ export function SubcontractorFormFields({ control }: SubcontractorFormFieldsProp
         name="phone"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Phone</FormLabel>
+            <FormLabel>Phone *</FormLabel>
             <FormControl>
               <Input placeholder="Enter phone number" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={control}
+        name="commercialRegistration"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Commercial Registration *</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter commercial registration number" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={control}
+        name="taxCardNo"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Tax Card Number *</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter tax card number" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>

@@ -32,12 +32,12 @@ export function ProjectDetailView({ project, onBack, onEdit }: ProjectDetailView
   // Helper function to get subcontractor name
   const getSubcontractorName = (subcontractorId: string) => {
     const subcontractor = subcontractors.find(s => s.id === subcontractorId);
-    return subcontractor ? subcontractor.name : subcontractorId;
+    return subcontractor ? subcontractor.companyName : subcontractorId;
   };
 
-  // Handle subcontract click navigation
-  const handleSubcontractClick = (contractId: string) => {
-    navigate(`/subcontracts/${contractId}`);
+  // Handle subcontract click navigation - use the database ID instead of contractId
+  const handleSubcontractClick = (subcontractId: string) => {
+    navigate(`/subcontracts/${subcontractId}`);
   };
 
   return (
@@ -111,7 +111,7 @@ export function ProjectDetailView({ project, onBack, onEdit }: ProjectDetailView
                     <div 
                       key={subcontract.id} 
                       className="border rounded-lg p-4 hover:bg-muted/50 cursor-pointer transition-colors"
-                      onClick={() => handleSubcontractClick(subcontract.contractId)}
+                      onClick={() => handleSubcontractClick(subcontract.id)}
                     >
                       <div className="flex justify-between items-start">
                         <div className="space-y-2">
@@ -126,7 +126,7 @@ export function ProjectDetailView({ project, onBack, onEdit }: ProjectDetailView
                               <span className="font-medium">Trades:</span> {subcontract.tradeItems.map(item => item.trade).join(', ') || 'No trades specified'}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              <span className="font-medium">Total Value:</span> ${subcontract.totalValue.toLocaleString()}
+                              <span className="font-medium">Total Value:</span> {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EGP' }).format(subcontract.totalValue)}
                             </p>
                             {subcontract.responsibilities.length > 0 && (
                               <p className="text-sm text-muted-foreground">

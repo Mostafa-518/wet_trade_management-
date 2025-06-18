@@ -17,10 +17,15 @@ interface TradeDetailViewProps {
 }
 
 export function TradeDetailView({ tradeId, onBack, onEdit, onAddItem, onEditItem }: TradeDetailViewProps) {
-  const { trades, tradeItems, deleteTradeItem } = useData();
+  const { trades, tradeItems, deleteTradeItem, subcontracts } = useData();
   
   const trade = trades.find(t => t.id === tradeId);
   const items = tradeItems.filter(item => item.trade_id === tradeId);
+
+  // Find subcontracts that use this trade
+  const relatedSubcontracts = subcontracts.filter(subcontract => 
+    subcontract.tradeItems.some(item => item.trade === trade?.name)
+  );
 
   const handleDeleteItem = (itemId: string) => {
     deleteTradeItem(itemId);
@@ -80,7 +85,7 @@ export function TradeDetailView({ tradeId, onBack, onEdit, onAddItem, onEditItem
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card className="border-l-4 border-l-blue-500 shadow-sm">
           <CardContent className="p-6">
             <div className="flex items-center gap-3">
@@ -113,10 +118,24 @@ export function TradeDetailView({ tradeId, onBack, onEdit, onAddItem, onEditItem
           <CardContent className="p-6">
             <div className="flex items-center gap-3">
               <div className="bg-purple-50 p-3 rounded-full">
-                <Calendar className="h-6 w-6 text-purple-600" />
+                <FileText className="h-6 w-6 text-purple-600" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-purple-600">
+                <div className="text-2xl font-bold text-purple-600">{relatedSubcontracts.length}</div>
+                <div className="text-sm font-medium text-muted-foreground">Used in Subcontracts</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-orange-500 shadow-sm">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3">
+              <div className="bg-orange-50 p-3 rounded-full">
+                <Calendar className="h-6 w-6 text-orange-600" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-orange-600">
                   {new Date(trade.created_at).toLocaleDateString('en', { month: 'short', year: 'numeric' })}
                 </div>
                 <div className="text-sm font-medium text-muted-foreground">Created</div>
@@ -127,7 +146,7 @@ export function TradeDetailView({ tradeId, onBack, onEdit, onAddItem, onEditItem
       </div>
 
       <Tabs defaultValue="info" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 bg-gray-100">
+        <TabsList className="grid w-full grid-cols-3 bg-gray-100">
           <TabsTrigger value="info" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             Trade Information
@@ -135,6 +154,10 @@ export function TradeDetailView({ tradeId, onBack, onEdit, onAddItem, onEditItem
           <TabsTrigger value="items" className="flex items-center gap-2">
             <Package className="h-4 w-4" />
             Items ({items.length})
+          </TabsTrigger>
+          <TabsTrigger value="subcontracts" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Related Subcontracts ({relatedSubcontracts.length})
           </TabsTrigger>
         </TabsList>
 
@@ -253,6 +276,51 @@ export function TradeDetailView({ tradeId, onBack, onEdit, onAddItem, onEditItem
                     <Plus className="h-4 w-4 mr-2" />
                     Add First Item
                   </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="subcontracts">
+          <Card className="shadow-sm">
+            <CardHeader className="bg-gray-50">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <FileText className="h-5 w-5 text-blue-600" />
+                Related Subcontracts
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {relatedSubcontracts.length > 0 ? (
+                <div className="space-y-4">
+                  {relatedSubcontracts.map(subcontract => (
+                    <div key={subcontract.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-2">
+                          <div>
+                            <h3 className="font-semibold text-lg text-blue-600">{subcontract.contractId}</h3>
+                            <p className="text-sm text-muted-foreground">Project: {subcontract.project}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">
+                              <span className="font-medium">Total Value:</span> {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EGP' }).format(subcontract.totalValue)}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              <span className="font-medium">Created:</span> {new Date(subcontract.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                        <Badge variant={subcontract.status === 'active' ? 'default' : 'secondary'}>
+                          {subcontract.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">This trade is not used in any subcontracts yet.</p>
                 </div>
               )}
             </CardContent>

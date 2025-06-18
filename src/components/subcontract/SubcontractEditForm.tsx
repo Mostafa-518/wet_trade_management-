@@ -1,10 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Subcontract } from '@/types/subcontract';
 import { useData } from '@/contexts/DataContext';
 import { useSubcontractHelpers } from '@/hooks/subcontract/useSubcontractHelpers';
 import { SubcontractEditFields } from './SubcontractEditFields';
-import { SubcontractEditActions } from './SubcontractEditActions';
+import { TradeItemsList } from './TradeItemsList';
+import { ResponsibilitiesStep } from './ResponsibilitiesStep';
 
 interface SubcontractEditFormProps {
   subcontract: Subcontract;
@@ -13,7 +17,7 @@ interface SubcontractEditFormProps {
 }
 
 export function SubcontractEditForm({ subcontract, onSave, onClose }: SubcontractEditFormProps) {
-  const { projects, subcontractors, subcontracts } = useData();
+  const { projects, subcontractors, subcontracts, trades, tradeItems, responsibilities } = useData();
   const { getProjectName, getSubcontractorName } = useSubcontractHelpers();
   
   const [formData, setFormData] = useState({
@@ -29,6 +33,9 @@ export function SubcontractEditForm({ subcontract, onSave, onClose }: Subcontrac
     contractType: 'subcontract' as 'subcontract' | 'ADD',
     parentSubcontractId: ''
   });
+
+  const [selectedTradeItems, setSelectedTradeItems] = useState<any[]>([]);
+  const [selectedResponsibilities, setSelectedResponsibilities] = useState<string[]>([]);
 
   // Filter out projects and subcontractors with empty or invalid IDs
   const validProjects = projects.filter(project => project.id && project.name && project.id.trim() !== '' && project.name.trim() !== '');
@@ -54,13 +61,30 @@ export function SubcontractEditForm({ subcontract, onSave, onClose }: Subcontrac
         contractType: subcontract.contractType || 'subcontract',
         parentSubcontractId: subcontract.parentSubcontractId || ''
       });
+
+      // Set selected trade items and responsibilities
+      setSelectedTradeItems(subcontract.tradeItems || []);
+      setSelectedResponsibilities(subcontract.responsibilities || []);
     }
   }, [subcontract]);
+
+  // Recalculate total when trade items change
+  useEffect(() => {
+    const calculatedTotal = selectedTradeItems.reduce((total, item) => {
+      return total + ((item.quantity || 0) * (item.unitPrice || 0));
+    }, 0);
+    setFormData(prev => ({ ...prev, totalValue: calculatedTotal }));
+  }, [selectedTradeItems]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await onSave(subcontract.id, formData);
+      const updateData = {
+        ...formData,
+        tradeItems: selectedTradeItems,
+        responsibilities: selectedResponsibilities
+      };
+      await onSave(subcontract.id, updateData);
       onClose();
     } catch (error) {
       console.error('Error saving subcontract:', error);
@@ -68,17 +92,73 @@ export function SubcontractEditForm({ subcontract, onSave, onClose }: Subcontrac
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <SubcontractEditFields
-        formData={formData}
-        setFormData={setFormData}
-        validProjects={validProjects}
-        validSubcontractors={validSubcontractors}
-        subcontracts={subcontracts}
-        getProjectName={getProjectName}
-        getSubcontractorName={getSubcontractorName}
-      />
-      <SubcontractEditActions onClose={onClose} />
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <Tabs defaultValue="basic" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="basic">Basic Info</TabsTrigger>
+          <TabsTrigger value="trades">Trade Items ({selectedTradeItems.length})</TabsTrigger>
+          <TabsTrigger value="responsibilities">Responsibilities ({selectedResponsibilities.length})</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="basic" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Basic Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <SubcontractEditFields
+                formData={formData}
+                setFormData={setFormData}
+                validProjects={validProjects}
+                validSubcontractors={validSubcontractors}
+                subcontracts={subcontracts}
+                getProjectName={getProjectName}
+                getSubcontractorName={getSubcontractorName}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="trades" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Trade Items</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TradeItemsList
+                selectedItems={selectedTradeItems}
+                onItemsChange={setSelectedTradeItems}
+                trades={trades}
+                tradeItems={tradeItems}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="responsibilities" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Responsibilities</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsibilitiesStep
+                selectedResponsibilities={selectedResponsibilities}
+                onResponsibilitiesChange={setSelectedResponsibilities}
+                responsibilities={responsibilities}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      <div className="flex justify-end gap-2 pt-4 border-t">
+        <Button type="button" variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button type="submit">
+          Save Changes
+        </Button>
+      </div>
     </form>
   );
 }

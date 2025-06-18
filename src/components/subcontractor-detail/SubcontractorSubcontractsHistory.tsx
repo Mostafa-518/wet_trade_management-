@@ -2,10 +2,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { FileText } from 'lucide-react';
 import { Subcontract } from '@/types/subcontract';
+import { useData } from '@/contexts/DataContext';
 
 interface SubcontractorSubcontractsHistoryProps {
   subcontractorProjects: Subcontract[];
@@ -13,6 +13,7 @@ interface SubcontractorSubcontractsHistoryProps {
 
 export function SubcontractorSubcontractsHistory({ subcontractorProjects }: SubcontractorSubcontractsHistoryProps) {
   const navigate = useNavigate();
+  const { projects } = useData();
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -35,6 +36,11 @@ export function SubcontractorSubcontractsHistory({ subcontractorProjects }: Subc
     }
   };
 
+  const getProjectName = (projectId: string) => {
+    const project = projects.find(p => p.id === projectId);
+    return project ? project.name : projectId;
+  };
+
   const handleSubcontractClick = (subcontractId: string) => {
     navigate(`/subcontracts/${subcontractId}`);
   };
@@ -49,44 +55,52 @@ export function SubcontractorSubcontractsHistory({ subcontractorProjects }: Subc
       </CardHeader>
       <CardContent>
         {subcontractorProjects.length > 0 ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Contract ID</TableHead>
-                <TableHead>Project Name</TableHead>
-                <TableHead className="text-right">Contract Value</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Start Date</TableHead>
-                <TableHead>End Date</TableHead>
-                <TableHead>Created Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {subcontractorProjects.map((project) => (
-                <TableRow 
-                  key={project.id} 
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => handleSubcontractClick(project.id)}
-                >
-                  <TableCell className="font-medium text-blue-600 hover:text-blue-800">
-                    {project.contractId}
-                  </TableCell>
-                  <TableCell>{project.project}</TableCell>
-                  <TableCell className="text-right">{formatCurrency(project.totalValue)}</TableCell>
-                  <TableCell>{getProjectStatusBadge(project.status)}</TableCell>
-                  <TableCell className="text-sm">
-                    {project.startDate ? new Date(project.startDate).toLocaleDateString() : '-'}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {project.endDate ? new Date(project.endDate).toLocaleDateString() : '-'}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {new Date(project.createdAt).toLocaleDateString()}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <div className="space-y-4">
+            {subcontractorProjects.map(subcontract => (
+              <div 
+                key={subcontract.id} 
+                className="border rounded-lg p-4 hover:bg-muted/50 cursor-pointer transition-colors"
+                onClick={() => handleSubcontractClick(subcontract.id)}
+              >
+                <div className="flex justify-between items-start">
+                  <div className="space-y-2">
+                    <div>
+                      <h3 className="font-semibold text-lg text-blue-600 hover:text-blue-800">
+                        {subcontract.contractId}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        Project: {getProjectName(subcontract.project)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">
+                        <span className="font-medium">Trades:</span> {subcontract.tradeItems.map(item => item.trade).join(', ') || 'No trades specified'}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        <span className="font-medium">Total Value:</span> {formatCurrency(subcontract.totalValue)}
+                      </p>
+                      {subcontract.responsibilities.length > 0 && (
+                        <p className="text-sm text-muted-foreground">
+                          <span className="font-medium">Responsibilities:</span> {subcontract.responsibilities.join(', ')}
+                        </p>
+                      )}
+                    </div>
+                    {subcontract.startDate && subcontract.endDate && (
+                      <div className="text-sm text-muted-foreground">
+                        <span className="font-medium">Duration:</span> {new Date(subcontract.startDate).toLocaleDateString()} - {new Date(subcontract.endDate).toLocaleDateString()}
+                      </div>
+                    )}
+                    <div className="text-sm text-muted-foreground">
+                      <span className="font-medium">Created:</span> {new Date(subcontract.createdAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    {getProjectStatusBadge(subcontract.status)}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="text-center py-8">
             <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
