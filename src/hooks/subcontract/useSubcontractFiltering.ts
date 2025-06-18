@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { useSubcontractHelpers } from './useSubcontractHelpers';
 
 export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any) {
-  const { getProjectName, getProjectCode } = useSubcontractHelpers();
+  const { getProjectName, getProjectCode, getSubcontractorName } = useSubcontractHelpers();
 
   const filteredSubcontracts = useMemo(() => {
     console.log('useSubcontractFiltering - Starting filter process');
@@ -16,7 +16,7 @@ export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any
     }
     
     const filtered = subcontracts.filter(subcontract => {
-      console.log(`\n--- Processing Subcontract ${subcontract.contractId} ---`);
+      console.log(`\n--- Processing Subcontract ${subcontract.contractId || subcontract.contract_number} ---`);
       console.log('Full subcontract object:', subcontract);
       
       // Month filter
@@ -25,8 +25,9 @@ export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any
                            'July', 'August', 'September', 'October', 'November', 'December'];
         const monthIndex = monthNames.findIndex(m => m.toLowerCase() === reportFilters.month.toLowerCase());
         
-        if (monthIndex !== -1 && subcontract.dateOfIssuing) {
-          const subcontractMonth = new Date(subcontract.dateOfIssuing).getMonth();
+        if (monthIndex !== -1 && (subcontract.dateOfIssuing || subcontract.date_of_issuing)) {
+          const dateField = subcontract.dateOfIssuing || subcontract.date_of_issuing;
+          const subcontractMonth = new Date(dateField).getMonth();
           if (subcontractMonth !== monthIndex) {
             console.log(`❌ Month filter failed: expected ${reportFilters.month} (${monthIndex}), got month ${subcontractMonth}`);
             return false;
@@ -37,8 +38,9 @@ export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any
 
       // Year filter
       if (reportFilters.year && reportFilters.year !== 'all' && reportFilters.year !== 'All') {
-        if (subcontract.dateOfIssuing) {
-          const subcontractYear = new Date(subcontract.dateOfIssuing).getFullYear().toString();
+        if (subcontract.dateOfIssuing || subcontract.date_of_issuing) {
+          const dateField = subcontract.dateOfIssuing || subcontract.date_of_issuing;
+          const subcontractYear = new Date(dateField).getFullYear().toString();
           if (subcontractYear !== reportFilters.year) {
             console.log(`❌ Year filter failed: expected ${reportFilters.year}, got ${subcontractYear}`);
             return false;
@@ -49,7 +51,8 @@ export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any
 
       // Location filter
       if (reportFilters.location && reportFilters.location !== 'all' && reportFilters.location !== 'All') {
-        const projectName = getProjectName(subcontract.project);
+        const projectId = subcontract.project || subcontract.project_id;
+        const projectName = getProjectName(projectId);
         // This is a simplified check - you might need to adjust based on your project structure
         if (!projectName.toLowerCase().includes(reportFilters.location.toLowerCase())) {
           console.log(`❌ Location filter failed: project "${projectName}" doesn't contain "${reportFilters.location}"`);
@@ -60,9 +63,16 @@ export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any
 
       // Trade filter
       if (reportFilters.trades && reportFilters.trades !== 'all' && reportFilters.trades !== 'All') {
-        const hasMatchingTrade = subcontract.tradeItems?.some(
-          item => item.trade && item.trade.toLowerCase().includes(reportFilters.trades.toLowerCase())
-        );
+        const tradeItems = subcontract.tradeItems || subcontract.subcontract_trade_items || [];
+        const hasMatchingTrade = tradeItems.some(item => {
+          // Handle different data structures
+          const tradeName = item.trade || 
+                           (item.trade_items && item.trade_items.trades && item.trade_items.trades.name) ||
+                           (item.tradeItem && item.tradeItem.trade && item.tradeItem.trade.name);
+          
+          return tradeName && tradeName.toLowerCase().includes(reportFilters.trades.toLowerCase());
+        });
+        
         if (!hasMatchingTrade) {
           console.log(`❌ Trade filter failed: no matching trade "${reportFilters.trades}"`);
           return false;
@@ -72,7 +82,8 @@ export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any
 
       // Project name filter
       if (reportFilters.projectName && reportFilters.projectName !== 'all' && reportFilters.projectName !== 'All') {
-        const projectName = getProjectName(subcontract.project);
+        const projectId = subcontract.project || subcontract.project_id;
+        const projectName = getProjectName(projectId);
         if (projectName !== reportFilters.projectName) {
           console.log(`❌ Project name filter failed: expected "${reportFilters.projectName}", got "${projectName}"`);
           return false;
@@ -82,7 +93,8 @@ export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any
 
       // Project code filter
       if (reportFilters.projectCode && reportFilters.projectCode !== 'all' && reportFilters.projectCode !== 'All') {
-        const projectCode = getProjectCode(subcontract.project);
+        const projectId = subcontract.project || subcontract.project_id;
+        const projectCode = getProjectCode(projectId);
         if (projectCode !== reportFilters.projectCode) {
           console.log(`❌ Project code filter failed: expected "${reportFilters.projectCode}", got "${projectCode}"`);
           return false;
@@ -94,41 +106,41 @@ export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any
       if (reportFilters.facilities && reportFilters.facilities.length > 0) {
         console.log(`🔍 FACILITIES FILTER - STRICT MODE`);
         console.log(`Selected facilities (${reportFilters.facilities.length}):`, reportFilters.facilities);
-        console.log(`Subcontract responsibilities RAW:`, subcontract.responsibilities);
-        console.log(`Type of responsibilities:`, typeof subcontract.responsibilities);
-        console.log(`Is responsibilities an array:`, Array.isArray(subcontract.responsibilities));
         
         // Handle different data structures for responsibilities
+        const responsibilities = subcontract.responsibilities || 
+                               subcontract.subcontract_responsibilities || 
+                               [];
+        
+        console.log(`Subcontract responsibilities RAW:`, responsibilities);
+        console.log(`Type of responsibilities:`, typeof responsibilities);
+        console.log(`Is responsibilities an array:`, Array.isArray(responsibilities));
+        
         let responsibilityNames: string[] = [];
         
-        if (!subcontract.responsibilities) {
-          console.log(`❌ FACILITIES FILTER FAILED: No responsibilities property`);
+        if (!responsibilities || !Array.isArray(responsibilities)) {
+          console.log(`❌ FACILITIES FILTER FAILED: No valid responsibilities array`);
           return false;
         }
         
-        if (Array.isArray(subcontract.responsibilities)) {
-          // Check if it's an array of strings or objects
-          if (subcontract.responsibilities.length === 0) {
-            console.log(`❌ FACILITIES FILTER FAILED: Empty responsibilities array`);
-            return false;
-          }
-          
-          // If first item is a string, assume all are strings
-          if (typeof subcontract.responsibilities[0] === 'string') {
-            responsibilityNames = subcontract.responsibilities as string[];
-          } else if (typeof subcontract.responsibilities[0] === 'object' && subcontract.responsibilities[0] !== null) {
-            // If objects, try to extract name property
-            responsibilityNames = subcontract.responsibilities.map(resp => {
-              if (typeof resp === 'object' && resp !== null) {
-                return (resp as any).name || (resp as any).responsibility || '';
-              }
-              return '';
-            }).filter(Boolean);
-          }
-        } else {
-          console.log(`❌ FACILITIES FILTER FAILED: Responsibilities is not an array`);
+        if (responsibilities.length === 0) {
+          console.log(`❌ FACILITIES FILTER FAILED: Empty responsibilities array`);
           return false;
         }
+        
+        // Extract responsibility names from different data structures
+        responsibilityNames = responsibilities.map(resp => {
+          if (typeof resp === 'string') {
+            return resp;
+          } else if (typeof resp === 'object' && resp !== null) {
+            // Handle different object structures
+            return resp.name || 
+                   (resp.responsibilities && resp.responsibilities.name) ||
+                   resp.responsibility || 
+                   '';
+          }
+          return '';
+        }).filter(Boolean);
         
         console.log(`Extracted responsibility names (${responsibilityNames.length}):`, responsibilityNames);
         
@@ -146,13 +158,13 @@ export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any
         console.log(`✅ FACILITIES FILTER PASSED: All ${reportFilters.facilities.length} facilities are present`);
       }
 
-      console.log(`✅ Subcontract ${subcontract.contractId} passed all filters`);
+      console.log(`✅ Subcontract ${subcontract.contractId || subcontract.contract_number} passed all filters`);
       return true;
     });
 
     console.log('\n=== FILTER RESULTS ===');
     console.log('Filtered subcontracts count:', filtered.length);
-    console.log('Filtered subcontract IDs:', filtered.map(s => s.contractId));
+    console.log('Filtered subcontract IDs:', filtered.map(s => s.contractId || s.contract_number || s.id));
     console.log('=== END FILTER PROCESS ===\n');
     
     return filtered;
