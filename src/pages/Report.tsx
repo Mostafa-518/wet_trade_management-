@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -57,8 +56,34 @@ export function Report() {
   };
 
   const handleNavigateToSubcontracts = () => {
-    // Navigate to subcontracts page
-    navigate('/subcontracts');
+    // Create URL parameters from current filters
+    const params = new URLSearchParams();
+    
+    if (reportData.filters.month !== 'all' && reportData.filters.month !== 'All') {
+      params.set('month', reportData.filters.month);
+    }
+    if (reportData.filters.year !== 'all' && reportData.filters.year !== 'All') {
+      params.set('year', reportData.filters.year);
+    }
+    if (reportData.filters.location !== 'all' && reportData.filters.location !== 'All') {
+      params.set('location', reportData.filters.location);
+    }
+    if (reportData.filters.trades !== 'all' && reportData.filters.trades !== 'All') {
+      params.set('trades', reportData.filters.trades);
+    }
+    if (reportData.filters.projectName !== 'all' && reportData.filters.projectName !== 'All') {
+      params.set('projectName', reportData.filters.projectName);
+    }
+    if (reportData.filters.projectCode !== 'all' && reportData.filters.projectCode !== 'All') {
+      params.set('projectCode', reportData.filters.projectCode);
+    }
+    if (reportData.filters.facilities.length > 0) {
+      params.set('facilities', reportData.filters.facilities.join(','));
+    }
+    
+    // Navigate to subcontracts page with filters
+    const queryString = params.toString();
+    navigate(`/subcontracts${queryString ? `?${queryString}` : ''}`);
   };
 
   return (

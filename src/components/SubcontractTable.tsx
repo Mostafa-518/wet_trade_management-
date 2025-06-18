@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { SubcontractEditModal } from './subcontract/SubcontractEditModal';
 import { SubcontractTableHeader } from './subcontract/SubcontractTableHeader';
@@ -12,9 +11,10 @@ import { useSubcontractsImport } from '@/hooks/useSubcontractsImport';
 interface SubcontractTableProps {
   onCreateNew?: () => void;
   onViewDetail: (contractId: string) => void;
+  reportFilters?: any;
 }
 
-export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTableProps) {
+export function SubcontractTable({ onCreateNew, onViewDetail, reportFilters }: SubcontractTableProps) {
   const {
     subcontracts,
     filteredData,
@@ -36,7 +36,7 @@ export function SubcontractTable({ onCreateNew, onViewDetail }: SubcontractTable
     handleBulkDelete,
     deleteSubcontract,
     setEditingSubcontract,
-  } = useSubcontractTableLogic();
+  } = useSubcontractTableLogic(reportFilters);
 
   const {
     isImporting,
