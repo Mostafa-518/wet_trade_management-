@@ -78,25 +78,6 @@ export function Dashboard() {
     averageRate: item.count > 0 ? item.totalRate / item.count : 0
   })).slice(0, 10);
 
-  // Inclusion analysis
-  const inclusionData = [
-    {
-      category: 'Accommodation',
-      included: reportData.tableData.filter(item => item.accommodation === 'Yes').length,
-      notIncluded: reportData.tableData.filter(item => item.accommodation === 'No').length
-    },
-    {
-      category: 'Transportation',
-      included: reportData.tableData.filter(item => item.transportation === 'Yes').length,
-      notIncluded: reportData.tableData.filter(item => item.transportation === 'No').length
-    },
-    {
-      category: 'Safety',
-      included: reportData.tableData.filter(item => item.safety === 'Yes').length,
-      notIncluded: reportData.tableData.filter(item => item.safety === 'No').length
-    }
-  ];
-
   // Mock time trend data (since we don't have detailed date breakdown)
   const timeTrendData = [
     { month: 'Jan', contracts: 5, value: 125000 },
@@ -158,12 +139,11 @@ export function Dashboard() {
 
       {/* Charts Tabs */}
       <Tabs defaultValue="trends" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="trends">Time Trends</TabsTrigger>
           <TabsTrigger value="projects">Projects</TabsTrigger>
           <TabsTrigger value="subcontractors">Subcontractors</TabsTrigger>
           <TabsTrigger value="items">BOQ Items</TabsTrigger>
-          <TabsTrigger value="inclusions">Inclusions</TabsTrigger>
         </TabsList>
 
         <TabsContent value="trends" className="space-y-4">
@@ -324,27 +304,6 @@ export function Dashboard() {
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
-
-        <TabsContent value="inclusions" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Inclusion Analysis</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={inclusionData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="category" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="included" stackId="a" fill="#82ca9d" name="Included" />
-                  <Bar dataKey="notIncluded" stackId="a" fill="#ff7c7c" name="Not Included" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
         </TabsContent>
       </Tabs>
     </div>
