@@ -332,14 +332,21 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
               onAddItem={addTradeItem}
             />
             <TradeItemsList
-              items={formData.tradeItems}
-              onRemoveItem={removeTradeItem}
-              totalAmount={getTotalAmount()}
+              selectedItems={formData.tradeItems}
+              onItemsChange={(items) => setFormData(prev => ({ ...prev, tradeItems: items }))}
+              trades={[]}
+              tradeItems={[]}
             />
           </div>
         );
       case 3:
-        return <ResponsibilitiesStep formData={formData} setFormData={setFormData} />;
+        return (
+          <ResponsibilitiesStep
+            selectedResponsibilities={formData.responsibilities}
+            onResponsibilitiesChange={(responsibilities) => setFormData(prev => ({ ...prev, responsibilities }))}
+            responsibilities={[]}
+          />
+        );
       case 4:
         return (
           <DocumentsReviewStep
