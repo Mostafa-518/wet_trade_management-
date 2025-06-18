@@ -55,9 +55,10 @@ export function filterSubcontracts(
       }
     }
 
-    // Facilities filter
+    // Facilities filter - STRICT AND LOGIC: ALL selected facilities must be present
     if (filters.facilities.length > 0) {
-      console.log(`🔍 Checking facilities filter. Selected facilities:`, filters.facilities);
+      console.log(`🔍 FACILITIES FILTER - STRICT AND MODE`);
+      console.log(`Selected facilities (${filters.facilities.length}):`, filters.facilities);
       
       // Get all responsibility names for this subcontract
       const subcontractFacilities = subcontract.subcontract_responsibilities
@@ -66,19 +67,18 @@ export function filterSubcontracts(
       
       console.log(`Subcontract ${subcontract.contract_number} has facilities:`, subcontractFacilities);
       
-      // Check if ANY of the selected facilities match ANY of the subcontract's facilities
-      const hasMatchingFacility = filters.facilities.some(selectedFacility => 
-        subcontractFacilities.includes(selectedFacility)
-      );
-      
-      console.log(`Has matching facility: ${hasMatchingFacility}`);
-      
-      if (!hasMatchingFacility) {
-        console.log(`❌ Facilities filter failed: no matching facilities found`);
-        return false;
-      } else {
-        console.log(`✅ Facilities filter passed`);
+      // Check that ALL selected facilities are present (strict AND logic)
+      for (const selectedFacility of filters.facilities) {
+        const isPresent = subcontractFacilities.includes(selectedFacility);
+        console.log(`  - Checking facility "${selectedFacility}": ${isPresent ? '✅ PRESENT' : '❌ MISSING'}`);
+        
+        if (!isPresent) {
+          console.log(`❌ FACILITIES FILTER FAILED: Missing facility "${selectedFacility}"`);
+          return false;
+        }
       }
+      
+      console.log(`✅ FACILITIES FILTER PASSED: All ${filters.facilities.length} facilities are present`);
     }
 
     // Project name filter (only active when present data is by project and projectFilterType is 'name')
