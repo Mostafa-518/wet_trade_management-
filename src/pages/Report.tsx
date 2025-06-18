@@ -20,8 +20,10 @@ import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { useReportData } from '@/hooks/useReportData';
 import { Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export function Report() {
+  const navigate = useNavigate();
   const { reportData, filterOptions, updateFilter, isLoading } = useReportData();
 
   if (isLoading) {
@@ -52,6 +54,11 @@ export function Report() {
   const removeFacility = (facility: string) => {
     const newFacilities = reportData.filters.facilities.filter(f => f !== facility);
     updateFilter('facilities', newFacilities);
+  };
+
+  const handleNavigateToSubcontracts = () => {
+    // Navigate to subcontracts page
+    navigate('/subcontracts');
   };
 
   return (
@@ -274,7 +281,10 @@ export function Report() {
 
       {/* Current Subcontracts Card */}
       <div className="flex justify-center">
-        <Card className="w-auto">
+        <Card 
+          className="w-auto cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={handleNavigateToSubcontracts}
+        >
           <CardContent className="pt-6">
             <div className="text-center">
               <div className="text-lg font-semibold">
@@ -334,4 +344,3 @@ export function Report() {
     </div>
   );
 }
-
