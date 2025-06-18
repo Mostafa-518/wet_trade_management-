@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -20,6 +20,7 @@ import {
 import { useReportData } from '@/hooks/useReportData';
 
 export function Dashboard() {
+  const navigate = useNavigate();
   const { reportData, isLoading } = useReportData();
 
   if (isLoading) {
@@ -32,6 +33,11 @@ export function Dashboard() {
       </div>
     );
   }
+
+  const handleNavigateToSubcontracts = () => {
+    // Navigate to subcontracts page
+    navigate('/subcontracts');
+  };
 
   // Calculate KPI metrics
   const totalSubcontracts = reportData.totalSubcontracts;
@@ -113,7 +119,10 @@ export function Dashboard() {
 
       {/* KPI Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
+        <Card 
+          className="cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={handleNavigateToSubcontracts}
+        >
           <CardContent className="p-6">
             <div className="text-2xl font-bold text-blue-600">{totalSubcontracts}</div>
             <div className="text-sm text-muted-foreground">Total Subcontracts</div>
