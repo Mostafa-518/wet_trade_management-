@@ -1,4 +1,3 @@
-
 import { useMemo } from 'react';
 import { Subcontract } from '@/types/subcontract';
 import { useData } from '@/contexts/DataContext';
@@ -45,8 +44,8 @@ export function useSubcontractFiltering(subcontracts: Subcontract[], reportFilte
       // Filter by subcontractor name - this should be inclusive, not exact match
       if (reportFilters.subcontractorName && reportFilters.subcontractorName !== 'all') {
         const subcontractorMatches = subcontractorData?.name?.toLowerCase().includes(reportFilters.subcontractorName.toLowerCase()) ||
-                                   subcontractorData?.company_name?.toLowerCase().includes(reportFilters.subcontractorName.toLowerCase());
-        console.log(`Subcontractor filter: ${reportFilters.subcontractorName}, Subcontractor: ${subcontractorData?.name || subcontractorData?.company_name}, Matches: ${subcontractorMatches}`);
+                                   subcontractorData?.companyName?.toLowerCase().includes(reportFilters.subcontractorName.toLowerCase());
+        console.log(`Subcontractor filter: ${reportFilters.subcontractorName}, Subcontractor: ${subcontractorData?.name || subcontractorData?.companyName}, Matches: ${subcontractorMatches}`);
         if (!subcontractorMatches) return false;
       }
 
