@@ -1,4 +1,3 @@
-
 import { useData } from '@/contexts/DataContext';
 import { useSubcontractHelpers } from './subcontract/useSubcontractHelpers';
 import { useSubcontractSearch } from './subcontract/useSubcontractSearch';
@@ -96,21 +95,30 @@ export function useSubcontractTableLogic(reportFilters?: any) {
         console.log(`✅ Project code filter passed: ${reportFilters.projectCode}`);
       }
 
-      // Facilities filter - Modified to require ALL selected facilities to be present
+      // Facilities filter - STRICT: ALL selected facilities must be present
       if (reportFilters.facilities && reportFilters.facilities.length > 0) {
-        console.log(`🔍 Checking facilities filter. Selected facilities:`, reportFilters.facilities);
-        console.log(`Subcontract responsibilities:`, subcontract.responsibilities);
+        console.log(`🔍 FACILITIES FILTER - STRICT MODE`);
+        console.log(`Selected facilities (${reportFilters.facilities.length}):`, reportFilters.facilities);
+        console.log(`Subcontract responsibilities (${subcontract.responsibilities?.length || 0}):`, subcontract.responsibilities);
         
-        // Check if ALL selected facilities are present in the subcontract's responsibilities
-        const allFacilitiesPresent = reportFilters.facilities.every((selectedFacility: string) => 
-          subcontract.responsibilities?.includes(selectedFacility)
-        );
-        
-        if (!allFacilitiesPresent) {
-          console.log(`❌ Facilities filter failed: not all selected facilities are present in subcontract`);
+        // If subcontract has no responsibilities, it can't match any facilities
+        if (!subcontract.responsibilities || subcontract.responsibilities.length === 0) {
+          console.log(`❌ FACILITIES FILTER FAILED: Subcontract has no responsibilities`);
           return false;
         }
-        console.log(`✅ Facilities filter passed: all selected facilities are present`);
+        
+        // Check each selected facility individually
+        for (const selectedFacility of reportFilters.facilities) {
+          const isPresent = subcontract.responsibilities.includes(selectedFacility);
+          console.log(`  - Checking facility "${selectedFacility}": ${isPresent ? '✅ PRESENT' : '❌ MISSING'}`);
+          
+          if (!isPresent) {
+            console.log(`❌ FACILITIES FILTER FAILED: Missing facility "${selectedFacility}"`);
+            return false;
+          }
+        }
+        
+        console.log(`✅ FACILITIES FILTER PASSED: All ${reportFilters.facilities.length} facilities are present`);
       }
 
       console.log(`✅ Subcontract ${subcontract.contractId} passed all filters`);
