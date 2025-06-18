@@ -51,14 +51,6 @@ export function Subcontracts() {
       filters.facilities = searchParams.get('facilities')?.split(',') || [];
       console.log('Found facilities filter:', filters.facilities);
     }
-    if (searchParams.get('presentData')) {
-      filters.presentData = searchParams.get('presentData');
-      console.log('Found presentData filter:', filters.presentData);
-    }
-    if (searchParams.get('projectFilterType')) {
-      filters.projectFilterType = searchParams.get('projectFilterType');
-      console.log('Found projectFilterType filter:', filters.projectFilterType);
-    }
     
     console.log('Final parsed filters:', filters);
     

@@ -25,8 +25,6 @@ interface SubcontractTableContentProps {
   onEdit: (subcontract: Subcontract) => void;
   onDelete: (id: string) => Promise<void>;
   onBulkDelete: () => Promise<void>;
-  onCreateNew?: () => void;
-  isFiltered?: boolean;
 }
 
 export function SubcontractTableContent({ 
@@ -42,9 +40,7 @@ export function SubcontractTableContent({
   onViewDetail,
   onEdit,
   onDelete,
-  onBulkDelete,
-  onCreateNew,
-  isFiltered = false
+  onBulkDelete
 }: SubcontractTableContentProps) {
   const {
     currentPage,
@@ -60,14 +56,7 @@ export function SubcontractTableContent({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>
-          Subcontracts ({filteredData.length})
-          {isFiltered && (
-            <span className="text-sm font-normal text-blue-600 ml-2">
-              (Filtered from report)
-            </span>
-          )}
-        </CardTitle>
+        <CardTitle>Subcontracts ({filteredData.length})</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {selectedIds.size > 0 && (
@@ -95,8 +84,6 @@ export function SubcontractTableContent({
                 <SubcontractTableEmpty 
                   searchTerm={searchTerm}
                   showAdvancedSearch={showAdvancedSearch}
-                  onCreateNew={onCreateNew}
-                  isFiltered={isFiltered}
                 />
               ) : (
                 paginatedData.map((contract) => (

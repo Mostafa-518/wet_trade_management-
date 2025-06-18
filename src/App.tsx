@@ -24,7 +24,7 @@ import { TradeDetail } from '@/pages/TradeDetail';
 import { Responsibilities } from '@/pages/Responsibilities';
 import { Subcontracts } from '@/pages/Subcontracts';
 import { SubcontractDetail } from '@/pages/SubcontractDetail';
-import Report from '@/pages/Report';
+import { Report } from '@/pages/Report';
 import { Users } from '@/pages/Users';
 import { UserDetail } from '@/pages/UserDetail';
 import { ProfileSettings } from '@/pages/ProfileSettings';

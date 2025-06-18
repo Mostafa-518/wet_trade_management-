@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { SubcontractEditModal } from './subcontract/SubcontractEditModal';
 import { SubcontractTableHeader } from './subcontract/SubcontractTableHeader';
@@ -37,7 +36,6 @@ export function SubcontractTable({ onCreateNew, onViewDetail, reportFilters }: S
     handleBulkDelete,
     deleteSubcontract,
     setEditingSubcontract,
-    isFiltered,
   } = useSubcontractTableLogic(reportFilters);
 
   const {
@@ -67,7 +65,6 @@ export function SubcontractTable({ onCreateNew, onViewDetail, reportFilters }: S
         onCreateNew={onCreateNew}
         onFileUpload={handleFileUpload}
         onDownloadTemplate={downloadTemplate}
-        isFiltered={isFiltered}
       />
 
       <SubcontractTableSearch
@@ -92,8 +89,6 @@ export function SubcontractTable({ onCreateNew, onViewDetail, reportFilters }: S
         onEdit={handleEdit}
         onDelete={deleteSubcontract}
         onBulkDelete={handleBulkDelete}
-        onCreateNew={onCreateNew}
-        isFiltered={isFiltered}
       />
 
       <SubcontractTableSummary filteredData={filteredData} />

@@ -14,11 +14,6 @@ export function useSubcontractTableLogic(reportFilters?: any) {
   // Apply report filters if provided
   const preFilteredSubcontracts = useSubcontractFiltering(subcontracts, reportFilters);
   
-  console.log('useSubcontractTableLogic - Report filters applied');
-  console.log('Original subcontracts count:', subcontracts.length);
-  console.log('After filtering count:', preFilteredSubcontracts.length);
-  console.log('Report filters:', reportFilters);
-  
   const {
     searchTerm,
     filteredData,
@@ -65,6 +60,5 @@ export function useSubcontractTableLogic(reportFilters?: any) {
     deleteSubcontract,
     setEditingSubcontract,
     setShowAdvancedSearch,
-    isFiltered: !!reportFilters, // Flag to indicate if we're in filtered mode
   };
 }
