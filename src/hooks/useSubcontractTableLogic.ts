@@ -96,20 +96,21 @@ export function useSubcontractTableLogic(reportFilters?: any) {
         console.log(`✅ Project code filter passed: ${reportFilters.projectCode}`);
       }
 
-      // Facilities filter
+      // Facilities filter - Modified to require ALL selected facilities to be present
       if (reportFilters.facilities && reportFilters.facilities.length > 0) {
         console.log(`🔍 Checking facilities filter. Selected facilities:`, reportFilters.facilities);
         console.log(`Subcontract responsibilities:`, subcontract.responsibilities);
         
-        const hasMatchingFacility = reportFilters.facilities.some((selectedFacility: string) => 
+        // Check if ALL selected facilities are present in the subcontract's responsibilities
+        const allFacilitiesPresent = reportFilters.facilities.every((selectedFacility: string) => 
           subcontract.responsibilities?.includes(selectedFacility)
         );
         
-        if (!hasMatchingFacility) {
-          console.log(`❌ Facilities filter failed: no matching facilities found`);
+        if (!allFacilitiesPresent) {
+          console.log(`❌ Facilities filter failed: not all selected facilities are present in subcontract`);
           return false;
         }
-        console.log(`✅ Facilities filter passed`);
+        console.log(`✅ Facilities filter passed: all selected facilities are present`);
       }
 
       console.log(`✅ Subcontract ${subcontract.contractId} passed all filters`);
