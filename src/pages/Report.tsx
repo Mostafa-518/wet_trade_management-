@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -51,8 +52,11 @@ export function Report() {
   };
 
   const handleNavigateToSubcontracts = () => {
-    // Create URL parameters from current filters
+    // Create URL parameters from current filters to ensure we get the same filtered results
     const params = new URLSearchParams();
+    
+    console.log('Report page - navigating with filters:', reportData.filters);
+    console.log('Current filtered subcontracts count:', reportData.currentSubcontracts);
     
     if (reportData.filters.month !== 'all' && reportData.filters.month !== 'All') {
       params.set('month', reportData.filters.month);
@@ -76,8 +80,13 @@ export function Report() {
       params.set('facilities', reportData.filters.facilities.join(','));
     }
     
+    // Add presentData filter to ensure consistent filtering
+    params.set('presentData', reportData.filters.presentData);
+    params.set('projectFilterType', reportData.filters.projectFilterType);
+    
     // Navigate to subcontracts page with filters
     const queryString = params.toString();
+    console.log('Navigating to subcontracts with query string:', queryString);
     navigate(`/subcontracts${queryString ? `?${queryString}` : ''}`);
   };
 
@@ -320,6 +329,9 @@ export function Report() {
             <div className="text-center">
               <div className="text-lg font-semibold print:text-base">
                 No. Of Subcontract: [{reportData.currentSubcontracts}] Subcontract
+              </div>
+              <div className="text-sm text-gray-500 mt-1">
+                Click to view filtered subcontracts
               </div>
             </div>
           </CardContent>

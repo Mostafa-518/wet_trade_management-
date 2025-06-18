@@ -50,7 +50,8 @@ export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any
       // Location filter
       if (reportFilters.location && reportFilters.location !== 'all' && reportFilters.location !== 'All') {
         const projectName = getProjectName(subcontract.project);
-        // This is a simplified check - you might need to adjust based on your project structure
+        // For now, we'll check if the project name contains the location
+        // This might need adjustment based on your actual project-location relationship
         if (!projectName.toLowerCase().includes(reportFilters.location.toLowerCase())) {
           console.log(`❌ Location filter failed: project "${projectName}" doesn't contain "${reportFilters.location}"`);
           return false;
@@ -58,11 +59,13 @@ export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any
         console.log(`✅ Location filter passed: ${reportFilters.location}`);
       }
 
-      // Trade filter
+      // Trade filter - check against trade items
       if (reportFilters.trades && reportFilters.trades !== 'all' && reportFilters.trades !== 'All') {
-        const hasMatchingTrade = subcontract.tradeItems?.some(
-          item => item.trade && item.trade.toLowerCase().includes(reportFilters.trades.toLowerCase())
-        );
+        const hasMatchingTrade = subcontract.tradeItems?.some(item => {
+          // Handle both string trade and object trade structures
+          const tradeName = typeof item.trade === 'string' ? item.trade : item.trade?.name;
+          return tradeName && tradeName.toLowerCase().includes(reportFilters.trades.toLowerCase());
+        });
         if (!hasMatchingTrade) {
           console.log(`❌ Trade filter failed: no matching trade "${reportFilters.trades}"`);
           return false;
@@ -94,9 +97,6 @@ export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any
       if (reportFilters.facilities && reportFilters.facilities.length > 0) {
         console.log(`🔍 FACILITIES FILTER - STRICT MODE`);
         console.log(`Selected facilities (${reportFilters.facilities.length}):`, reportFilters.facilities);
-        console.log(`Subcontract responsibilities RAW:`, subcontract.responsibilities);
-        console.log(`Type of responsibilities:`, typeof subcontract.responsibilities);
-        console.log(`Is responsibilities an array:`, Array.isArray(subcontract.responsibilities));
         
         // Handle different data structures for responsibilities
         let responsibilityNames: string[] = [];
@@ -107,32 +107,23 @@ export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any
         }
         
         if (Array.isArray(subcontract.responsibilities)) {
-          // Check if it's an array of strings or objects
-          if (subcontract.responsibilities.length === 0) {
-            console.log(`❌ FACILITIES FILTER FAILED: Empty responsibilities array`);
-            return false;
-          }
-          
-          // If first item is a string, assume all are strings
-          if (typeof subcontract.responsibilities[0] === 'string') {
-            responsibilityNames = subcontract.responsibilities as string[];
-          } else if (typeof subcontract.responsibilities[0] === 'object' && subcontract.responsibilities[0] !== null) {
-            // If objects, try to extract name property
-            responsibilityNames = subcontract.responsibilities.map(resp => {
-              if (typeof resp === 'object' && resp !== null) {
-                return (resp as any).name || (resp as any).responsibility || '';
-              }
-              return '';
-            }).filter(Boolean);
-          }
-        } else {
-          console.log(`❌ FACILITIES FILTER FAILED: Responsibilities is not an array`);
-          return false;
+          // Handle array of strings or objects
+          responsibilityNames = subcontract.responsibilities.map(resp => {
+            if (typeof resp === 'string') {
+              return resp;
+            } else if (typeof resp === 'object' && resp !== null) {
+              return (resp as any).name || (resp as any).responsibility || '';
+            }
+            return '';
+          }).filter(Boolean);
+        } else if (typeof subcontract.responsibilities === 'string') {
+          // Handle single string responsibility
+          responsibilityNames = [subcontract.responsibilities];
         }
         
         console.log(`Extracted responsibility names (${responsibilityNames.length}):`, responsibilityNames);
         
-        // Check each selected facility individually
+        // Check each selected facility individually (strict AND logic)
         for (const selectedFacility of reportFilters.facilities) {
           const isPresent = responsibilityNames.includes(selectedFacility);
           console.log(`  - Checking facility "${selectedFacility}": ${isPresent ? '✅ PRESENT' : '❌ MISSING'}`);
