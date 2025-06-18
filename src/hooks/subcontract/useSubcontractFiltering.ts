@@ -1,9 +1,11 @@
 
 import { useMemo } from 'react';
 import { useSubcontractHelpers } from './useSubcontractHelpers';
+import { useData } from '@/contexts/DataContext';
 
 export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any) {
   const { getProjectName, getProjectCode, getSubcontractorName } = useSubcontractHelpers();
+  const { projects } = useData();
 
   const filteredSubcontracts = useMemo(() => {
     console.log('useSubcontractFiltering - Starting filter process');
@@ -49,15 +51,32 @@ export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any
         }
       }
 
-      // Location filter
+      // Location filter - Enhanced logic
       if (reportFilters.location && reportFilters.location !== 'all' && reportFilters.location !== 'All') {
+        console.log(`🔍 LOCATION FILTER`);
+        console.log(`Selected location: ${reportFilters.location}`);
+        
+        // Get the project for this subcontract
         const projectId = subcontract.project || subcontract.project_id;
-        const projectName = getProjectName(projectId);
-        // This is a simplified check - you might need to adjust based on your project structure
-        if (!projectName.toLowerCase().includes(reportFilters.location.toLowerCase())) {
-          console.log(`❌ Location filter failed: project "${projectName}" doesn't contain "${reportFilters.location}"`);
+        console.log(`Subcontract project ID: ${projectId}`);
+        
+        // Find the project and check its location
+        const project = projects.find(p => p.id === projectId);
+        console.log(`Found project:`, project);
+        
+        if (!project) {
+          console.log(`❌ Location filter failed: No project found for ID ${projectId}`);
           return false;
         }
+        
+        const projectLocation = project.location;
+        console.log(`Project location: ${projectLocation}`);
+        
+        if (projectLocation !== reportFilters.location) {
+          console.log(`❌ Location filter failed: expected "${reportFilters.location}", got "${projectLocation}"`);
+          return false;
+        }
+        
         console.log(`✅ Location filter passed: ${reportFilters.location}`);
       }
 
@@ -168,7 +187,7 @@ export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any
     console.log('=== END FILTER PROCESS ===\n');
     
     return filtered;
-  }, [subcontracts, reportFilters, getProjectName, getProjectCode]);
+  }, [subcontracts, reportFilters, getProjectName, getProjectCode, projects]);
 
   return filteredSubcontracts;
 }
