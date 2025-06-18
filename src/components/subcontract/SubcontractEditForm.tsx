@@ -38,15 +38,15 @@ export function SubcontractEditForm({ subcontract, onSave, onClose }: Subcontrac
   const [selectedResponsibilities, setSelectedResponsibilities] = useState<string[]>([]);
 
   // Filter out projects and subcontractors with empty or invalid IDs
-  const validProjects = projects.filter(project => project.id && project.name && project.id.trim() !== '' && project.name.trim() !== '');
-  const validSubcontractors = subcontractors.filter(sub => sub.id && sub.companyName && sub.id.trim() !== '' && sub.companyName.trim() !== '');
+  const validProjects = (projects || []).filter(project => project.id && project.name && project.id.trim() !== '' && project.name.trim() !== '');
+  const validSubcontractors = (subcontractors || []).filter(sub => sub.id && sub.companyName && sub.id.trim() !== '' && sub.companyName.trim() !== '');
 
   useEffect(() => {
     if (subcontract) {
       // Calculate total value without wastage
-      const calculatedTotal = subcontract.tradeItems?.reduce((total, item) => {
+      const calculatedTotal = (subcontract.tradeItems || []).reduce((total, item) => {
         return total + ((item.quantity || 0) * (item.unitPrice || 0));
-      }, 0) || 0;
+      }, 0);
 
       setFormData({
         contractId: subcontract.contractId || '',
@@ -62,7 +62,7 @@ export function SubcontractEditForm({ subcontract, onSave, onClose }: Subcontrac
         parentSubcontractId: subcontract.parentSubcontractId || ''
       });
 
-      // Set selected trade items and responsibilities
+      // Set selected trade items and responsibilities with safety checks
       setSelectedTradeItems(subcontract.tradeItems || []);
       setSelectedResponsibilities(subcontract.responsibilities || []);
     }
@@ -70,7 +70,7 @@ export function SubcontractEditForm({ subcontract, onSave, onClose }: Subcontrac
 
   // Recalculate total when trade items change
   useEffect(() => {
-    const calculatedTotal = selectedTradeItems.reduce((total, item) => {
+    const calculatedTotal = (selectedTradeItems || []).reduce((total, item) => {
       return total + ((item.quantity || 0) * (item.unitPrice || 0));
     }, 0);
     setFormData(prev => ({ ...prev, totalValue: calculatedTotal }));
@@ -81,8 +81,8 @@ export function SubcontractEditForm({ subcontract, onSave, onClose }: Subcontrac
     try {
       const updateData = {
         ...formData,
-        tradeItems: selectedTradeItems,
-        responsibilities: selectedResponsibilities
+        tradeItems: selectedTradeItems || [],
+        responsibilities: selectedResponsibilities || []
       };
       await onSave(subcontract.id, updateData);
       onClose();
@@ -96,8 +96,8 @@ export function SubcontractEditForm({ subcontract, onSave, onClose }: Subcontrac
       <Tabs defaultValue="basic" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="basic">Basic Info</TabsTrigger>
-          <TabsTrigger value="trades">Trade Items ({selectedTradeItems.length})</TabsTrigger>
-          <TabsTrigger value="responsibilities">Responsibilities ({selectedResponsibilities.length})</TabsTrigger>
+          <TabsTrigger value="trades">Trade Items ({(selectedTradeItems || []).length})</TabsTrigger>
+          <TabsTrigger value="responsibilities">Responsibilities ({(selectedResponsibilities || []).length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="basic" className="space-y-4">
@@ -111,7 +111,7 @@ export function SubcontractEditForm({ subcontract, onSave, onClose }: Subcontrac
                 setFormData={setFormData}
                 validProjects={validProjects}
                 validSubcontractors={validSubcontractors}
-                subcontracts={subcontracts}
+                subcontracts={subcontracts || []}
                 getProjectName={getProjectName}
                 getSubcontractorName={getSubcontractorName}
               />
@@ -120,34 +120,20 @@ export function SubcontractEditForm({ subcontract, onSave, onClose }: Subcontrac
         </TabsContent>
 
         <TabsContent value="trades" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Trade Items</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TradeItemsList
-                selectedItems={selectedTradeItems}
-                onItemsChange={setSelectedTradeItems}
-                trades={trades}
-                tradeItems={tradeItems}
-              />
-            </CardContent>
-          </Card>
+          <TradeItemsList
+            selectedItems={selectedTradeItems || []}
+            onItemsChange={setSelectedTradeItems}
+            trades={trades || []}
+            tradeItems={tradeItems || []}
+          />
         </TabsContent>
 
         <TabsContent value="responsibilities" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Responsibilities</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsibilitiesStep
-                selectedResponsibilities={selectedResponsibilities}
-                onResponsibilitiesChange={setSelectedResponsibilities}
-                responsibilities={responsibilities}
-              />
-            </CardContent>
-          </Card>
+          <ResponsibilitiesStep
+            selectedResponsibilities={selectedResponsibilities || []}
+            onResponsibilitiesChange={setSelectedResponsibilities}
+            responsibilities={responsibilities || []}
+          />
         </TabsContent>
       </Tabs>
 

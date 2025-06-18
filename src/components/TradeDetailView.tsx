@@ -17,18 +17,40 @@ interface TradeDetailViewProps {
 }
 
 export function TradeDetailView({ tradeId, onBack, onEdit, onAddItem, onEditItem }: TradeDetailViewProps) {
-  const { trades, tradeItems, deleteTradeItem, subcontracts } = useData();
+  const { trades, tradeItems, deleteTradeItem, subcontracts, projects, subcontractors } = useData();
   
-  const trade = trades.find(t => t.id === tradeId);
-  const items = tradeItems.filter(item => item.trade_id === tradeId);
+  const trade = (trades || []).find(t => t.id === tradeId);
+  const items = (tradeItems || []).filter(item => item.trade_id === tradeId);
 
   // Find subcontracts that use this trade
-  const relatedSubcontracts = subcontracts.filter(subcontract => 
-    subcontract.tradeItems.some(item => item.trade === trade?.name)
+  const relatedSubcontracts = (subcontracts || []).filter(subcontract => 
+    (subcontract.tradeItems || []).some(item => item.trade === trade?.name)
+  );
+
+  // Get unique projects from related subcontracts
+  const relatedProjects = (projects || []).filter(project =>
+    relatedSubcontracts.some(subcontract => subcontract.project === project.id)
+  );
+
+  // Get unique subcontractors from related subcontracts
+  const relatedSubcontractors = (subcontractors || []).filter(subcontractor =>
+    relatedSubcontracts.some(subcontract => subcontract.subcontractor === subcontractor.id)
   );
 
   const handleDeleteItem = (itemId: string) => {
-    deleteTradeItem(itemId);
+    if (deleteTradeItem) {
+      deleteTradeItem(itemId);
+    }
+  };
+
+  const getProjectName = (projectId: string) => {
+    const project = (projects || []).find(p => p.id === projectId);
+    return project ? project.name : projectId;
+  };
+
+  const getSubcontractorName = (subcontractorId: string) => {
+    const subcontractor = (subcontractors || []).find(s => s.id === subcontractorId);
+    return subcontractor ? subcontractor.companyName : subcontractorId;
   };
 
   if (!trade) {
@@ -146,10 +168,10 @@ export function TradeDetailView({ tradeId, onBack, onEdit, onAddItem, onEditItem
       </div>
 
       <Tabs defaultValue="info" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 bg-gray-100">
+        <TabsList className="grid w-full grid-cols-5 bg-gray-100">
           <TabsTrigger value="info" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            Trade Information
+            Trade Info
           </TabsTrigger>
           <TabsTrigger value="items" className="flex items-center gap-2">
             <Package className="h-4 w-4" />
@@ -157,7 +179,15 @@ export function TradeDetailView({ tradeId, onBack, onEdit, onAddItem, onEditItem
           </TabsTrigger>
           <TabsTrigger value="subcontracts" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            Related Subcontracts ({relatedSubcontracts.length})
+            Subcontracts ({relatedSubcontracts.length})
+          </TabsTrigger>
+          <TabsTrigger value="projects" className="flex items-center gap-2">
+            <Tag className="h-4 w-4" />
+            Projects ({relatedProjects.length})
+          </TabsTrigger>
+          <TabsTrigger value="subcontractors" className="flex items-center gap-2">
+            <Tag className="h-4 w-4" />
+            Subcontractors ({relatedSubcontractors.length})
           </TabsTrigger>
         </TabsList>
 
@@ -299,7 +329,8 @@ export function TradeDetailView({ tradeId, onBack, onEdit, onAddItem, onEditItem
                         <div className="space-y-2">
                           <div>
                             <h3 className="font-semibold text-lg text-blue-600">{subcontract.contractId}</h3>
-                            <p className="text-sm text-muted-foreground">Project: {subcontract.project}</p>
+                            <p className="text-sm text-muted-foreground">Project: {getProjectName(subcontract.project)}</p>
+                            <p className="text-sm text-muted-foreground">Subcontractor: {getSubcontractorName(subcontract.subcontractor)}</p>
                           </div>
                           <div>
                             <p className="text-sm text-muted-foreground">
@@ -321,6 +352,69 @@ export function TradeDetailView({ tradeId, onBack, onEdit, onAddItem, onEditItem
                 <div className="text-center py-8">
                   <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">This trade is not used in any subcontracts yet.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="projects">
+          <Card className="shadow-sm">
+            <CardHeader className="bg-gray-50">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Tag className="h-5 w-5 text-blue-600" />
+                Related Projects
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {relatedProjects.length > 0 ? (
+                <div className="space-y-4">
+                  {relatedProjects.map(project => (
+                    <div key={project.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+                      <div className="space-y-2">
+                        <h3 className="font-semibold text-lg text-blue-600">{project.name}</h3>
+                        <p className="text-sm text-muted-foreground">Code: {project.code}</p>
+                        <p className="text-sm text-muted-foreground">Location: {project.location}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Tag className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">This trade is not used in any projects yet.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="subcontractors">
+          <Card className="shadow-sm">
+            <CardHeader className="bg-gray-50">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Tag className="h-5 w-5 text-blue-600" />
+                Related Subcontractors
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {relatedSubcontractors.length > 0 ? (
+                <div className="space-y-4">
+                  {relatedSubcontractors.map(subcontractor => (
+                    <div key={subcontractor.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+                      <div className="space-y-2">
+                        <h3 className="font-semibold text-lg text-blue-600">{subcontractor.companyName}</h3>
+                        <p className="text-sm text-muted-foreground">Representative: {subcontractor.representativeName}</p>
+                        <p className="text-sm text-muted-foreground">Phone: {subcontractor.phone}</p>
+                        <p className="text-sm text-muted-foreground">Email: {subcontractor.email}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Tag className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">This trade is not associated with any subcontractors yet.</p>
                 </div>
               )}
             </CardContent>
