@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useMemo } from 'react';
@@ -12,6 +11,7 @@ interface ReportFilters {
   projectCode: string;
   presentData: string;
   projectFilterType: 'name' | 'code';
+  facilities: string[]; // NEW: Array of selected facilities/responsibilities
 }
 
 interface SubcontractWithDetails {
@@ -63,7 +63,8 @@ export function useReportData() {
     projectName: 'all',
     projectCode: 'all',
     presentData: 'by-project',
-    projectFilterType: 'name'
+    projectFilterType: 'name',
+    facilities: [] // NEW: Initialize empty facilities array
   });
 
   // Fetch all subcontracts with related data
@@ -138,6 +139,12 @@ export function useReportData() {
       .filter(Boolean)
     )];
 
+    // NEW: Get all available facilities/responsibilities
+    const facilities = [...new Set(subcontracts
+      .flatMap(s => s.subcontract_responsibilities?.map(resp => resp.responsibilities?.name))
+      .filter(Boolean)
+    )];
+
     return {
       months,
       years: ['All', ...years],
@@ -145,7 +152,8 @@ export function useReportData() {
       trades: ['All', ...trades],
       projectNames: ['All', ...projectNames],
       projectCodes: ['All', ...projectCodes],
-      presentDataOptions: ['By Project', 'By Location']
+      presentDataOptions: ['By Project', 'By Location'],
+      facilities: ['All', ...facilities] // NEW: Add facilities to filter options
     };
   }, [subcontracts]);
 
@@ -181,6 +189,19 @@ export function useReportData() {
           item => item.trade_items?.trades?.name === filters.trades
         );
         if (!hasMatchingTrade) return false;
+      }
+
+      // Facilities filter - Check if subcontract has any of the selected facilities
+      if (filters.facilities.length > 0 && !filters.facilities.includes('All')) {
+        const subcontractFacilities = subcontract.subcontract_responsibilities?.map(
+          resp => resp.responsibilities?.name
+        ).filter(Boolean) || [];
+        
+        const hasMatchingFacility = filters.facilities.some(
+          facility => subcontractFacilities.includes(facility)
+        );
+        
+        if (!hasMatchingFacility) return false;
       }
 
       // Project name filter (only active when present data is by project and projectFilterType is 'name')
@@ -229,12 +250,7 @@ export function useReportData() {
             totalQuantity: item.quantity || 0,
             wastage: item.wastage_percentage || 0,
             unit: item.trade_items?.unit || '',
-            count: 1,
-            // Mock data for additional fields
-            accommodation: Math.random() > 0.5 ? 'Yes' : 'No',
-            transportation: Math.random() > 0.5 ? 'Yes' : 'No',
-            safety: Math.random() > 0.3 ? 'Yes' : 'No',
-            verticalTransportation: Math.random() > 0.6 ? 'Yes' : 'No'
+            count: 1
           });
         }
       });
@@ -254,7 +270,7 @@ export function useReportData() {
     };
   }, [subcontracts, filteredSubcontracts, filters]);
 
-  const updateFilter = (key: keyof ReportFilters, value: string) => {
+  const updateFilter = (key: keyof ReportFilters, value: string | string[]) => {
     setFilters(prev => {
       const newFilters = { ...prev, [key]: value };
       

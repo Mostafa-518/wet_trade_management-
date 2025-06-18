@@ -16,6 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { X } from 'lucide-react';
 import { useReportData } from '@/hooks/useReportData';
 import { Loader2 } from 'lucide-react';
 
@@ -32,6 +34,25 @@ export function Report() {
   }
 
   const isPresentDataByProject = reportData.filters.presentData === 'by-project';
+
+  const handleFacilityToggle = (facility: string) => {
+    if (facility === 'All') {
+      updateFilter('facilities', []);
+      return;
+    }
+
+    const currentFacilities = reportData.filters.facilities;
+    const newFacilities = currentFacilities.includes(facility)
+      ? currentFacilities.filter(f => f !== facility)
+      : [...currentFacilities, facility];
+    
+    updateFilter('facilities', newFacilities);
+  };
+
+  const removeFacility = (facility: string) => {
+    const newFacilities = reportData.filters.facilities.filter(f => f !== facility);
+    updateFilter('facilities', newFacilities);
+  };
 
   return (
     <div className="space-y-6">
@@ -210,6 +231,43 @@ export function Report() {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* NEW: Facilities Filter */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Facilities (Responsibilities):</label>
+              <Select onValueChange={handleFacilityToggle}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select facilities..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All">Clear All</SelectItem>
+                  {filterOptions.facilities.filter(f => f !== 'All').map((facility) => (
+                    <SelectItem key={facility} value={facility}>
+                      {facility}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              {/* Show selected facilities */}
+              {reportData.filters.facilities.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {reportData.filters.facilities.map((facility) => (
+                    <Badge key={facility} variant="secondary" className="flex items-center gap-1">
+                      {facility}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-auto p-0 w-4 h-4"
+                        onClick={() => removeFacility(facility)}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -238,10 +296,6 @@ export function Report() {
                   <TableHead className="font-semibold">Average Rate</TableHead>
                   <TableHead className="font-semibold">Total Amount</TableHead>
                   <TableHead className="font-semibold">Wastage %</TableHead>
-                  <TableHead className="font-semibold">Accommodation</TableHead>
-                  <TableHead className="font-semibold">Transportation</TableHead>
-                  <TableHead className="font-semibold">Safety</TableHead>
-                  <TableHead className="font-semibold">Vertical Transportation</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -252,31 +306,11 @@ export function Report() {
                       <TableCell>{row.averageRate.toFixed(2)}</TableCell>
                       <TableCell>{row.totalAmount.toLocaleString()}</TableCell>
                       <TableCell>{row.wastage}%</TableCell>
-                      <TableCell>
-                        <Badge variant={row.accommodation === 'Yes' ? 'default' : 'secondary'}>
-                          {row.accommodation}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={row.transportation === 'Yes' ? 'default' : 'secondary'}>
-                          {row.transportation}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={row.safety === 'Yes' ? 'default' : 'secondary'}>
-                          {row.safety}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={row.verticalTransportation === 'Yes' ? 'default' : 'secondary'}>
-                          {row.verticalTransportation}
-                        </Badge>
-                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                    <TableCell colSpan={4} className="text-center py-8 text-gray-500">
                       No data available for the selected filters
                     </TableCell>
                   </TableRow>
@@ -285,10 +319,6 @@ export function Report() {
                 {reportData.tableData.length < 5 && 
                   [...Array(5 - reportData.tableData.length)].map((_, index) => (
                     <TableRow key={`empty-${index}`}>
-                      <TableCell>&nbsp;</TableCell>
-                      <TableCell>&nbsp;</TableCell>
-                      <TableCell>&nbsp;</TableCell>
-                      <TableCell>&nbsp;</TableCell>
                       <TableCell>&nbsp;</TableCell>
                       <TableCell>&nbsp;</TableCell>
                       <TableCell>&nbsp;</TableCell>
@@ -304,3 +334,4 @@ export function Report() {
     </div>
   );
 }
+
