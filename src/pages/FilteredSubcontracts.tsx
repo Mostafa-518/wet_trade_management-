@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -48,7 +47,7 @@ export function FilteredSubcontracts() {
     }
     if (subcontractorId && subcontractors.length > 0) {
       const subcontractor = subcontractors.find(s => s.id === subcontractorId);
-      return `Subcontracts for Subcontractor: ${subcontractor?.company_name || 'Unknown Subcontractor'}`;
+      return `Subcontracts for Subcontractor: ${subcontractor?.companyName || 'Unknown Subcontractor'}`;
     }
     if (projectName && projectName !== 'all') {
       return `Subcontracts for Project: ${projectName}`;
