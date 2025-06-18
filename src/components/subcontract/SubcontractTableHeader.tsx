@@ -7,16 +7,25 @@ interface SubcontractTableHeaderProps {
   onCreateNew?: () => void;
   onFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onDownloadTemplate: () => void;
+  isFiltered?: boolean;
 }
 
 export function SubcontractTableHeader({ 
   onCreateNew, 
   onFileUpload, 
-  onDownloadTemplate 
+  onDownloadTemplate,
+  isFiltered = false
 }: SubcontractTableHeaderProps) {
   return (
     <div className="flex justify-between items-center">
-      <h2 className="text-2xl font-bold">Subcontracts</h2>
+      <h2 className="text-2xl font-bold">
+        Subcontracts
+        {isFiltered && (
+          <span className="text-sm font-normal text-blue-600 ml-2">
+            (Filtered from report)
+          </span>
+        )}
+      </h2>
       <div className="flex items-center gap-2">
         <Button variant="outline" onClick={onDownloadTemplate} className="flex items-center gap-2">
           <FileSpreadsheet className="h-4 w-4" />

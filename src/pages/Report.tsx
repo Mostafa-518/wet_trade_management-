@@ -1,367 +1,248 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { X, Printer } from 'lucide-react';
-import { useReportData } from '@/hooks/useReportData';
-import { Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ReportTableView } from '@/components/report/ReportTableView';
-import { ReportGraphsView } from '@/components/report/ReportGraphsView';
+import { DateRange } from 'react-day-picker';
+import { format } from 'date-fns';
 
-export function Report() {
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer"
+import { useToast } from "@/hooks/use-toast"
+import { useData } from "@/contexts/DataContext";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Separator } from "@/components/ui/separator"
+import { Slider } from "@/components/ui/slider"
+import { Switch } from "@/components/ui/switch"
+import { ModeToggle } from "@/components/mode-toggle"
+import { Icons } from "@/components/icons"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import { Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator, CommandShortcut } from "@/components/ui/command"
+import { CalendarIcon, CheckCheck, ChevronsUpDown } from "lucide-react"
+import { cn } from "@/lib/utils"
+
+const Report = () => {
   const navigate = useNavigate();
-  const { reportData, filterOptions, updateFilter, isLoading, filteredSubcontracts } = useReportData();
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [selectedYear, setSelectedYear] = useState('');
+  const [selectedLocation, setSelectedLocation] = useState('');
+  const [selectedTrades, setSelectedTrades] = useState('');
+  const [selectedFacilities, setSelectedFacilities] = useState<string[]>([]);
+  const [presentData, setPresentData] = useState('');
+  const [projectFilterType, setProjectFilterType] = useState('');
+  const [reportData, setReportData] = useState([
+    { project_name: 'Project A', project_code: 'PA123', subcontractor_name: 'Subcontractor X', total_contracts: 5 },
+    { project_name: 'Project B', project_code: 'PB456', subcontractor_name: 'Subcontractor Y', total_contracts: 3 },
+  ]);
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-96">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <span className="ml-2">Loading report data...</span>
-      </div>
-    );
-  }
-
-  const isPresentDataByProject = reportData.filters.presentData === 'by-project';
-
-  const handleFacilityToggle = (facility: string) => {
-    if (facility === 'All') {
-      updateFilter('facilities', []);
-      return;
-    }
-
-    const currentFacilities = reportData.filters.facilities;
-    const newFacilities = currentFacilities.includes(facility)
-      ? currentFacilities.filter(f => f !== facility)
-      : [...currentFacilities, facility];
+  const handleSubcontractClick = (item: any) => {
+    console.log('handleSubcontractClick called with item:', item);
     
-    updateFilter('facilities', newFacilities);
-  };
-
-  const removeFacility = (facility: string) => {
-    const newFacilities = reportData.filters.facilities.filter(f => f !== facility);
-    updateFilter('facilities', newFacilities);
-  };
-
-  const handleNavigateToSubcontracts = () => {
-    // Create URL parameters from current filters to ensure we get the same filtered results
-    const params = new URLSearchParams();
+    // Build filter parameters based on the clicked item
+    const filterParams = new URLSearchParams();
     
-    console.log('Report page - navigating with filters:', reportData.filters);
-    console.log('Current filtered subcontracts count:', reportData.currentSubcontracts);
+    // Add basic filters
+    if (selectedMonth) filterParams.append('month', selectedMonth);
+    if (selectedYear) filterParams.append('year', selectedYear);
+    if (selectedLocation) filterParams.append('location', selectedLocation);
+    if (selectedTrades) filterParams.append('trades', selectedTrades);
     
-    if (reportData.filters.month !== 'all' && reportData.filters.month !== 'All') {
-      params.set('month', reportData.filters.month);
+    // Add specific filters based on the clicked item
+    if (item.project_name) {
+      filterParams.append('projectName', item.project_name);
+      console.log('Added projectName filter:', item.project_name);
     }
-    if (reportData.filters.year !== 'all' && reportData.filters.year !== 'All') {
-      params.set('year', reportData.filters.year);
+    if (item.project_code) {
+      filterParams.append('projectCode', item.project_code);
+      console.log('Added projectCode filter:', item.project_code);
     }
-    if (reportData.filters.location !== 'all' && reportData.filters.location !== 'All') {
-      params.set('location', reportData.filters.location);
-    }
-    if (reportData.filters.trades !== 'all' && reportData.filters.trades !== 'All') {
-      params.set('trades', reportData.filters.trades);
-    }
-    if (reportData.filters.projectName !== 'all' && reportData.filters.projectName !== 'All') {
-      params.set('projectName', reportData.filters.projectName);
-    }
-    if (reportData.filters.projectCode !== 'all' && reportData.filters.projectCode !== 'All') {
-      params.set('projectCode', reportData.filters.projectCode);
-    }
-    if (reportData.filters.facilities.length > 0) {
-      params.set('facilities', reportData.filters.facilities.join(','));
+    if (item.subcontractor_name) {
+      filterParams.append('subcontractorName', item.subcontractor_name);
+      console.log('Added subcontractorName filter:', item.subcontractor_name);
     }
     
-    // Add presentData filter to ensure consistent filtering
-    params.set('presentData', reportData.filters.presentData);
-    params.set('projectFilterType', reportData.filters.projectFilterType);
+    // Add facilities if they exist
+    if (selectedFacilities && selectedFacilities.length > 0) {
+      filterParams.append('facilities', selectedFacilities.join(','));
+    }
     
-    // Navigate to subcontracts page with filters
-    const queryString = params.toString();
-    console.log('Navigating to subcontracts with query string:', queryString);
-    navigate(`/subcontracts${queryString ? `?${queryString}` : ''}`);
-  };
-
-  const handlePrint = () => {
-    window.print();
+    // Add present data filter
+    if (presentData) {
+      filterParams.append('presentData', presentData);
+    }
+    
+    // Add project filter type
+    if (projectFilterType) {
+      filterParams.append('projectFilterType', projectFilterType);
+    }
+    
+    console.log('Final filter params:', filterParams.toString());
+    navigate(`/subcontracts?${filterParams.toString()}`);
   };
 
   return (
-    <div className="space-y-6 print:space-y-4">
-      {/* Header Section */}
-      <div className="flex items-center justify-between print:justify-center">
-        <h1 className="text-3xl font-bold tracking-tight print:text-2xl">Report</h1>
-        <Button 
-          onClick={handlePrint} 
-          variant="outline" 
-          size="sm"
-          className="print:hidden"
-        >
-          <Printer className="h-4 w-4 mr-2" />
-          Print/PDF
-        </Button>
-      </div>
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Report</h1>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <div>
+          <Label htmlFor="month">Month</Label>
+          <Select onValueChange={setSelectedMonth}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select a month" />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+                <SelectItem key={month} value={String(month).padStart(2, '0')}>
+                  {new Date(2000, month - 1, 1).toLocaleString('default', { month: 'long' })}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-      {/* Filter Cards Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 print:grid-cols-3 print:gap-2">
-        {/* Present Data Card */}
-        <Card className="print:shadow-none">
-          <CardHeader className="pb-3 print:pb-2">
-            <CardTitle className="text-sm font-medium">Present Data:</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center space-x-2">
-              <Badge variant="outline" className="bg-gray-50">
-                {reportData.filters.presentData}
-              </Badge>
-              <Select 
-                value={reportData.filters.presentData} 
-                onValueChange={(value) => updateFilter('presentData', value)}
-              >
-                <SelectTrigger className="w-8 h-8 p-0 border-0 print:hidden">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {filterOptions.presentDataOptions.map((option) => (
-                    <SelectItem key={option} value={option.toLowerCase().replace(' ', '-')}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
+        <div>
+          <Label htmlFor="year">Year</Label>
+          <Select onValueChange={setSelectedYear}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select a year" />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map((year) => (
+                <SelectItem key={year} value={String(year)}>
+                  {year}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-        {/* Empty Card for spacing */}
-        <Card className="opacity-0 print:hidden">
-          <CardContent className="h-20"></CardContent>
-        </Card>
-
-        {/* Total Subcontracts Card */}
-        <Card className="print:shadow-none">
-          <CardHeader className="pb-3 print:pb-2">
-            <CardTitle className="text-sm font-medium">No. Of All Subcontract:</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-center print:text-lg">
-              [{reportData.totalSubcontracts}] Subcontract
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filter Section */}
-      <Card className="print:shadow-none print:break-inside-avoid">
-        <CardContent className="pt-6 print:pt-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 print:grid-cols-4 print:gap-2">
-            <div className="space-y-2 print:space-y-1">
-              <label className="text-sm font-medium">Month:</label>
-              <Select 
-                value={reportData.filters.month} 
-                onValueChange={(value) => updateFilter('month', value)}
-              >
-                <SelectTrigger className="print:border-none print:shadow-none">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {filterOptions.months.map((month) => (
-                    <SelectItem key={month} value={month.toLowerCase()}>
-                      {month}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2 print:space-y-1">
-              <label className="text-sm font-medium">Year:</label>
-              <Select 
-                value={reportData.filters.year} 
-                onValueChange={(value) => updateFilter('year', value)}
-              >
-                <SelectTrigger className="print:border-none print:shadow-none">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {filterOptions.years.map((year) => (
-                    <SelectItem key={year} value={year}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Conditional filters based on Present Data selection */}
-            {!isPresentDataByProject && (
-              <div className="space-y-2 print:space-y-1">
-                <label className="text-sm font-medium">Location of work:</label>
-                <Select 
-                  value={reportData.filters.location} 
-                  onValueChange={(value) => updateFilter('location', value)}
-                >
-                  <SelectTrigger className="print:border-none print:shadow-none">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filterOptions.locations.map((location) => (
-                      <SelectItem key={location} value={location}>
-                        {location}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {isPresentDataByProject && (
-              <div className="space-y-2 print:space-y-1">
-                <label className="text-sm font-medium">
-                  {reportData.filters.projectFilterType === 'name' ? 'Project Name:' : 'Project Code:'}
-                </label>
-                <div className="flex gap-2">
-                  <Select 
-                    value={reportData.filters.projectFilterType === 'name' ? reportData.filters.projectName : reportData.filters.projectCode}
-                    onValueChange={(value) => updateFilter(reportData.filters.projectFilterType === 'name' ? 'projectName' : 'projectCode', value)}
-                  >
-                    <SelectTrigger className="flex-1 print:border-none print:shadow-none">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {(reportData.filters.projectFilterType === 'name' ? filterOptions.projectNames : filterOptions.projectCodes).map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {option}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Select 
-                    value={reportData.filters.projectFilterType}
-                    onValueChange={(value) => updateFilter('projectFilterType', value)}
-                  >
-                    <SelectTrigger className="w-20 print:hidden">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="name">Name</SelectItem>
-                      <SelectItem value="code">Code</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-2 print:space-y-1">
-              <label className="text-sm font-medium">Trades:</label>
-              <Select 
-                value={reportData.filters.trades} 
-                onValueChange={(value) => updateFilter('trades', value)}
-              >
-                <SelectTrigger className="print:border-none print:shadow-none">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {filterOptions.trades.map((trade) => (
-                    <SelectItem key={trade} value={trade}>
-                      {trade}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Facilities Filter */}
-            <div className="space-y-2 print:space-y-1">
-              <label className="text-sm font-medium">Facilities (Responsibilities):</label>
-              <Select onValueChange={handleFacilityToggle}>
-                <SelectTrigger className="print:border-none print:shadow-none">
-                  <SelectValue placeholder="Select facilities..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="All">Clear All</SelectItem>
-                  {filterOptions.facilities.filter(f => f !== 'All').map((facility) => (
-                    <SelectItem key={facility} value={facility}>
-                      {facility}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              {/* Show selected facilities */}
-              {reportData.filters.facilities.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-2 print:gap-0.5">
-                  {reportData.filters.facilities.map((facility) => (
-                    <Badge key={facility} variant="secondary" className="flex items-center gap-1 print:text-xs">
-                      {facility}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-auto p-0 w-4 h-4 print:hidden"
-                        onClick={() => removeFacility(facility)}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Current Subcontracts Card */}
-      <div className="flex justify-center print:break-inside-avoid">
-        <Card 
-          className="w-auto cursor-pointer hover:shadow-lg transition-shadow print:shadow-none print:cursor-default"
-          onClick={handleNavigateToSubcontracts}
-        >
-          <CardContent className="pt-6 print:pt-4">
-            <div className="text-center">
-              <div className="text-lg font-semibold print:text-base">
-                No. Of Subcontract: [{reportData.currentSubcontracts}] Subcontract
-              </div>
-              <div className="text-sm text-gray-500 mt-1">
-                Click to view filtered subcontracts
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Tabs Section */}
-      <Tabs defaultValue="table" className="w-full print:hidden">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="table">Table View</TabsTrigger>
-          <TabsTrigger value="graphs">Graphs View</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="table" className="mt-6">
-          <ReportTableView tableData={reportData.tableData} />
-        </TabsContent>
-        
-        <TabsContent value="graphs" className="mt-6">
-          <ReportGraphsView 
-            tableData={reportData.tableData} 
-            subcontracts={filteredSubcontracts}
-            isLoading={isLoading}
+        <div>
+          <Label htmlFor="location">Location</Label>
+          <Input
+            type="text"
+            id="location"
+            placeholder="Enter location"
+            value={selectedLocation}
+            onChange={(e) => setSelectedLocation(e.target.value)}
           />
-        </TabsContent>
-      </Tabs>
+        </div>
 
-      {/* Print-only table view */}
-      <div className="hidden print:block">
-        <ReportTableView tableData={reportData.tableData} />
+        <div>
+          <Label htmlFor="trades">Trades</Label>
+          <Input
+            type="text"
+            id="trades"
+            placeholder="Enter trades"
+            value={selectedTrades}
+            onChange={(e) => setSelectedTrades(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="facilities">Facilities</Label>
+          <Select onValueChange={(value) => setSelectedFacilities(value === '' ? [] : value.split(','))}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select facilities" />
+            </SelectTrigger>
+            <SelectContent>
+              {['Facility A', 'Facility B', 'Facility C'].map((facility) => (
+                <SelectItem key={facility} value={facility}>
+                  {facility}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label htmlFor="presentData">Present Data</Label>
+          <Input
+            type="text"
+            id="presentData"
+            placeholder="Enter present data"
+            value={presentData}
+            onChange={(e) => setPresentData(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="projectFilterType">Project Filter Type</Label>
+          <Input
+            type="text"
+            id="projectFilterType"
+            placeholder="Enter project filter type"
+            value={projectFilterType}
+            onChange={(e) => setProjectFilterType(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Project Name</TableHead>
+              <TableHead>Project Code</TableHead>
+              <TableHead>Subcontractor Name</TableHead>
+              <TableHead>Total Contracts</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {reportData.map((item, index) => (
+              <TableRow key={index} className="cursor-pointer hover:bg-gray-100" onClick={() => handleSubcontractClick(item)}>
+                <TableCell>{item.project_name}</TableCell>
+                <TableCell>{item.project_code}</TableCell>
+                <TableCell>{item.subcontractor_name}</TableCell>
+                <TableCell>{item.total_contracts}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
-}
+};
+
+export default Report;
