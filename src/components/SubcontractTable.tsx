@@ -13,9 +13,10 @@ interface SubcontractTableProps {
   onCreateNew?: () => void;
   onViewDetail: (contractId: string) => void;
   reportFilters?: any;
+  expectedCount?: number | null;
 }
 
-export function SubcontractTable({ onCreateNew, onViewDetail, reportFilters }: SubcontractTableProps) {
+export function SubcontractTable({ onCreateNew, onViewDetail, reportFilters, expectedCount }: SubcontractTableProps) {
   const {
     subcontracts,
     filteredData,
@@ -61,6 +62,9 @@ export function SubcontractTable({ onCreateNew, onViewDetail, reportFilters }: S
     );
   }
 
+  // Show warning if filtered results don't match expected count
+  const showCountMismatch = expectedCount && filteredData.length !== expectedCount && isFiltered;
+
   return (
     <div className="space-y-4">
       <SubcontractTableHeader 
@@ -69,6 +73,28 @@ export function SubcontractTable({ onCreateNew, onViewDetail, reportFilters }: S
         onDownloadTemplate={downloadTemplate}
         isFiltered={isFiltered}
       />
+
+      {showCountMismatch && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <h4 className="font-medium text-yellow-900">Count Mismatch Warning</h4>
+          <p className="text-sm text-yellow-700">
+            Expected {expectedCount} subcontract(s) from report, but found {filteredData.length}.
+            This might indicate a filtering issue or data inconsistency.
+          </p>
+        </div>
+      )}
+
+      {isFiltered && filteredData.length === 0 && (
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No subcontracts found</h3>
+          <p className="text-gray-600 mb-4">
+            No subcontracts found for this report segment.
+          </p>
+          <p className="text-sm text-gray-500">
+            Try adjusting the filters or check if the data matches the report criteria.
+          </p>
+        </div>
+      )}
 
       <SubcontractTableSearch
         searchTerm={searchTerm}

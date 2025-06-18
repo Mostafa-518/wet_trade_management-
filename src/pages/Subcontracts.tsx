@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { SubcontractTable } from '@/components/SubcontractTable';
@@ -12,6 +11,7 @@ export function Subcontracts() {
   const location = useLocation();
   const [showStepper, setShowStepper] = useState(false);
   const [reportFilters, setReportFilters] = useState<any>(null);
+  const [expectedCount, setExpectedCount] = useState<number | null>(null);
   const { addSubcontract } = useData();
   const { toast } = useToast();
   const { profile } = useAuth();
@@ -22,6 +22,14 @@ export function Subcontracts() {
     // Parse URL parameters to extract filters from report page
     const searchParams = new URLSearchParams(location.search);
     const filters: any = {};
+    
+    // Get expected count for validation
+    if (searchParams.get('expectedCount')) {
+      const count = parseInt(searchParams.get('expectedCount') || '0');
+      setExpectedCount(count);
+      filters.expectedCount = count;
+      console.log('Found expected count:', count);
+    }
     
     if (searchParams.get('month')) {
       filters.month = searchParams.get('month');
@@ -46,6 +54,10 @@ export function Subcontracts() {
     if (searchParams.get('projectCode')) {
       filters.projectCode = searchParams.get('projectCode');
       console.log('Found projectCode filter:', filters.projectCode);
+    }
+    if (searchParams.get('subcontractorName')) {
+      filters.subcontractorName = searchParams.get('subcontractorName');
+      console.log('Found subcontractorName filter:', filters.subcontractorName);
     }
     if (searchParams.get('facilities')) {
       filters.facilities = searchParams.get('facilities')?.split(',') || [];
@@ -98,10 +110,28 @@ export function Subcontracts() {
   }
 
   return (
-    <SubcontractTable 
-      onCreateNew={canModify ? handleCreateNew : undefined}
-      onViewDetail={handleViewDetail}
-      reportFilters={reportFilters}
-    />
+    <div className="space-y-4">
+      {reportFilters && expectedCount && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h3 className="font-medium text-blue-900">Report Filter Applied</h3>
+          <p className="text-sm text-blue-700">
+            Showing subcontracts filtered from report. Expected: {expectedCount} subcontract(s)
+          </p>
+          {reportFilters.projectName && (
+            <p className="text-xs text-blue-600">Project: {reportFilters.projectName}</p>
+          )}
+          {reportFilters.subcontractorName && (
+            <p className="text-xs text-blue-600">Subcontractor: {reportFilters.subcontractorName}</p>
+          )}
+        </div>
+      )}
+      
+      <SubcontractTable 
+        onCreateNew={canModify ? handleCreateNew : undefined}
+        onViewDetail={handleViewDetail}
+        reportFilters={reportFilters}
+        expectedCount={expectedCount}
+      />
+    </div>
   );
 }
