@@ -124,6 +124,7 @@ export function useReportData() {
     filterOptions,
     updateFilter,
     isLoading: subcontractsLoading,
-    refetch
+    refetch,
+    filteredSubcontracts // Expose filtered subcontracts for graphs
   };
 }

@@ -1,15 +1,17 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ReportTableData } from '@/types/report';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { ProjectComparisonChart } from './ProjectComparisonChart';
 
 interface ReportGraphsViewProps {
   tableData: ReportTableData[];
+  subcontracts?: any[];
+  isLoading?: boolean;
 }
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658'];
 
-export function ReportGraphsView({ tableData }: ReportGraphsViewProps) {
+export function ReportGraphsView({ tableData, subcontracts = [], isLoading = false }: ReportGraphsViewProps) {
   // Prepare data for charts
   const chartData = tableData.map(item => ({
     name: item.item.length > 15 ? item.item.substring(0, 15) + '...' : item.item,
@@ -35,6 +37,13 @@ export function ReportGraphsView({ tableData }: ReportGraphsViewProps) {
 
   return (
     <div className="space-y-6">
+      {/* Project Comparison Analysis Chart */}
+      <ProjectComparisonChart 
+        tableData={tableData} 
+        subcontracts={subcontracts}
+        isLoading={isLoading}
+      />
+
       {/* Total Amount Bar Chart */}
       <Card className="print:shadow-none print:break-inside-avoid">
         <CardHeader>

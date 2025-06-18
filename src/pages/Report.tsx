@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -19,7 +18,7 @@ import { ReportGraphsView } from '@/components/report/ReportGraphsView';
 
 export function Report() {
   const navigate = useNavigate();
-  const { reportData, filterOptions, updateFilter, isLoading } = useReportData();
+  const { reportData, filterOptions, updateFilter, isLoading, filteredSubcontracts } = useReportData();
 
   if (isLoading) {
     return (
@@ -339,7 +338,11 @@ export function Report() {
         </TabsContent>
         
         <TabsContent value="graphs" className="mt-6">
-          <ReportGraphsView tableData={reportData.tableData} />
+          <ReportGraphsView 
+            tableData={reportData.tableData} 
+            subcontracts={filteredSubcontracts}
+            isLoading={isLoading}
+          />
         </TabsContent>
       </Tabs>
 
