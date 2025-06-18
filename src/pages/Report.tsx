@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -31,7 +32,6 @@ const Report = () => {
   const [reportData, setReportData] = useState([
     { project_name: 'Project A', project_code: 'PA123', subcontractor_name: 'Subcontractor X', total_contracts: 5 },
     { project_name: 'Project B', project_code: 'PB456', subcontractor_name: 'Subcontractor Y', total_contracts: 3 },
-    { project_name: 'Project C', project_code: 'PC789', subcontractor_name: 'Subcontractor Z', total_contracts: 9 },
   ]);
 
   const handleSubcontractClick = (item: any) => {
@@ -41,55 +41,51 @@ const Report = () => {
     // Build filter parameters based on the clicked item
     const filterParams = new URLSearchParams();
     
-    // Add the expected count for debugging
-    filterParams.append('expectedCount', item.total_contracts.toString());
-    console.log('Added expectedCount:', item.total_contracts);
-    
-    // Add basic filters from form - only if they have values
-    if (selectedMonth && selectedMonth !== 'all') {
+    // Add basic filters from form
+    if (selectedMonth) {
       filterParams.append('month', selectedMonth);
       console.log('Added month filter:', selectedMonth);
     }
-    if (selectedYear && selectedYear !== 'all') {
+    if (selectedYear) {
       filterParams.append('year', selectedYear);
       console.log('Added year filter:', selectedYear);
     }
-    if (selectedLocation && selectedLocation.trim()) {
+    if (selectedLocation) {
       filterParams.append('location', selectedLocation);
       console.log('Added location filter:', selectedLocation);
     }
-    if (selectedTrades && selectedTrades.trim()) {
+    if (selectedTrades) {
       filterParams.append('trades', selectedTrades);
       console.log('Added trades filter:', selectedTrades);
     }
     
-    // Add specific filters based on the clicked item - be more flexible with matching
-    if (item.project_name && item.project_name.trim()) {
+    // Add specific filters based on the clicked item - use the exact property names from the item
+    if (item.project_name) {
       filterParams.append('projectName', item.project_name);
       console.log('Added projectName filter:', item.project_name);
     }
-    if (item.project_code && item.project_code.trim()) {
+    if (item.project_code) {
       filterParams.append('projectCode', item.project_code);
       console.log('Added projectCode filter:', item.project_code);
     }
-    if (item.subcontractor_name && item.subcontractor_name.trim()) {
+    if (item.subcontractor_name) {
       filterParams.append('subcontractorName', item.subcontractor_name);
       console.log('Added subcontractorName filter:', item.subcontractor_name);
     }
     
-    // Add facilities if they exist and are selected
+    // Add facilities if they exist
     if (selectedFacilities && selectedFacilities.length > 0) {
       filterParams.append('facilities', selectedFacilities.join(','));
       console.log('Added facilities filter:', selectedFacilities);
     }
     
-    // Add present data filter if selected
-    if (presentData && presentData.trim()) {
+    // Add present data filter
+    if (presentData) {
       filterParams.append('presentData', presentData);
     }
     
-    // Add project filter type if selected
-    if (projectFilterType && projectFilterType.trim()) {
+    // Add project filter type
+    if (projectFilterType) {
       filterParams.append('projectFilterType', projectFilterType);
     }
     
@@ -112,7 +108,6 @@ const Report = () => {
               <SelectValue placeholder="Select a month" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Months</SelectItem>
               {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
                 <SelectItem key={month} value={String(month).padStart(2, '0')}>
                   {new Date(2000, month - 1, 1).toLocaleString('default', { month: 'long' })}
@@ -129,7 +124,6 @@ const Report = () => {
               <SelectValue placeholder="Select a year" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Years</SelectItem>
               {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map((year) => (
                 <SelectItem key={year} value={String(year)}>
                   {year}

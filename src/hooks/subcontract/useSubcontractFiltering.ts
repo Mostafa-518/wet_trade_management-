@@ -1,3 +1,4 @@
+
 import { useMemo } from 'react';
 import { Subcontract } from '@/types/subcontract';
 import { useData } from '@/contexts/DataContext';
@@ -18,39 +19,40 @@ export function useSubcontractFiltering(subcontracts: Subcontract[], reportFilte
     const filtered = subcontracts.filter(subcontract => {
       console.log('=== FILTERING: Checking subcontract ===');
       console.log('Subcontract ID:', subcontract.id);
+      console.log('Subcontract data:', subcontract);
 
-      // Get project data using the correct field name
+      // Get project data
       const project = projects.find(p => p.id === subcontract.project);
       const subcontractorData = subcontractors.find(s => s.id === subcontract.subcontractor);
       
       console.log('Found project:', project);
       console.log('Found subcontractor:', subcontractorData);
 
-      // Filter by project name - this should be inclusive, not exact match
-      if (reportFilters.projectName && reportFilters.projectName !== 'all') {
+      // Filter by project name
+      if (reportFilters.projectName) {
         const projectMatches = project?.name?.toLowerCase().includes(reportFilters.projectName.toLowerCase());
         console.log(`Project filter: ${reportFilters.projectName}, Project name: ${project?.name}, Matches: ${projectMatches}`);
         if (!projectMatches) return false;
       }
 
       // Filter by project code
-      if (reportFilters.projectCode && reportFilters.projectCode !== 'all') {
-        const projectCode = project?.code;
+      if (reportFilters.projectCode) {
+        // Assuming project has a code field - you might need to check your Project type
+        const projectCode = (project as any)?.code;
         const codeMatches = projectCode?.toLowerCase().includes(reportFilters.projectCode.toLowerCase());
         console.log(`Project code filter: ${reportFilters.projectCode}, Project code: ${projectCode}, Matches: ${codeMatches}`);
         if (!codeMatches) return false;
       }
 
-      // Filter by subcontractor name - this should be inclusive, not exact match
-      if (reportFilters.subcontractorName && reportFilters.subcontractorName !== 'all') {
-        const subcontractorMatches = subcontractorData?.name?.toLowerCase().includes(reportFilters.subcontractorName.toLowerCase()) ||
-                                   subcontractorData?.companyName?.toLowerCase().includes(reportFilters.subcontractorName.toLowerCase());
-        console.log(`Subcontractor filter: ${reportFilters.subcontractorName}, Subcontractor: ${subcontractorData?.name || subcontractorData?.companyName}, Matches: ${subcontractorMatches}`);
+      // Filter by subcontractor name
+      if (reportFilters.subcontractorName) {
+        const subcontractorMatches = subcontractorData?.name?.toLowerCase().includes(reportFilters.subcontractorName.toLowerCase());
+        console.log(`Subcontractor filter: ${reportFilters.subcontractorName}, Subcontractor: ${subcontractorData?.name}, Matches: ${subcontractorMatches}`);
         if (!subcontractorMatches) return false;
       }
 
       // Filter by trades
-      if (reportFilters.trades && reportFilters.trades !== 'all') {
+      if (reportFilters.trades) {
         const tradesMatches = subcontract.tradeItems?.some(tradeItem => 
           tradeItem.trade?.toLowerCase().includes(reportFilters.trades.toLowerCase())
         );
@@ -58,37 +60,37 @@ export function useSubcontractFiltering(subcontracts: Subcontract[], reportFilte
         if (!tradesMatches) return false;
       }
 
-      // Filter by date range (month/year) - be more flexible with date filtering
-      if (reportFilters.month && reportFilters.month !== 'all') {
+      // Filter by date range (month/year)
+      if (reportFilters.month || reportFilters.year) {
         const contractDate = new Date(subcontract.dateOfIssuing || subcontract.startDate);
-        const contractMonth = contractDate.getMonth() + 1;
-        const filterMonth = parseInt(reportFilters.month);
-        
-        if (contractMonth !== filterMonth) {
-          console.log(`Month filter: ${filterMonth}, Contract month: ${contractMonth}, No match`);
-          return false;
-        }
-      }
-
-      if (reportFilters.year && reportFilters.year !== 'all') {
-        const contractDate = new Date(subcontract.dateOfIssuing || subcontract.startDate);
+        const contractMonth = contractDate.getMonth() + 1; // JavaScript months are 0-indexed
         const contractYear = contractDate.getFullYear();
-        const filterYear = parseInt(reportFilters.year);
-        
-        if (contractYear !== filterYear) {
-          console.log(`Year filter: ${filterYear}, Contract year: ${contractYear}, No match`);
-          return false;
+
+        if (reportFilters.month) {
+          const filterMonth = parseInt(reportFilters.month);
+          if (contractMonth !== filterMonth) {
+            console.log(`Month filter: ${filterMonth}, Contract month: ${contractMonth}, No match`);
+            return false;
+          }
+        }
+
+        if (reportFilters.year) {
+          const filterYear = parseInt(reportFilters.year);
+          if (contractYear !== filterYear) {
+            console.log(`Year filter: ${filterYear}, Contract year: ${contractYear}, No match`);
+            return false;
+          }
         }
       }
 
       // Filter by location
-      if (reportFilters.location && reportFilters.location !== 'all') {
+      if (reportFilters.location) {
         const locationMatches = project?.location?.toLowerCase().includes(reportFilters.location.toLowerCase());
         console.log(`Location filter: ${reportFilters.location}, Location: ${project?.location}, Matches: ${locationMatches}`);
         if (!locationMatches) return false;
       }
 
-      // Filter by facilities (responsibilities) - make this more flexible
+      // Filter by facilities (responsibilities)
       if (reportFilters.facilities && reportFilters.facilities.length > 0) {
         const facilityMatches = reportFilters.facilities.some((facility: string) =>
           subcontract.responsibilities?.some(responsibility => 
@@ -106,14 +108,6 @@ export function useSubcontractFiltering(subcontracts: Subcontract[], reportFilte
     console.log('=== FILTERING: Final results ===');
     console.log('Filtered subcontracts count:', filtered.length);
     console.log('Filtered subcontract IDs:', filtered.map(s => s.id));
-    
-    // Add a warning if we expected more results
-    if (filtered.length === 0) {
-      console.warn('⚠️ FILTERING: No subcontracts matched the filters. This might indicate a data mismatch.');
-    } else if (filtered.length === 1 && reportFilters.expectedCount && reportFilters.expectedCount > 1) {
-      console.warn(`⚠️ FILTERING: Only 1 subcontract found but expected ${reportFilters.expectedCount}. Check filter logic.`);
-    }
-    
     console.log('=== FILTERING: Process complete ===');
     
     return filtered;
