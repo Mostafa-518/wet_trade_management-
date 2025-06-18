@@ -11,6 +11,8 @@ import { Responsibility, ResponsibilitySearchFilters } from '@/types/responsibil
 import { responsibilityCategories } from '@/data/responsibilitiesData';
 import { useData } from '@/contexts/DataContext';
 import { useToast } from '@/hooks/use-toast';
+import { usePagination } from '@/hooks/usePagination';
+import { PaginationControls } from '@/components/PaginationControls';
 
 interface ResponsibilitiesTableProps {
   onCreateNew: () => void;
@@ -36,6 +38,17 @@ export function ResponsibilitiesTable({ onCreateNew, onEdit, onDelete, onViewDet
       (searchFilters.isActive === '' || searchFilters.isActive === 'all' || responsibility.isActive.toString() === searchFilters.isActive)
     );
   });
+
+  const {
+    currentPage,
+    totalPages,
+    paginatedData,
+    goToPage,
+    hasNextPage,
+    hasPreviousPage,
+    totalItems,
+    itemsPerPage,
+  } = usePagination({ data: filteredResponsibilities, itemsPerPage: 10 });
 
   const handleFilterChange = (field: keyof ResponsibilitySearchFilters, value: string) => {
     // Convert "all" back to empty string for filtering logic
@@ -124,7 +137,7 @@ export function ResponsibilitiesTable({ onCreateNew, onEdit, onDelete, onViewDet
         <CardHeader>
           <CardTitle>Responsibilities ({filteredResponsibilities.length})</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <Table>
             <TableHeader>
               <TableRow>
@@ -137,7 +150,7 @@ export function ResponsibilitiesTable({ onCreateNew, onEdit, onDelete, onViewDet
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredResponsibilities.map((responsibility) => (
+              {paginatedData.map((responsibility) => (
                 <TableRow key={responsibility.id}>
                   <TableCell className="font-medium">{responsibility.name}</TableCell>
                   <TableCell className="max-w-xs truncate">{responsibility.description}</TableCell>
@@ -156,6 +169,7 @@ export function ResponsibilitiesTable({ onCreateNew, onEdit, onDelete, onViewDet
                         variant="ghost"
                         size="sm"
                         onClick={() => onViewDetail(responsibility.id)}
+                        className="h-8 w-8 p-0"
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
@@ -163,6 +177,7 @@ export function ResponsibilitiesTable({ onCreateNew, onEdit, onDelete, onViewDet
                         variant="ghost"
                         size="sm"
                         onClick={() => onEdit(responsibility)}
+                        className="h-8 w-8 p-0"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -170,7 +185,7 @@ export function ResponsibilitiesTable({ onCreateNew, onEdit, onDelete, onViewDet
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDelete(responsibility.id)}
-                        className="text-destructive hover:text-destructive"
+                        className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-red-50"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -178,13 +193,25 @@ export function ResponsibilitiesTable({ onCreateNew, onEdit, onDelete, onViewDet
                   </TableCell>
                 </TableRow>
               ))}
+              {paginatedData.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    No responsibilities found matching your criteria.
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
-          {filteredResponsibilities.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              No responsibilities found matching your criteria.
-            </div>
-          )}
+          
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={goToPage}
+            hasNextPage={hasNextPage}
+            hasPreviousPage={hasPreviousPage}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+          />
         </CardContent>
       </Card>
     </div>

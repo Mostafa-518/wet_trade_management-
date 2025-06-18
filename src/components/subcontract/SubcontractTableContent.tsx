@@ -2,10 +2,13 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody } from '@/components/ui/table';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SubcontractTableHeaderRow } from './SubcontractTableHeaderRow';
 import { SubcontractTableRow } from './SubcontractTableRow';
 import { SubcontractTableEmpty } from './SubcontractTableEmpty';
 import { Subcontract } from '@/types/subcontract';
+import { usePagination } from '@/hooks/usePagination';
+import { PaginationControls } from '@/components/PaginationControls';
 
 interface SubcontractTableContentProps {
   filteredData: Subcontract[];
@@ -39,49 +42,78 @@ export function SubcontractTableContent({
   onDelete,
   onBulkDelete
 }: SubcontractTableContentProps) {
+  const {
+    currentPage,
+    totalPages,
+    paginatedData,
+    goToPage,
+    hasNextPage,
+    hasPreviousPage,
+    totalItems,
+    itemsPerPage,
+  } = usePagination({ data: filteredData, itemsPerPage: 10 });
+
   return (
-    <div className="border rounded-lg overflow-auto">
-      {selectedIds.size > 0 && (
-        <div className="p-2 bg-red-50 border-b flex items-center gap-2">
-          <span className="font-medium">{selectedIds.size} selected</span>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={onBulkDelete}
-            className="ml-2"
-          >
-            Delete Selected
-          </Button>
-        </div>
-      )}
-      <Table>
-        <SubcontractTableHeaderRow 
-          allSelected={allSelected}
-          onToggleAll={onToggleAll}
-        />
-        <TableBody>
-          {filteredData.length === 0 ? (
-            <SubcontractTableEmpty 
-              searchTerm={searchTerm}
-              showAdvancedSearch={showAdvancedSearch}
+    <Card>
+      <CardHeader>
+        <CardTitle>Subcontracts ({filteredData.length})</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {selectedIds.size > 0 && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
+            <span className="font-medium">{selectedIds.size} selected</span>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={onBulkDelete}
+              className="ml-2"
+            >
+              Delete Selected
+            </Button>
+          </div>
+        )}
+        
+        <div className="border rounded-lg overflow-auto">
+          <Table>
+            <SubcontractTableHeaderRow 
+              allSelected={allSelected}
+              onToggleAll={onToggleAll}
             />
-          ) : (
-            filteredData.map((contract) => (
-              <SubcontractTableRow
-                key={contract.id}
-                contract={contract}
-                isSelected={selectedIds.has(contract.id)}
-                getProjectName={getProjectName}
-                getSubcontractorName={getSubcontractorName}
-                onToggleOne={onToggleOne}
-                onViewDetail={onViewDetail}
-                onEdit={onEdit}
-                onDelete={onDelete}
-              />
-            ))
-          )}
-        </TableBody>
-      </Table>
-    </div>
+            <TableBody>
+              {paginatedData.length === 0 ? (
+                <SubcontractTableEmpty 
+                  searchTerm={searchTerm}
+                  showAdvancedSearch={showAdvancedSearch}
+                />
+              ) : (
+                paginatedData.map((contract) => (
+                  <SubcontractTableRow
+                    key={contract.id}
+                    contract={contract}
+                    isSelected={selectedIds.has(contract.id)}
+                    getProjectName={getProjectName}
+                    getSubcontractorName={getSubcontractorName}
+                    onToggleOne={onToggleOne}
+                    onViewDetail={onViewDetail}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                  />
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+        
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={goToPage}
+          hasNextPage={hasNextPage}
+          hasPreviousPage={hasPreviousPage}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+        />
+      </CardContent>
+    </Card>
   );
 }

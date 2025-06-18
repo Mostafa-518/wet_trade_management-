@@ -22,7 +22,9 @@ import {
   LogOut,
   User as UserIcon,
   Settings,
-  FileBarChart
+  FileBarChart,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -43,6 +45,7 @@ const navigationItems = [
 
 export function Layout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, signOut, user } = useAuth();
@@ -73,7 +76,7 @@ export function Layout({ children }: LayoutProps) {
       : navigationItems;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 flex w-full">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
@@ -87,22 +90,40 @@ export function Layout({ children }: LayoutProps) {
       {/* Sidebar */}
       <div
         className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 lg:flex lg:flex-col
+        fixed inset-y-0 left-0 z-50 bg-white shadow-lg transform transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 lg:flex lg:flex-col
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        ${sidebarCollapsed ? 'lg:w-16' : 'lg:w-64'}
+        w-64
       `}
       >
+        {/* Sidebar Header */}
         <div className="flex items-center justify-between h-16 px-6 border-b flex-shrink-0">
-          <h1 className="text-xl font-bold text-gray-900">Wet Trades</h1>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
+          <h1 className={`text-xl font-bold text-gray-900 transition-opacity duration-300 ${sidebarCollapsed ? 'lg:opacity-0 lg:w-0' : 'opacity-100'}`}>
+            Wet Trades
+          </h1>
+          <div className="flex items-center gap-2">
+            {/* Desktop collapse toggle */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="hidden lg:flex"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            >
+              {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            </Button>
+            {/* Mobile close button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="lg:hidden"
+              onClick={() => setSidebarOpen(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
+        {/* Navigation */}
         <nav className="flex-1 px-3 py-6 overflow-y-auto">
           <div className="space-y-1">
             {filteredNavigation.map((item) => {
@@ -116,7 +137,7 @@ export function Layout({ children }: LayoutProps) {
                   key={item.name}
                   to={item.href}
                   className={`
-                    flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors
+                    flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors group
                     ${
                       isActive
                         ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
@@ -124,9 +145,12 @@ export function Layout({ children }: LayoutProps) {
                     }
                   `}
                   onClick={() => setSidebarOpen(false)}
+                  title={sidebarCollapsed ? item.name : ''}
                 >
-                  <Icon className="mr-3 h-5 w-5" />
-                  {item.name}
+                  <Icon className="h-5 w-5 flex-shrink-0" />
+                  <span className={`ml-3 transition-opacity duration-300 ${sidebarCollapsed ? 'lg:opacity-0 lg:w-0' : 'opacity-100'}`}>
+                    {item.name}
+                  </span>
                 </Link>
               );
             })}
@@ -135,7 +159,7 @@ export function Layout({ children }: LayoutProps) {
       </div>
 
       {/* Main content area */}
-      <div className="flex-1 flex flex-col min-w-0 lg:ml-0">
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
         <div className="bg-white shadow-sm border-b flex-shrink-0">
           <div className="flex items-center justify-between h-16 px-6">
@@ -159,7 +183,7 @@ export function Layout({ children }: LayoutProps) {
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 bg-white">
+                <DropdownMenuContent align="end" className="w-56 bg-white border shadow-lg">
                   <div className="flex items-center justify-start gap-2 p-2">
                     <div className="flex flex-col space-y-1 leading-none">
                       <p className="font-medium">
@@ -176,12 +200,12 @@ export function Layout({ children }: LayoutProps) {
                     </div>
                   </div>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate('/profile')}>
+                  <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
                     Profile Settings
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut}>
+                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" />
                     Sign out
                   </DropdownMenuItem>

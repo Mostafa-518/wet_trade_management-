@@ -6,6 +6,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Edit, Trash2, Eye } from 'lucide-react';
 import { Project } from '@/types/project';
 import { TableSelectionCheckbox } from '@/components/TableSelectionCheckbox';
+import { usePagination } from '@/hooks/usePagination';
+import { PaginationControls } from '@/components/PaginationControls';
 
 interface ProjectsTableContentProps {
   filteredProjects: Project[];
@@ -28,12 +30,23 @@ export function ProjectsTableContent({
   onEdit,
   onDelete
 }: ProjectsTableContentProps) {
+  const {
+    currentPage,
+    totalPages,
+    paginatedData,
+    goToPage,
+    hasNextPage,
+    hasPreviousPage,
+    totalItems,
+    itemsPerPage,
+  } = usePagination({ data: filteredProjects, itemsPerPage: 10 });
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Projects ({filteredProjects.length})</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
         <Table>
           <TableHeader>
             <TableRow>
@@ -51,7 +64,7 @@ export function ProjectsTableContent({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredProjects.map((project) => (
+            {paginatedData.map((project) => (
               <TableRow key={project.id}>
                 <TableCell>
                   <TableSelectionCheckbox
@@ -60,7 +73,7 @@ export function ProjectsTableContent({
                     ariaLabel={`Select project ${project.name}`}
                   />
                 </TableCell>
-                <TableCell>{project.name}</TableCell>
+                <TableCell className="font-medium">{project.name}</TableCell>
                 <TableCell>{project.code}</TableCell>
                 <TableCell>{project.location}</TableCell>
                 <TableCell className="text-right">
@@ -69,6 +82,7 @@ export function ProjectsTableContent({
                       variant="outline"
                       size="sm"
                       onClick={() => onViewDetail(project.id)}
+                      className="h-8 w-8 p-0"
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
@@ -77,6 +91,7 @@ export function ProjectsTableContent({
                         variant="outline"
                         size="sm"
                         onClick={() => onEdit(project)}
+                        className="h-8 w-8 p-0"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -86,6 +101,7 @@ export function ProjectsTableContent({
                         variant="outline"
                         size="sm"
                         onClick={() => onDelete(project.id)}
+                        className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -94,8 +110,25 @@ export function ProjectsTableContent({
                 </TableCell>
               </TableRow>
             ))}
+            {paginatedData.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                  No projects found.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
+        
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={goToPage}
+          hasNextPage={hasNextPage}
+          hasPreviousPage={hasPreviousPage}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+        />
       </CardContent>
     </Card>
   );
