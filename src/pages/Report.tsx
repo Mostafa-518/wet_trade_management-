@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -50,7 +51,7 @@ export function Report() {
     updateFilter('facilities', newFacilities);
   };
 
-  const handleNavigateToSubcontracts = () => {
+  const handleNavigateToFilteredSubcontracts = () => {
     // Create URL parameters from current filters
     const params = new URLSearchParams();
     
@@ -76,9 +77,9 @@ export function Report() {
       params.set('facilities', reportData.filters.facilities.join(','));
     }
     
-    // Navigate to subcontracts page with filters
+    // Navigate to the new filtered subcontracts page
     const queryString = params.toString();
-    navigate(`/subcontracts${queryString ? `?${queryString}` : ''}`);
+    navigate(`/reports/subcontracts${queryString ? `?${queryString}` : ''}`);
   };
 
   const handlePrint = () => {
@@ -314,7 +315,7 @@ export function Report() {
       <div className="flex justify-center print:break-inside-avoid">
         <Card 
           className="w-auto cursor-pointer hover:shadow-lg transition-shadow print:shadow-none print:cursor-default"
-          onClick={handleNavigateToSubcontracts}
+          onClick={handleNavigateToFilteredSubcontracts}
         >
           <CardContent className="pt-6 print:pt-4">
             <div className="text-center">

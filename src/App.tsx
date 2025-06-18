@@ -25,6 +25,7 @@ import { Responsibilities } from '@/pages/Responsibilities';
 import { Subcontracts } from '@/pages/Subcontracts';
 import { SubcontractDetail } from '@/pages/SubcontractDetail';
 import { Report } from '@/pages/Report';
+import { FilteredSubcontracts } from '@/pages/FilteredSubcontracts';
 import { Users } from '@/pages/Users';
 import { UserDetail } from '@/pages/UserDetail';
 import { ProfileSettings } from '@/pages/ProfileSettings';
@@ -166,6 +167,16 @@ function App() {
                 <Layout>
                   <DataProvider>
                     <Report />
+                  </DataProvider>
+                </Layout>
+              </AuthGuard>
+            } />
+            
+            <Route path="/reports/subcontracts" element={
+              <AuthGuard>
+                <Layout>
+                  <DataProvider>
+                    <FilteredSubcontracts />
                   </DataProvider>
                 </Layout>
               </AuthGuard>
