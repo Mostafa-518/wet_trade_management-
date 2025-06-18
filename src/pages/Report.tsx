@@ -1,13 +1,6 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import {
   Select,
   SelectContent,
@@ -16,10 +9,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { X, Printer } from 'lucide-react';
 import { useReportData } from '@/hooks/useReportData';
 import { Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { ReportTableView } from '@/components/report/ReportTableView';
+import { ReportGraphsView } from '@/components/report/ReportGraphsView';
 
 export function Report() {
   const navigate = useNavigate();
@@ -86,18 +82,31 @@ export function Report() {
     navigate(`/subcontracts${queryString ? `?${queryString}` : ''}`);
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 print:space-y-4">
       {/* Header Section */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Report</h1>
+      <div className="flex items-center justify-between print:justify-center">
+        <h1 className="text-3xl font-bold tracking-tight print:text-2xl">Report</h1>
+        <Button 
+          onClick={handlePrint} 
+          variant="outline" 
+          size="sm"
+          className="print:hidden"
+        >
+          <Printer className="h-4 w-4 mr-2" />
+          Print/PDF
+        </Button>
       </div>
 
       {/* Filter Cards Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 print:grid-cols-3 print:gap-2">
         {/* Present Data Card */}
-        <Card>
-          <CardHeader className="pb-3">
+        <Card className="print:shadow-none">
+          <CardHeader className="pb-3 print:pb-2">
             <CardTitle className="text-sm font-medium">Present Data:</CardTitle>
           </CardHeader>
           <CardContent>
@@ -109,7 +118,7 @@ export function Report() {
                 value={reportData.filters.presentData} 
                 onValueChange={(value) => updateFilter('presentData', value)}
               >
-                <SelectTrigger className="w-8 h-8 p-0 border-0">
+                <SelectTrigger className="w-8 h-8 p-0 border-0 print:hidden">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -125,17 +134,17 @@ export function Report() {
         </Card>
 
         {/* Empty Card for spacing */}
-        <Card className="opacity-0">
+        <Card className="opacity-0 print:hidden">
           <CardContent className="h-20"></CardContent>
         </Card>
 
         {/* Total Subcontracts Card */}
-        <Card>
-          <CardHeader className="pb-3">
+        <Card className="print:shadow-none">
+          <CardHeader className="pb-3 print:pb-2">
             <CardTitle className="text-sm font-medium">No. Of All Subcontract:</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-center">
+            <div className="text-2xl font-bold text-center print:text-lg">
               [{reportData.totalSubcontracts}] Subcontract
             </div>
           </CardContent>
@@ -143,16 +152,16 @@ export function Report() {
       </div>
 
       {/* Filter Section */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            <div className="space-y-2">
+      <Card className="print:shadow-none print:break-inside-avoid">
+        <CardContent className="pt-6 print:pt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 print:grid-cols-4 print:gap-2">
+            <div className="space-y-2 print:space-y-1">
               <label className="text-sm font-medium">Month:</label>
               <Select 
                 value={reportData.filters.month} 
                 onValueChange={(value) => updateFilter('month', value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="print:border-none print:shadow-none">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -165,13 +174,13 @@ export function Report() {
               </Select>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 print:space-y-1">
               <label className="text-sm font-medium">Year:</label>
               <Select 
                 value={reportData.filters.year} 
                 onValueChange={(value) => updateFilter('year', value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="print:border-none print:shadow-none">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -186,13 +195,13 @@ export function Report() {
 
             {/* Conditional filters based on Present Data selection */}
             {!isPresentDataByProject && (
-              <div className="space-y-2">
+              <div className="space-y-2 print:space-y-1">
                 <label className="text-sm font-medium">Location of work:</label>
                 <Select 
                   value={reportData.filters.location} 
                   onValueChange={(value) => updateFilter('location', value)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="print:border-none print:shadow-none">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -207,51 +216,49 @@ export function Report() {
             )}
 
             {isPresentDataByProject && (
-              <>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    {reportData.filters.projectFilterType === 'name' ? 'Project Name:' : 'Project Code:'}
-                  </label>
-                  <div className="flex gap-2">
-                    <Select 
-                      value={reportData.filters.projectFilterType === 'name' ? reportData.filters.projectName : reportData.filters.projectCode}
-                      onValueChange={(value) => updateFilter(reportData.filters.projectFilterType === 'name' ? 'projectName' : 'projectCode', value)}
-                    >
-                      <SelectTrigger className="flex-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {(reportData.filters.projectFilterType === 'name' ? filterOptions.projectNames : filterOptions.projectCodes).map((option) => (
-                          <SelectItem key={option} value={option}>
-                            {option}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Select 
-                      value={reportData.filters.projectFilterType}
-                      onValueChange={(value) => updateFilter('projectFilterType', value)}
-                    >
-                      <SelectTrigger className="w-20">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="name">Name</SelectItem>
-                        <SelectItem value="code">Code</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+              <div className="space-y-2 print:space-y-1">
+                <label className="text-sm font-medium">
+                  {reportData.filters.projectFilterType === 'name' ? 'Project Name:' : 'Project Code:'}
+                </label>
+                <div className="flex gap-2">
+                  <Select 
+                    value={reportData.filters.projectFilterType === 'name' ? reportData.filters.projectName : reportData.filters.projectCode}
+                    onValueChange={(value) => updateFilter(reportData.filters.projectFilterType === 'name' ? 'projectName' : 'projectCode', value)}
+                  >
+                    <SelectTrigger className="flex-1 print:border-none print:shadow-none">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(reportData.filters.projectFilterType === 'name' ? filterOptions.projectNames : filterOptions.projectCodes).map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select 
+                    value={reportData.filters.projectFilterType}
+                    onValueChange={(value) => updateFilter('projectFilterType', value)}
+                  >
+                    <SelectTrigger className="w-20 print:hidden">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="name">Name</SelectItem>
+                      <SelectItem value="code">Code</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              </>
+              </div>
             )}
 
-            <div className="space-y-2">
+            <div className="space-y-2 print:space-y-1">
               <label className="text-sm font-medium">Trades:</label>
               <Select 
                 value={reportData.filters.trades} 
                 onValueChange={(value) => updateFilter('trades', value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="print:border-none print:shadow-none">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -264,11 +271,11 @@ export function Report() {
               </Select>
             </div>
 
-            {/* NEW: Facilities Filter */}
-            <div className="space-y-2">
+            {/* Facilities Filter */}
+            <div className="space-y-2 print:space-y-1">
               <label className="text-sm font-medium">Facilities (Responsibilities):</label>
               <Select onValueChange={handleFacilityToggle}>
-                <SelectTrigger>
+                <SelectTrigger className="print:border-none print:shadow-none">
                   <SelectValue placeholder="Select facilities..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -283,14 +290,14 @@ export function Report() {
               
               {/* Show selected facilities */}
               {reportData.filters.facilities.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-2">
+                <div className="flex flex-wrap gap-1 mt-2 print:gap-0.5">
                   {reportData.filters.facilities.map((facility) => (
-                    <Badge key={facility} variant="secondary" className="flex items-center gap-1">
+                    <Badge key={facility} variant="secondary" className="flex items-center gap-1 print:text-xs">
                       {facility}
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-auto p-0 w-4 h-4"
+                        className="h-auto p-0 w-4 h-4 print:hidden"
                         onClick={() => removeFacility(facility)}
                       >
                         <X className="h-3 w-3" />
@@ -305,14 +312,14 @@ export function Report() {
       </Card>
 
       {/* Current Subcontracts Card */}
-      <div className="flex justify-center">
+      <div className="flex justify-center print:break-inside-avoid">
         <Card 
-          className="w-auto cursor-pointer hover:shadow-lg transition-shadow"
+          className="w-auto cursor-pointer hover:shadow-lg transition-shadow print:shadow-none print:cursor-default"
           onClick={handleNavigateToSubcontracts}
         >
-          <CardContent className="pt-6">
+          <CardContent className="pt-6 print:pt-4">
             <div className="text-center">
-              <div className="text-lg font-semibold">
+              <div className="text-lg font-semibold print:text-base">
                 No. Of Subcontract: [{reportData.currentSubcontracts}] Subcontract
               </div>
             </div>
@@ -320,52 +327,26 @@ export function Report() {
         </Card>
       </div>
 
-      {/* Results Table */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="font-semibold">Item</TableHead>
-                  <TableHead className="font-semibold">Average Rate</TableHead>
-                  <TableHead className="font-semibold">Total Amount</TableHead>
-                  <TableHead className="font-semibold">Wastage %</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {reportData.tableData.length > 0 ? (
-                  reportData.tableData.map((row, index) => (
-                    <TableRow key={index}>
-                      <TableCell className="font-medium">{row.item}</TableCell>
-                      <TableCell>{row.averageRate.toFixed(2)}</TableCell>
-                      <TableCell>{row.totalAmount.toLocaleString()}</TableCell>
-                      <TableCell>{row.wastage}%</TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center py-8 text-gray-500">
-                      No data available for the selected filters
-                    </TableCell>
-                  </TableRow>
-                )}
-                {/* Add empty rows if needed for consistent height */}
-                {reportData.tableData.length < 5 && 
-                  [...Array(5 - reportData.tableData.length)].map((_, index) => (
-                    <TableRow key={`empty-${index}`}>
-                      <TableCell>&nbsp;</TableCell>
-                      <TableCell>&nbsp;</TableCell>
-                      <TableCell>&nbsp;</TableCell>
-                      <TableCell>&nbsp;</TableCell>
-                    </TableRow>
-                  ))
-                }
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Tabs Section */}
+      <Tabs defaultValue="table" className="w-full print:hidden">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="table">Table View</TabsTrigger>
+          <TabsTrigger value="graphs">Graphs View</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="table" className="mt-6">
+          <ReportTableView tableData={reportData.tableData} />
+        </TabsContent>
+        
+        <TabsContent value="graphs" className="mt-6">
+          <ReportGraphsView tableData={reportData.tableData} />
+        </TabsContent>
+      </Tabs>
+
+      {/* Print-only table view */}
+      <div className="hidden print:block">
+        <ReportTableView tableData={reportData.tableData} />
+      </div>
     </div>
   );
 }
