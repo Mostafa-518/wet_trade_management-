@@ -18,34 +18,47 @@ export function Subcontracts() {
   const canModify = profile?.role !== 'viewer';
 
   useEffect(() => {
+    console.log('Subcontracts page - parsing URL parameters:', location.search);
     // Parse URL parameters to extract filters from report page
     const searchParams = new URLSearchParams(location.search);
     const filters: any = {};
     
     if (searchParams.get('month')) {
       filters.month = searchParams.get('month');
+      console.log('Found month filter:', filters.month);
     }
     if (searchParams.get('year')) {
       filters.year = searchParams.get('year');
+      console.log('Found year filter:', filters.year);
     }
     if (searchParams.get('location')) {
       filters.location = searchParams.get('location');
+      console.log('Found location filter:', filters.location);
     }
     if (searchParams.get('trades')) {
       filters.trades = searchParams.get('trades');
+      console.log('Found trades filter:', filters.trades);
     }
     if (searchParams.get('projectName')) {
       filters.projectName = searchParams.get('projectName');
+      console.log('Found projectName filter:', filters.projectName);
     }
     if (searchParams.get('projectCode')) {
       filters.projectCode = searchParams.get('projectCode');
+      console.log('Found projectCode filter:', filters.projectCode);
     }
     if (searchParams.get('facilities')) {
       filters.facilities = searchParams.get('facilities')?.split(',') || [];
+      console.log('Found facilities filter:', filters.facilities);
     }
+    
+    console.log('Final parsed filters:', filters);
     
     if (Object.keys(filters).length > 0) {
       setReportFilters(filters);
+      console.log('Setting report filters:', filters);
+    } else {
+      console.log('No filters found in URL');
     }
   }, [location.search]);
 
