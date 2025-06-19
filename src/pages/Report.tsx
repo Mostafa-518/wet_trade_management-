@@ -105,6 +105,23 @@ export function Report() {
     }
   };
 
+  const handleExportTableToPDF = async () => {
+    const result = await exportGraphsToPDF(reportData.filters);
+    
+    if (result.success) {
+      toast({
+        title: "Export Successful", 
+        description: "Table exported to PDF (print dialog opened)",
+      });
+    } else {
+      toast({
+        title: "Export Failed",
+        description: result.error || "Failed to export table",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleExportGraphs = async () => {
     const result = await exportGraphsToPDF(reportData.filters);
     
@@ -373,7 +390,7 @@ export function Report() {
         
         <TabsContent value="table" className="mt-6">
           <div className="space-y-4">
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-2">
               <Button 
                 onClick={handleExportTable}
                 variant="outline" 
@@ -382,6 +399,15 @@ export function Report() {
               >
                 <Download className="h-4 w-4 mr-2" />
                 Export Table to Excel
+              </Button>
+              <Button 
+                onClick={handleExportTableToPDF}
+                variant="outline" 
+                size="sm"
+                disabled={isLoading || reportData.tableData.length === 0}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export Table to PDF
               </Button>
             </div>
             <ReportTableView tableData={reportData.tableData} />
