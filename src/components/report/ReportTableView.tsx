@@ -1,13 +1,6 @@
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ReportTableData } from '@/types/report';
 
 interface ReportTableViewProps {
@@ -15,51 +8,49 @@ interface ReportTableViewProps {
 }
 
 export function ReportTableView({ tableData }: ReportTableViewProps) {
+  if (tableData.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        No data available for the table. Please adjust your filters.
+      </div>
+    );
+  }
+
   return (
-    <Card className="print:shadow-none">
-      <CardContent className="pt-6">
-        <div className="overflow-x-auto">
+    <div data-graphs-container>
+      <Card className="print:shadow-none">
+        <CardHeader>
+          <CardTitle>Report Data Table</CardTitle>
+        </CardHeader>
+        <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="font-semibold">Item</TableHead>
-                <TableHead className="font-semibold">Average Rate</TableHead>
-                <TableHead className="font-semibold">Total Amount</TableHead>
-                <TableHead className="font-semibold">Wastage %</TableHead>
+                <TableHead>Item</TableHead>
+                <TableHead className="text-right">Average Rate</TableHead>
+                <TableHead className="text-right">Total Amount</TableHead>
+                <TableHead className="text-right">Total Quantity</TableHead>
+                <TableHead className="text-right">Wastage %</TableHead>
+                <TableHead>Unit</TableHead>
+                <TableHead className="text-right">Count</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {tableData.length > 0 ? (
-                tableData.map((row, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium">{row.item}</TableCell>
-                    <TableCell>{row.averageRate.toFixed(2)}</TableCell>
-                    <TableCell>{row.totalAmount.toLocaleString()}</TableCell>
-                    <TableCell>{row.wastage}%</TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8 text-gray-500">
-                    No data available for the selected filters
-                  </TableCell>
+              {tableData.map((row, index) => (
+                <TableRow key={index}>
+                  <TableCell className="font-medium">{row.item}</TableCell>
+                  <TableCell className="text-right">${row.averageRate.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">${row.totalAmount.toLocaleString()}</TableCell>
+                  <TableCell className="text-right">{row.totalQuantity.toLocaleString()}</TableCell>
+                  <TableCell className="text-right">{row.wastage}%</TableCell>
+                  <TableCell>{row.unit}</TableCell>
+                  <TableCell className="text-right">{row.count}</TableCell>
                 </TableRow>
-              )}
-              {/* Add empty rows if needed for consistent height */}
-              {tableData.length < 5 && 
-                [...Array(5 - tableData.length)].map((_, index) => (
-                  <TableRow key={`empty-${index}`}>
-                    <TableCell>&nbsp;</TableCell>
-                    <TableCell>&nbsp;</TableCell>
-                    <TableCell>&nbsp;</TableCell>
-                    <TableCell>&nbsp;</TableCell>
-                  </TableRow>
-                ))
-              }
+              ))}
             </TableBody>
           </Table>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
