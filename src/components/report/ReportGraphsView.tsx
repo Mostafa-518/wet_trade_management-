@@ -36,7 +36,7 @@ export function ReportGraphsView({ tableData, subcontracts = [], isLoading = fal
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-graphs-container>
       {/* Project Comparison Analysis Chart */}
       <ProjectComparisonChart 
         tableData={tableData} 

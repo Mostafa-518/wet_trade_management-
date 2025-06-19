@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -10,15 +9,18 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { X, Printer } from 'lucide-react';
+import { X, Printer, Download } from 'lucide-react';
 import { useReportData } from '@/hooks/useReportData';
 import { Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ReportTableView } from '@/components/report/ReportTableView';
 import { ReportGraphsView } from '@/components/report/ReportGraphsView';
+import { useToast } from '@/hooks/use-toast';
+import { exportTableToExcel, exportGraphsToPDF } from '@/utils/report/reportExporter';
 
 export function Report() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { reportData, filterOptions, updateFilter, isLoading, filteredSubcontracts } = useReportData();
 
   if (isLoading) {
@@ -86,20 +88,55 @@ export function Report() {
     window.print();
   };
 
+  const handleExportTable = async () => {
+    const result = exportTableToExcel(reportData.tableData, reportData.filters);
+    
+    if (result.success) {
+      toast({
+        title: "Export Successful",
+        description: `Table data exported as ${result.filename}`,
+      });
+    } else {
+      toast({
+        title: "Export Failed",
+        description: result.error || "Failed to export table data",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleExportGraphs = async () => {
+    const result = await exportGraphsToPDF(reportData.filters);
+    
+    if (result.success) {
+      toast({
+        title: "Export Successful", 
+        description: "Graphs exported to PDF (print dialog opened)",
+      });
+    } else {
+      toast({
+        title: "Export Failed",
+        description: result.error || "Failed to export graphs",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-6 print:space-y-4">
       {/* Header Section */}
       <div className="flex items-center justify-between print:justify-center">
         <h1 className="text-3xl font-bold tracking-tight print:text-2xl">Report</h1>
-        <Button 
-          onClick={handlePrint} 
-          variant="outline" 
-          size="sm"
-          className="print:hidden"
-        >
-          <Printer className="h-4 w-4 mr-2" />
-          Print/PDF
-        </Button>
+        <div className="flex gap-2 print:hidden">
+          <Button 
+            onClick={handlePrint} 
+            variant="outline" 
+            size="sm"
+          >
+            <Printer className="h-4 w-4 mr-2" />
+            Print/PDF
+          </Button>
+        </div>
       </div>
 
       {/* Filter Cards Row */}
@@ -335,15 +372,41 @@ export function Report() {
         </TabsList>
         
         <TabsContent value="table" className="mt-6">
-          <ReportTableView tableData={reportData.tableData} />
+          <div className="space-y-4">
+            <div className="flex justify-end">
+              <Button 
+                onClick={handleExportTable}
+                variant="outline" 
+                size="sm"
+                disabled={isLoading || reportData.tableData.length === 0}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export Table to Excel
+              </Button>
+            </div>
+            <ReportTableView tableData={reportData.tableData} />
+          </div>
         </TabsContent>
         
         <TabsContent value="graphs" className="mt-6">
-          <ReportGraphsView 
-            tableData={reportData.tableData} 
-            subcontracts={filteredSubcontracts}
-            isLoading={isLoading}
-          />
+          <div className="space-y-4">
+            <div className="flex justify-end">
+              <Button 
+                onClick={handleExportGraphs}
+                variant="outline" 
+                size="sm"
+                disabled={isLoading || reportData.tableData.length === 0}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export Graphs to PDF
+              </Button>
+            </div>
+            <ReportGraphsView 
+              tableData={reportData.tableData} 
+              subcontracts={filteredSubcontracts}
+              isLoading={isLoading}
+            />
+          </div>
         </TabsContent>
       </Tabs>
 
