@@ -25,6 +25,31 @@ export function useSubcontractSearch(subcontracts: Subcontract[]) {
     }
   }, [subcontracts]);
 
+  const filterTradeItems = (subcontract: Subcontract, searchLower: string, isTradeFilter: boolean, isItemFilter: boolean) => {
+    if (!subcontract.tradeItems || subcontract.tradeItems.length === 0) {
+      return subcontract;
+    }
+
+    let filteredTradeItems = subcontract.tradeItems;
+
+    if (isTradeFilter || isItemFilter) {
+      filteredTradeItems = subcontract.tradeItems.filter(tradeItem => {
+        if (isTradeFilter) {
+          return tradeItem.trade && tradeItem.trade.toLowerCase().includes(searchLower);
+        }
+        if (isItemFilter) {
+          return tradeItem.item && tradeItem.item.toLowerCase().includes(searchLower);
+        }
+        return false;
+      });
+    }
+
+    return {
+      ...subcontract,
+      tradeItems: filteredTradeItems
+    };
+  };
+
   const handleSimpleSearch = (value: string) => {
     setSearchTerm(value);
     setAdvancedSearchConditions([]); // Clear advanced search when using simple search
@@ -36,7 +61,7 @@ export function useSubcontractSearch(subcontracts: Subcontract[]) {
 
     const searchLower = value.toLowerCase();
     
-    const filtered = subcontracts.filter(item => {
+    const filtered = subcontracts.map(item => {
       const projectName = getProjectName(item.project);
       const projectCode = getProjectCode(item.project);
       const subcontractorName = getSubcontractorName(item.subcontractor);
@@ -63,8 +88,18 @@ export function useSubcontractSearch(subcontracts: Subcontract[]) {
           return match;
         });
 
-      return basicFieldsMatch || tradeItemsMatch || responsibilitiesMatch;
-    });
+      // If basic fields or responsibilities match, return the full subcontract
+      if (basicFieldsMatch || responsibilitiesMatch) {
+        return item;
+      }
+
+      // If trade items match, filter the trade items to show only matching ones
+      if (tradeItemsMatch) {
+        return filterTradeItems(item, searchLower, true, true);
+      }
+
+      return null;
+    }).filter(Boolean) as Subcontract[];
     
     setFilteredData(filtered);
   };
@@ -79,12 +114,17 @@ export function useSubcontractSearch(subcontracts: Subcontract[]) {
       return;
     }
 
-    const filtered = subcontracts.filter(item => {
+    const filtered = subcontracts.map(item => {
       const projectName = getProjectName(item.project);
       const projectCode = getProjectCode(item.project);
       const subcontractorName = getSubcontractorName(item.subcontractor);
       
-      return conditions.every(condition => {
+      let hasTradeFilter = false;
+      let hasItemFilter = false;
+      let tradeFilterValue = '';
+      let itemFilterValue = '';
+      
+      const nonTradeConditionsPassed = conditions.every(condition => {
         const conditionLower = condition.value.toLowerCase();
         
         switch (condition.field) {
@@ -97,11 +137,15 @@ export function useSubcontractSearch(subcontracts: Subcontract[]) {
           case 'subcontractor':
             return subcontractorName.toLowerCase().includes(conditionLower);
           case 'trade':
+            hasTradeFilter = true;
+            tradeFilterValue = conditionLower;
             return item.tradeItems && item.tradeItems.length > 0 && 
               item.tradeItems.some(tradeItem => 
                 tradeItem.trade && tradeItem.trade.toLowerCase().includes(conditionLower)
               );
           case 'item':
+            hasItemFilter = true;
+            itemFilterValue = conditionLower;
             return item.tradeItems && item.tradeItems.length > 0 && 
               item.tradeItems.some(tradeItem => 
                 tradeItem.item && tradeItem.item.toLowerCase().includes(conditionLower)
@@ -117,7 +161,40 @@ export function useSubcontractSearch(subcontracts: Subcontract[]) {
             return false;
         }
       });
-    });
+
+      if (!nonTradeConditionsPassed) {
+        return null;
+      }
+
+      // If there are trade or item filters, filter the trade items
+      if (hasTradeFilter || hasItemFilter) {
+        let filteredTradeItems = item.tradeItems || [];
+        
+        if (hasTradeFilter && hasItemFilter) {
+          // Both trade and item filters must match on the same trade item
+          filteredTradeItems = filteredTradeItems.filter(tradeItem => {
+            const tradeMatch = tradeItem.trade && tradeItem.trade.toLowerCase().includes(tradeFilterValue);
+            const itemMatch = tradeItem.item && tradeItem.item.toLowerCase().includes(itemFilterValue);
+            return tradeMatch && itemMatch;
+          });
+        } else if (hasTradeFilter) {
+          filteredTradeItems = filteredTradeItems.filter(tradeItem => 
+            tradeItem.trade && tradeItem.trade.toLowerCase().includes(tradeFilterValue)
+          );
+        } else if (hasItemFilter) {
+          filteredTradeItems = filteredTradeItems.filter(tradeItem => 
+            tradeItem.item && tradeItem.item.toLowerCase().includes(itemFilterValue)
+          );
+        }
+
+        return {
+          ...item,
+          tradeItems: filteredTradeItems
+        };
+      }
+
+      return item;
+    }).filter(Boolean) as Subcontract[];
     
     console.log('Filtered results:', filtered.length, 'out of', subcontracts.length);
     setFilteredData(filtered);

@@ -17,7 +17,7 @@ export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any
       return subcontracts;
     }
     
-    const filtered = subcontracts.filter(subcontract => {
+    const filtered = subcontracts.map(subcontract => {
       console.log(`\n--- Processing Subcontract ${subcontract.contractId || subcontract.contract_number} ---`);
       console.log('Full subcontract object:', subcontract);
       
@@ -32,7 +32,7 @@ export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any
           const subcontractMonth = new Date(dateField).getMonth();
           if (subcontractMonth !== monthIndex) {
             console.log(`❌ Month filter failed: expected ${reportFilters.month} (${monthIndex}), got month ${subcontractMonth}`);
-            return false;
+            return null;
           }
           console.log(`✅ Month filter passed: ${reportFilters.month}`);
         }
@@ -45,7 +45,7 @@ export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any
           const subcontractYear = new Date(dateField).getFullYear().toString();
           if (subcontractYear !== reportFilters.year) {
             console.log(`❌ Year filter failed: expected ${reportFilters.year}, got ${subcontractYear}`);
-            return false;
+            return null;
           }
           console.log(`✅ Year filter passed: ${reportFilters.year}`);
         }
@@ -66,7 +66,7 @@ export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any
         
         if (!project) {
           console.log(`❌ Location filter failed: No project found for ID ${projectId}`);
-          return false;
+          return null;
         }
         
         const projectLocation = project.location;
@@ -74,29 +74,10 @@ export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any
         
         if (projectLocation !== reportFilters.location) {
           console.log(`❌ Location filter failed: expected "${reportFilters.location}", got "${projectLocation}"`);
-          return false;
+          return null;
         }
         
         console.log(`✅ Location filter passed: ${reportFilters.location}`);
-      }
-
-      // Trade filter
-      if (reportFilters.trades && reportFilters.trades !== 'all' && reportFilters.trades !== 'All') {
-        const tradeItems = subcontract.tradeItems || subcontract.subcontract_trade_items || [];
-        const hasMatchingTrade = tradeItems.some(item => {
-          // Handle different data structures
-          const tradeName = item.trade || 
-                           (item.trade_items && item.trade_items.trades && item.trade_items.trades.name) ||
-                           (item.tradeItem && item.tradeItem.trade && item.tradeItem.trade.name);
-          
-          return tradeName && tradeName.toLowerCase().includes(reportFilters.trades.toLowerCase());
-        });
-        
-        if (!hasMatchingTrade) {
-          console.log(`❌ Trade filter failed: no matching trade "${reportFilters.trades}"`);
-          return false;
-        }
-        console.log(`✅ Trade filter passed: ${reportFilters.trades}`);
       }
 
       // Project name filter
@@ -105,7 +86,7 @@ export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any
         const projectName = getProjectName(projectId);
         if (projectName !== reportFilters.projectName) {
           console.log(`❌ Project name filter failed: expected "${reportFilters.projectName}", got "${projectName}"`);
-          return false;
+          return null;
         }
         console.log(`✅ Project name filter passed: ${reportFilters.projectName}`);
       }
@@ -116,7 +97,7 @@ export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any
         const projectCode = getProjectCode(projectId);
         if (projectCode !== reportFilters.projectCode) {
           console.log(`❌ Project code filter failed: expected "${reportFilters.projectCode}", got "${projectCode}"`);
-          return false;
+          return null;
         }
         console.log(`✅ Project code filter passed: ${reportFilters.projectCode}`);
       }
@@ -132,19 +113,17 @@ export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any
                                [];
         
         console.log(`Subcontract responsibilities RAW:`, responsibilities);
-        console.log(`Type of responsibilities:`, typeof responsibilities);
-        console.log(`Is responsibilities an array:`, Array.isArray(responsibilities));
         
         let responsibilityNames: string[] = [];
         
         if (!responsibilities || !Array.isArray(responsibilities)) {
           console.log(`❌ FACILITIES FILTER FAILED: No valid responsibilities array`);
-          return false;
+          return null;
         }
         
         if (responsibilities.length === 0) {
           console.log(`❌ FACILITIES FILTER FAILED: Empty responsibilities array`);
-          return false;
+          return null;
         }
         
         // Extract responsibility names from different data structures
@@ -152,7 +131,6 @@ export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any
           if (typeof resp === 'string') {
             return resp;
           } else if (typeof resp === 'object' && resp !== null) {
-            // Handle different object structures
             return resp.name || 
                    (resp.responsibilities && resp.responsibilities.name) ||
                    resp.responsibility || 
@@ -170,16 +148,54 @@ export function useSubcontractFiltering(subcontracts: any[], reportFilters?: any
           
           if (!isPresent) {
             console.log(`❌ FACILITIES FILTER FAILED: Missing facility "${selectedFacility}"`);
-            return false;
+            return null;
           }
         }
         
         console.log(`✅ FACILITIES FILTER PASSED: All ${reportFilters.facilities.length} facilities are present`);
       }
 
+      // Trade filter - NEW: Filter at trade item level
+      if (reportFilters.trades && reportFilters.trades !== 'all' && reportFilters.trades !== 'All') {
+        console.log(`🔍 TRADE FILTER - ITEM LEVEL`);
+        console.log(`Selected trade: ${reportFilters.trades}`);
+        
+        const tradeItems = subcontract.tradeItems || subcontract.subcontract_trade_items || [];
+        
+        if (!tradeItems || tradeItems.length === 0) {
+          console.log(`❌ Trade filter failed: no trade items`);
+          return null;
+        }
+
+        // Filter trade items to only include matching trades
+        const filteredTradeItems = tradeItems.filter(item => {
+          const tradeName = item.trade || 
+                           (item.trade_items && item.trade_items.trades && item.trade_items.trades.name) ||
+                           (item.tradeItem && item.tradeItem.trade && item.tradeItem.trade.name);
+          
+          const matches = tradeName && tradeName.toLowerCase().includes(reportFilters.trades.toLowerCase());
+          console.log(`  - Trade item "${tradeName}": ${matches ? '✅ MATCHES' : '❌ NO MATCH'}`);
+          return matches;
+        });
+
+        if (filteredTradeItems.length === 0) {
+          console.log(`❌ Trade filter failed: no matching trade items`);
+          return null;
+        }
+
+        console.log(`✅ Trade filter passed: ${filteredTradeItems.length} matching trade items`);
+        
+        // Return subcontract with only matching trade items
+        return {
+          ...subcontract,
+          tradeItems: filteredTradeItems,
+          subcontract_trade_items: filteredTradeItems
+        };
+      }
+
       console.log(`✅ Subcontract ${subcontract.contractId || subcontract.contract_number} passed all filters`);
-      return true;
-    });
+      return subcontract;
+    }).filter(Boolean);
 
     console.log('\n=== FILTER RESULTS ===');
     console.log('Filtered subcontracts count:', filtered.length);
