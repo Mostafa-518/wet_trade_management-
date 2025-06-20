@@ -1,21 +1,11 @@
-
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from '@/hooks/useAuth';
-import { QueryProvider } from '@/components/providers/QueryProvider';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Index } from '@/pages/Index';
+import { Login } from '@/pages/Login';
+import { SignUp } from '@/pages/SignUp';
 import { AuthGuard } from '@/components/AuthGuard';
 import { Layout } from '@/components/Layout';
 import { DataProvider } from '@/contexts/DataContext';
-import { Toaster } from '@/components/ui/toaster';
-import { ROUTES } from '@/config/routes';
-
-// Auth pages
-import { Login } from '@/pages/Login';
-import { SignUp } from '@/pages/SignUp';
-
-// Protected pages
-import Index from '@/pages/Index';
-import { Dashboard } from '@/pages/Dashboard';
 import { Projects } from '@/pages/Projects';
 import { ProjectDetail } from '@/pages/ProjectDetail';
 import { Subcontractors } from '@/pages/Subcontractors';
@@ -29,149 +19,171 @@ import { Report } from '@/pages/Report';
 import { FilteredSubcontracts } from '@/pages/FilteredSubcontracts';
 import { Users } from '@/pages/Users';
 import { UserDetail } from '@/pages/UserDetail';
-import { ProfileSettings } from '@/pages/ProfileSettings';
-import NotFound from '@/pages/NotFound';
-
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-  withDataProvider?: boolean;
-}
-
-function ProtectedRoute({ children, withDataProvider = true }: ProtectedRouteProps) {
-  const content = withDataProvider ? (
-    <DataProvider>{children}</DataProvider>
-  ) : (
-    children
-  );
-
-  return (
-    <AuthGuard>
-      <Layout>{content}</Layout>
-    </AuthGuard>
-  );
-}
+import { Profile } from '@/pages/Profile';
+import { Dashboard } from '@/pages/Dashboard';
+import { Alerts } from '@/pages/Alerts';
 
 function App() {
   return (
-    <QueryProvider>
-      <AuthProvider>
-        <Router>
-          <Routes>
-            {/* Auth routes */}
-            <Route path={ROUTES.LOGIN} element={
-              <AuthGuard requireAuth={false}>
-                <Login />
-              </AuthGuard>
-            } />
-            <Route path={ROUTES.SIGNUP} element={
-              <AuthGuard requireAuth={false}>
-                <SignUp />
-              </AuthGuard>
-            } />
-            
-            {/* Protected routes */}
-            <Route path={ROUTES.HOME} element={
-              <ProtectedRoute>
+    <Router>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/" element={
+          <AuthGuard>
+            <Layout>
+              <DataProvider>
                 <Index />
-              </ProtectedRoute>
-            } />
-            
-            <Route path={ROUTES.DASHBOARD} element={
-              <ProtectedRoute>
+              </DataProvider>
+            </Layout>
+          </AuthGuard>
+        } />
+        <Route path="/dashboard" element={
+          <AuthGuard>
+            <Layout>
+              <DataProvider>
                 <Dashboard />
-              </ProtectedRoute>
-            } />
-            
-            <Route path={ROUTES.PROJECTS} element={
-              <ProtectedRoute>
+              </DataProvider>
+            </Layout>
+          </AuthGuard>
+        } />
+        <Route path="/alerts" element={
+          <AuthGuard>
+            <Layout>
+              <DataProvider>
+                <Alerts />
+              </DataProvider>
+            </Layout>
+          </AuthGuard>
+        } />
+        <Route path="/projects" element={
+          <AuthGuard>
+            <Layout>
+              <DataProvider>
                 <Projects />
-              </ProtectedRoute>
-            } />
-            
-            <Route path={ROUTES.PROJECT_DETAIL} element={
-              <ProtectedRoute>
+              </DataProvider>
+            </Layout>
+          </AuthGuard>
+        } />
+        <Route path="/projects/:id" element={
+          <AuthGuard>
+            <Layout>
+              <DataProvider>
                 <ProjectDetail />
-              </ProtectedRoute>
-            } />
-            
-            <Route path={ROUTES.SUBCONTRACTORS} element={
-              <ProtectedRoute>
+              </DataProvider>
+            </Layout>
+          </AuthGuard>
+        } />
+        <Route path="/subcontractors" element={
+          <AuthGuard>
+            <Layout>
+              <DataProvider>
                 <Subcontractors />
-              </ProtectedRoute>
-            } />
-            
-            <Route path={ROUTES.SUBCONTRACTOR_DETAIL} element={
-              <ProtectedRoute>
+              </DataProvider>
+            </Layout>
+          </AuthGuard>
+        } />
+        <Route path="/subcontractors/:id" element={
+          <AuthGuard>
+            <Layout>
+              <DataProvider>
                 <SubcontractorDetail />
-              </ProtectedRoute>
-            } />
-            
-            <Route path={ROUTES.TRADES} element={
-              <ProtectedRoute>
+              </DataProvider>
+            </Layout>
+          </AuthGuard>
+        } />
+        <Route path="/trades" element={
+          <AuthGuard>
+            <Layout>
+              <DataProvider>
                 <Trades />
-              </ProtectedRoute>
-            } />
-            
-            <Route path={ROUTES.TRADE_DETAIL} element={
-              <ProtectedRoute>
+              </DataProvider>
+            </Layout>
+          </AuthGuard>
+        } />
+        <Route path="/trades/:tradeId" element={
+          <AuthGuard>
+            <Layout>
+              <DataProvider>
                 <TradeDetail />
-              </ProtectedRoute>
-            } />
-            
-            <Route path={ROUTES.RESPONSIBILITIES} element={
-              <ProtectedRoute>
+              </DataProvider>
+            </Layout>
+          </AuthGuard>
+        } />
+        <Route path="/responsibilities" element={
+          <AuthGuard>
+            <Layout>
+              <DataProvider>
                 <Responsibilities />
-              </ProtectedRoute>
-            } />
-            
-            <Route path={ROUTES.SUBCONTRACTS} element={
-              <ProtectedRoute>
+              </DataProvider>
+            </Layout>
+          </AuthGuard>
+        } />
+        <Route path="/subcontracts" element={
+          <AuthGuard>
+            <Layout>
+              <DataProvider>
                 <Subcontracts />
-              </ProtectedRoute>
-            } />
-            
-            <Route path={ROUTES.SUBCONTRACT_DETAIL} element={
-              <ProtectedRoute>
+              </DataProvider>
+            </Layout>
+          </AuthGuard>
+        } />
+        <Route path="/subcontracts/:id" element={
+          <AuthGuard>
+            <Layout>
+              <DataProvider>
                 <SubcontractDetail />
-              </ProtectedRoute>
-            } />
-            
-            <Route path={ROUTES.REPORT} element={
-              <ProtectedRoute>
+              </DataProvider>
+            </Layout>
+          </AuthGuard>
+        } />
+        <Route path="/report" element={
+          <AuthGuard>
+            <Layout>
+              <DataProvider>
                 <Report />
-              </ProtectedRoute>
-            } />
-            
-            <Route path={ROUTES.FILTERED_SUBCONTRACTS} element={
-              <ProtectedRoute>
+              </DataProvider>
+            </Layout>
+          </AuthGuard>
+        } />
+        <Route path="/reports/subcontracts" element={
+          <AuthGuard>
+            <Layout>
+              <DataProvider>
                 <FilteredSubcontracts />
-              </ProtectedRoute>
-            } />
-            
-            <Route path={ROUTES.USERS} element={
-              <ProtectedRoute>
+              </DataProvider>
+            </Layout>
+          </AuthGuard>
+        } />
+        <Route path="/users" element={
+          <AuthGuard>
+            <Layout>
+              <DataProvider>
                 <Users />
-              </ProtectedRoute>
-            } />
-            
-            <Route path={ROUTES.USER_DETAIL} element={
-              <ProtectedRoute>
+              </DataProvider>
+            </Layout>
+          </AuthGuard>
+        } />
+        <Route path="/users/:id" element={
+          <AuthGuard>
+            <Layout>
+              <DataProvider>
                 <UserDetail />
-              </ProtectedRoute>
-            } />
-            
-            <Route path={ROUTES.PROFILE} element={
-              <ProtectedRoute withDataProvider={false}>
-                <ProfileSettings />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <Toaster />
-        </Router>
-      </AuthProvider>
-    </QueryProvider>
+              </DataProvider>
+            </Layout>
+          </AuthGuard>
+        } />
+        <Route path="/profile" element={
+          <AuthGuard>
+            <Layout>
+              <DataProvider>
+                <Profile />
+              </DataProvider>
+            </Layout>
+          </AuthGuard>
+        } />
+      </Routes>
+    </Router>
   );
 }
 

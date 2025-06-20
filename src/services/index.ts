@@ -1,4 +1,3 @@
-
 export { projectService } from './projectService';
 export { subcontractorService } from './subcontractorService';
 export { tradeService } from './tradeService';
@@ -11,6 +10,7 @@ export { userProfileService } from './userProfileService';
 export { UserService } from './userService';
 export { AuthService } from './authService';
 export { default as ApiService, apiService } from './apiService';
+export { alertService } from './alertService';
 
 // Export types
 export type { UserProfile } from './types';

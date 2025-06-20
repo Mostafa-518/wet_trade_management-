@@ -18,6 +18,7 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { useReportData } from '@/hooks/useReportData';
+import { DashboardAlerts } from '@/components/DashboardAlerts';
 
 export function Dashboard() {
   const navigate = useNavigate();
@@ -116,6 +117,9 @@ export function Dashboard() {
         <h2 className="text-2xl font-bold">Dashboard</h2>
         <p className="text-muted-foreground">Subcontract Management Analytics</p>
       </div>
+
+      {/* Alert System */}
+      <DashboardAlerts />
 
       {/* KPI Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

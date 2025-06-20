@@ -16,6 +16,7 @@ export const ROUTES = {
   RESPONSIBILITIES: '/responsibilities',
   SUBCONTRACTS: '/subcontracts',
   SUBCONTRACT_DETAIL: '/subcontracts/:id',
+  ALERTS: '/alerts',
   REPORT: '/report',
   FILTERED_SUBCONTRACTS: '/reports/subcontracts',
   USERS: '/users',
