@@ -63,28 +63,48 @@ export function Subcontracts() {
   }, [location.search]);
 
   const handleCreateNew = () => {
-    if (!canModify) return;
+    console.log('Create new subcontract clicked, canModify:', canModify);
+    if (!canModify) {
+      console.log('User cannot modify - showing toast');
+      toast({
+        title: "Access Denied",
+        description: "You don't have permission to create subcontracts",
+        variant: "destructive"
+      });
+      return;
+    }
+    console.log('Opening stepper modal');
     setShowStepper(true);
   };
 
   const handleViewDetail = (contractId: string) => {
+    console.log('Viewing subcontract detail:', contractId);
     navigate(`/subcontracts/${contractId}`);
   };
 
   const handleSaveSubcontract = async (data: any) => {
+    console.log('handleSaveSubcontract called with data:', data);
     try {
+      console.log('Calling addSubcontract...');
       await addSubcontract(data);
+      console.log('addSubcontract completed successfully');
       setShowStepper(false);
     } catch (error) {
+      console.error('Error in handleSaveSubcontract:', error);
       // Error handling is already done in the hook
     }
   };
+
+  console.log('Subcontracts page render - showStepper:', showStepper, 'canModify:', canModify);
 
   if (showStepper) {
     return (
       <SubcontractStepper
         onSave={handleSaveSubcontract}
-        onClose={() => setShowStepper(false)}
+        onClose={() => {
+          console.log('Closing stepper');
+          setShowStepper(false);
+        }}
       />
     );
   }
