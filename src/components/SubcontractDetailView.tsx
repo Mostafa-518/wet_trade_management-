@@ -9,6 +9,8 @@ import { SubcontractTradeItemsTable } from '@/components/subcontract/Subcontract
 import { SubcontractResponsibilities } from '@/components/subcontract/SubcontractResponsibilities';
 import { SubcontractDescription } from '@/components/subcontract/SubcontractDescription';
 import { useData } from '@/contexts/DataContext';
+import { generateSubcontractPDF } from '@/utils/pdfGenerator';
+import { useToast } from '@/hooks/use-toast';
 
 interface SubcontractDetailViewProps {
   subcontract: Subcontract;
@@ -18,6 +20,7 @@ interface SubcontractDetailViewProps {
 
 export function SubcontractDetailView({ subcontract, onBack, onEdit }: SubcontractDetailViewProps) {
   const { projects, subcontractors } = useData();
+  const { toast } = useToast();
   
   const projectData = projects.find(p => p.id === subcontract.project);
   const subcontractorData = subcontractors.find(s => s.id === subcontract.subcontractor);
@@ -28,6 +31,29 @@ export function SubcontractDetailView({ subcontract, onBack, onEdit }: Subcontra
       currency: 'EGP',
       minimumFractionDigits: 0
     }).format(amount);
+  };
+
+  const handleDownloadPDF = () => {
+    try {
+      generateSubcontractPDF({
+        subcontract,
+        projectName: projectData?.name || 'Unknown Project',
+        subcontractorName: subcontractorData?.companyName || 'Unknown Subcontractor',
+        subcontractorData
+      });
+      
+      toast({
+        title: "PDF Generated",
+        description: "Contract PDF has been downloaded successfully"
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate PDF. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -92,7 +118,7 @@ export function SubcontractDetailView({ subcontract, onBack, onEdit }: Subcontra
               <Edit className="h-4 w-4 mr-2" />
               Edit
             </Button>
-            <Button variant="outline" className="shadow-sm">
+            <Button variant="outline" onClick={handleDownloadPDF} className="shadow-sm">
               <Download className="h-4 w-4 mr-2" />
               Download PDF
             </Button>
