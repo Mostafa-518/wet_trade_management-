@@ -10,13 +10,17 @@ export function useAlerts() {
   const { data: alerts = [], isLoading } = useQuery({
     queryKey: ['alerts'],
     queryFn: () => alertService.getWithDetails(),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 30 * 1000, // 30 seconds
+    refetchInterval: 60 * 1000, // Refetch every 60 seconds
+    refetchIntervalInBackground: true, // Continue refetching when tab is not active
   });
 
   const { data: unreadCount = 0 } = useQuery({
     queryKey: ['alerts', 'unread-count'],
     queryFn: () => alertService.getUnreadCount(),
-    staleTime: 1 * 60 * 1000, // 1 minute
+    staleTime: 15 * 1000, // 15 seconds
+    refetchInterval: 30 * 1000, // Refetch every 30 seconds
+    refetchIntervalInBackground: true, // Continue refetching when tab is not active
   });
 
   const markAsReadMutation = useMutation({

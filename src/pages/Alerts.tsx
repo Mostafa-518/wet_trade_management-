@@ -4,9 +4,16 @@ import { AlertCard } from '@/components/AlertCard';
 import { useAlerts } from '@/hooks/useAlerts';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 
 export function Alerts() {
   const { alerts, isLoading, markAsRead, markAsDismissed } = useAlerts();
+  const queryClient = useQueryClient();
+
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['alerts'] });
+    queryClient.invalidateQueries({ queryKey: ['alerts', 'unread-count'] });
+  };
 
   if (isLoading) {
     return (
@@ -31,7 +38,7 @@ export function Alerts() {
             System notifications and warnings
           </p>
         </div>
-        <Button variant="outline" onClick={() => window.location.reload()}>
+        <Button variant="outline" onClick={handleRefresh}>
           <RefreshCw className="h-4 w-4 mr-2" />
           Refresh
         </Button>
