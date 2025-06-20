@@ -1,7 +1,8 @@
 
 import { useState, useEffect } from 'react';
 import { Subcontract } from '@/types/subcontract';
-import { useSubcontractHelpers } from './useSubcontractHelpers';
+import { useSearchFiltering } from './useSearchFiltering';
+import { useTradeItemFiltering } from './useTradeItemFiltering';
 
 interface SearchCondition {
   field: string;
@@ -12,7 +13,15 @@ export function useSubcontractSearch(subcontracts: Subcontract[]) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredData, setFilteredData] = useState(subcontracts);
   const [advancedSearchConditions, setAdvancedSearchConditions] = useState<SearchCondition[]>([]);
-  const { getProjectName, getProjectCode, getSubcontractorName } = useSubcontractHelpers();
+  
+  const {
+    checkBasicFieldsMatch,
+    checkResponsibilitiesMatch,
+    checkTradeItemsMatch,
+    evaluateAdvancedCondition,
+  } = useSearchFiltering();
+  
+  const { filterTradeItems, filterTradeItemsForAdvancedSearch } = useTradeItemFiltering();
 
   // Update filtered data when subcontracts change
   useEffect(() => {
@@ -24,31 +33,6 @@ export function useSubcontractSearch(subcontracts: Subcontract[]) {
       setFilteredData(subcontracts);
     }
   }, [subcontracts]);
-
-  const filterTradeItems = (subcontract: Subcontract, searchLower: string, isTradeFilter: boolean, isItemFilter: boolean) => {
-    if (!subcontract.tradeItems || subcontract.tradeItems.length === 0) {
-      return subcontract;
-    }
-
-    let filteredTradeItems = subcontract.tradeItems;
-
-    if (isTradeFilter || isItemFilter) {
-      filteredTradeItems = subcontract.tradeItems.filter(tradeItem => {
-        if (isTradeFilter) {
-          return tradeItem.trade && tradeItem.trade.toLowerCase().includes(searchLower);
-        }
-        if (isItemFilter) {
-          return tradeItem.item && tradeItem.item.toLowerCase().includes(searchLower);
-        }
-        return false;
-      });
-    }
-
-    return {
-      ...subcontract,
-      tradeItems: filteredTradeItems
-    };
-  };
 
   const handleSimpleSearch = (value: string) => {
     setSearchTerm(value);
@@ -62,31 +46,14 @@ export function useSubcontractSearch(subcontracts: Subcontract[]) {
     const searchLower = value.toLowerCase();
     
     const filtered = subcontracts.map(item => {
-      const projectName = getProjectName(item.project);
-      const projectCode = getProjectCode(item.project);
-      const subcontractorName = getSubcontractorName(item.subcontractor);
-      
       // Check basic fields
-      const basicFieldsMatch = 
-        item.contractId.toLowerCase().includes(searchLower) ||
-        projectName.toLowerCase().includes(searchLower) ||
-        projectCode.toLowerCase().includes(searchLower) ||
-        subcontractorName.toLowerCase().includes(searchLower);
+      const basicFieldsMatch = checkBasicFieldsMatch(item, searchLower);
 
       // Check trade items
-      const tradeItemsMatch = item.tradeItems && item.tradeItems.length > 0 && 
-        item.tradeItems.some(tradeItem => {
-          const tradeMatch = tradeItem.trade && tradeItem.trade.toLowerCase().includes(searchLower);
-          const itemMatch = tradeItem.item && tradeItem.item.toLowerCase().includes(searchLower);
-          return tradeMatch || itemMatch;
-        });
+      const tradeItemsMatch = checkTradeItemsMatch(item, searchLower);
 
       // Check responsibilities
-      const responsibilitiesMatch = item.responsibilities && item.responsibilities.length > 0 &&
-        item.responsibilities.some(resp => {
-          const match = resp && resp.toLowerCase().includes(searchLower);
-          return match;
-        });
+      const responsibilitiesMatch = checkResponsibilitiesMatch(item, searchLower);
 
       // If basic fields or responsibilities match, return the full subcontract
       if (basicFieldsMatch || responsibilitiesMatch) {
@@ -115,50 +82,23 @@ export function useSubcontractSearch(subcontracts: Subcontract[]) {
     }
 
     const filtered = subcontracts.map(item => {
-      const projectName = getProjectName(item.project);
-      const projectCode = getProjectCode(item.project);
-      const subcontractorName = getSubcontractorName(item.subcontractor);
-      
       let hasTradeFilter = false;
       let hasItemFilter = false;
       let tradeFilterValue = '';
       let itemFilterValue = '';
       
       const nonTradeConditionsPassed = conditions.every(condition => {
-        const conditionLower = condition.value.toLowerCase();
-        
         switch (condition.field) {
-          case 'contractId':
-            return item.contractId.toLowerCase().includes(conditionLower);
-          case 'project':
-            return projectName.toLowerCase().includes(conditionLower);
-          case 'projectCode':
-            return projectCode.toLowerCase().includes(conditionLower);
-          case 'subcontractor':
-            return subcontractorName.toLowerCase().includes(conditionLower);
           case 'trade':
             hasTradeFilter = true;
-            tradeFilterValue = conditionLower;
-            return item.tradeItems && item.tradeItems.length > 0 && 
-              item.tradeItems.some(tradeItem => 
-                tradeItem.trade && tradeItem.trade.toLowerCase().includes(conditionLower)
-              );
+            tradeFilterValue = condition.value.toLowerCase();
+            return evaluateAdvancedCondition(item, condition);
           case 'item':
             hasItemFilter = true;
-            itemFilterValue = conditionLower;
-            return item.tradeItems && item.tradeItems.length > 0 && 
-              item.tradeItems.some(tradeItem => 
-                tradeItem.item && tradeItem.item.toLowerCase().includes(conditionLower)
-              );
-          case 'responsibilities':
-            return item.responsibilities && item.responsibilities.length > 0 &&
-              item.responsibilities.some(resp => 
-                resp && resp.toLowerCase().includes(conditionLower)
-              );
-          case 'status':
-            return item.status.toLowerCase().includes(conditionLower);
+            itemFilterValue = condition.value.toLowerCase();
+            return evaluateAdvancedCondition(item, condition);
           default:
-            return false;
+            return evaluateAdvancedCondition(item, condition);
         }
       });
 
@@ -168,29 +108,13 @@ export function useSubcontractSearch(subcontracts: Subcontract[]) {
 
       // If there are trade or item filters, filter the trade items
       if (hasTradeFilter || hasItemFilter) {
-        let filteredTradeItems = item.tradeItems || [];
-        
-        if (hasTradeFilter && hasItemFilter) {
-          // Both trade and item filters must match on the same trade item
-          filteredTradeItems = filteredTradeItems.filter(tradeItem => {
-            const tradeMatch = tradeItem.trade && tradeItem.trade.toLowerCase().includes(tradeFilterValue);
-            const itemMatch = tradeItem.item && tradeItem.item.toLowerCase().includes(itemFilterValue);
-            return tradeMatch && itemMatch;
-          });
-        } else if (hasTradeFilter) {
-          filteredTradeItems = filteredTradeItems.filter(tradeItem => 
-            tradeItem.trade && tradeItem.trade.toLowerCase().includes(tradeFilterValue)
-          );
-        } else if (hasItemFilter) {
-          filteredTradeItems = filteredTradeItems.filter(tradeItem => 
-            tradeItem.item && tradeItem.item.toLowerCase().includes(itemFilterValue)
-          );
-        }
-
-        return {
-          ...item,
-          tradeItems: filteredTradeItems
-        };
+        return filterTradeItemsForAdvancedSearch(
+          item, 
+          hasTradeFilter, 
+          hasItemFilter, 
+          tradeFilterValue, 
+          itemFilterValue
+        );
       }
 
       return item;
