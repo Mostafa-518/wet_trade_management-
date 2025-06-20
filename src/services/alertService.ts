@@ -8,7 +8,7 @@ export class AlertService extends BaseService<Alert, AlertInsert, AlertUpdate> {
   }
 
   async getUnreadCount() {
-    const { count, error } = await this.supabase
+    const { count, error } = await this.client
       .from('alerts')
       .select('*', { count: 'exact', head: true })
       .eq('is_read', false)
@@ -19,7 +19,7 @@ export class AlertService extends BaseService<Alert, AlertInsert, AlertUpdate> {
   }
 
   async markAsRead(id: string) {
-    const { error } = await this.supabase
+    const { error } = await this.client
       .from('alerts')
       .update({ is_read: true, updated_at: new Date().toISOString() })
       .eq('id', id);
@@ -28,7 +28,7 @@ export class AlertService extends BaseService<Alert, AlertInsert, AlertUpdate> {
   }
 
   async markAsDismissed(id: string) {
-    const { error } = await this.supabase
+    const { error } = await this.client
       .from('alerts')
       .update({ is_dismissed: true, updated_at: new Date().toISOString() })
       .eq('id', id);
@@ -37,7 +37,7 @@ export class AlertService extends BaseService<Alert, AlertInsert, AlertUpdate> {
   }
 
   async getWithDetails() {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.client
       .from('alerts')
       .select(`
         *,
