@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -5,7 +6,6 @@ import { X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { FormData, TradeItem, SubcontractStepperProps } from '@/types/subcontract';
 import { ProjectSubcontractorStep } from '@/components/subcontract/ProjectSubcontractorStep';
-import { TradeItemForm } from '@/components/subcontract/TradeItemForm';
 import { TradeItemsList } from '@/components/subcontract/TradeItemsList';
 import { ResponsibilitiesStep } from '@/components/subcontract/ResponsibilitiesStep';
 import { DocumentsReviewStep } from '@/components/subcontract/DocumentsReviewStep';
@@ -15,7 +15,7 @@ import { StepperNavigation } from '@/components/subcontract/StepperNavigation';
 
 export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps) {
   const { toast } = useToast();
-  const { subcontracts } = useData();
+  const { subcontracts, trades, tradeItems, responsibilities } = useData();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
     project: '',
@@ -29,16 +29,6 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
     parentSubcontractId: ''
   });
   const [isSaving, setIsSaving] = useState(false);
-
-  const [currentTradeItem, setCurrentTradeItem] = useState<Partial<TradeItem>>({
-    trade: '',
-    item: '',
-    unit: '',
-    quantity: 0,
-    unitPrice: 0,
-    total: 0,
-    wastagePercentage: 0
-  });
 
   const steps = [
     'Project & Subcontractor',
@@ -97,59 +87,6 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
       default:
         return true;
     }
-  };
-
-  const addTradeItem = () => {
-    if (!currentTradeItem.trade || !currentTradeItem.item || !currentTradeItem.quantity || !currentTradeItem.unitPrice) {
-      toast({
-        title: "Incomplete Item",
-        description: "Please fill all fields for the trade item",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Create a unique ID using timestamp and random number to ensure uniqueness
-    // even for the same trade item with different quantities/prices
-    const newItem: TradeItem = {
-      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      trade: currentTradeItem.trade!,
-      item: currentTradeItem.item!,
-      unit: currentTradeItem.unit!,
-      quantity: currentTradeItem.quantity!,
-      unitPrice: currentTradeItem.unitPrice!,
-      total: currentTradeItem.total!,
-      wastagePercentage: currentTradeItem.wastagePercentage || 0
-    };
-
-    console.log('Adding new trade item:', newItem);
-
-    setFormData(prev => ({
-      ...prev,
-      tradeItems: [...prev.tradeItems, newItem]
-    }));
-
-    setCurrentTradeItem({
-      trade: '',
-      item: '',
-      unit: '',
-      quantity: 0,
-      unitPrice: 0,
-      total: 0,
-      wastagePercentage: 0
-    });
-
-    toast({
-      title: "Item Added",
-      description: "Trade item has been added to the contract"
-    });
-  };
-
-  const removeTradeItem = (id: string) => {
-    setFormData(prev => ({
-      ...prev,
-      tradeItems: prev.tradeItems.filter(item => item.id !== id)
-    }));
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -325,26 +262,19 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
         return <ProjectSubcontractorStep formData={formData} setFormData={setFormData} />;
       case 2:
         return (
-          <div className="space-y-6">
-            <TradeItemForm
-              currentTradeItem={currentTradeItem}
-              setCurrentTradeItem={setCurrentTradeItem}
-              onAddItem={addTradeItem}
-            />
-            <TradeItemsList
-              selectedItems={formData.tradeItems}
-              onItemsChange={(items) => setFormData(prev => ({ ...prev, tradeItems: items }))}
-              trades={[]}
-              tradeItems={[]}
-            />
-          </div>
+          <TradeItemsList
+            selectedItems={formData.tradeItems}
+            onItemsChange={(items) => setFormData(prev => ({ ...prev, tradeItems: items }))}
+            trades={trades || []}
+            tradeItems={tradeItems || []}
+          />
         );
       case 3:
         return (
           <ResponsibilitiesStep
             selectedResponsibilities={formData.responsibilities}
             onResponsibilitiesChange={(responsibilities) => setFormData(prev => ({ ...prev, responsibilities }))}
-            responsibilities={[]}
+            responsibilities={responsibilities || []}
           />
         );
       case 4:
