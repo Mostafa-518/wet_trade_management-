@@ -8,7 +8,6 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
 import { Responsibility, ResponsibilitySearchFilters } from '@/types/responsibility';
-import { responsibilityCategories } from '@/data/responsibilitiesData';
 import { useData } from '@/contexts/DataContext';
 import { useToast } from '@/hooks/use-toast';
 import { usePagination } from '@/hooks/usePagination';

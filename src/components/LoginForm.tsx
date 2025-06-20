@@ -33,7 +33,7 @@ export function LoginForm() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Sign In</CardTitle>
-          <p className="text-gray-600">Welcome back to Construction Management</p>
+          <p className="text-gray-600">Welcome back to Wet Trades - Orascom</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

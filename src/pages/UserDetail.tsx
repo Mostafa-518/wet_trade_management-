@@ -2,7 +2,6 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { UserDetailView } from '@/components/UserDetailView';
-import { mockUsers } from '@/data/usersData';
 
 export function UserDetail() {
   const { userId } = useParams<{ userId: string }>();

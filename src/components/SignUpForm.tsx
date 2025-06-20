@@ -34,7 +34,7 @@ export function SignUpForm() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Sign Up</CardTitle>
-          <p className="text-gray-600">Create your Construction Management account</p>
+          <p className="text-gray-600">Create your Wet Trades account</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

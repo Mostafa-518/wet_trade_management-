@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Save } from 'lucide-react';
 import { Responsibility, ResponsibilityFormData } from '@/types/responsibility';
-import { responsibilityCategories } from '@/data/responsibilitiesData';
 
 interface ResponsibilityFormProps {
   responsibility?: Responsibility | null;
