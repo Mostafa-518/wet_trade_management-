@@ -1,117 +1,66 @@
 
 import React, { createContext, useContext } from 'react';
 import { DataContextType } from '@/types/dataContext';
-import { useProjects } from '@/hooks/useProjects';
-import { useSubcontractors } from '@/hooks/useSubcontractors';
-import { useTrades } from '@/hooks/useTrades';
-import { useTradeItems } from '@/hooks/useTradeItems';
-import { useResponsibilities } from '@/hooks/useResponsibilities';
-import { useSubcontracts } from '@/hooks/useSubcontracts';
+import { ProjectProvider, useProjectContext } from './ProjectContext';
+import { SubcontractorProvider, useSubcontractorContext } from './SubcontractorContext';
+import { TradeProvider, useTradeContext } from './TradeContext';
+import { ResponsibilityProvider, useResponsibilityContext } from './ResponsibilityContext';
+import { SubcontractProvider, useSubcontractContext } from './SubcontractContext';
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
-export function DataProvider({ children }: { children: React.ReactNode }) {
-  const {
-    projects,
-    addProject,
-    updateProject,
-    deleteProject,
-    isLoading: projectsLoading
-  } = useProjects();
+function DataContextProvider({ children }: { children: React.ReactNode }) {
+  const projectContext = useProjectContext();
+  const subcontractorContext = useSubcontractorContext();
+  const tradeContext = useTradeContext();
+  const responsibilityContext = useResponsibilityContext();
+  const subcontractContext = useSubcontractContext();
 
-  const {
-    subcontractors,
-    addSubcontractor,
-    updateSubcontractor,
-    deleteSubcontractor,
-    isLoading: subcontractorsLoading
-  } = useSubcontractors();
+  const isLoading = projectContext.isLoading || 
+                   subcontractorContext.isLoading || 
+                   tradeContext.isLoading || 
+                   responsibilityContext.isLoading || 
+                   subcontractContext.isLoading;
 
-  const {
-    trades,
-    addTrade,
-    updateTrade,
-    deleteTrade,
-    bulkDeleteTrades,
-    isLoading: tradesLoading
-  } = useTrades();
-
-  const {
-    tradeItems,
-    addTradeItem,
-    updateTradeItem,
-    deleteTradeItem,
-    bulkDeleteTradeItems,
-    isLoading: tradeItemsLoading
-  } = useTradeItems();
-
-  const {
-    responsibilities,
-    addResponsibility,
-    updateResponsibility,
-    deleteResponsibility,
-    isLoading: responsibilitiesLoading
-  } = useResponsibilities();
-
-  // Only call useSubcontracts when we have the required dependencies
-  const dependenciesReady = !tradesLoading && !tradeItemsLoading && !responsibilitiesLoading && !projectsLoading;
-  
-  const {
-    subcontracts,
-    addSubcontract,
-    updateSubcontract,
-    deleteSubcontract,
-    deleteManySubcontracts,
-    isLoading: subcontractsLoading
-  } = useSubcontracts(
-    dependenciesReady ? trades : [],
-    dependenciesReady ? tradeItems : [],
-    dependenciesReady ? responsibilities : [],
-    dependenciesReady ? projects : []
-  );
-
-  const isLoading = projectsLoading || subcontractorsLoading || responsibilitiesLoading || tradesLoading || tradeItemsLoading || subcontractsLoading;
-
-  // Always provide a valid context value
   const value: DataContextType = {
     // Projects
-    projects: projects || [],
-    addProject,
-    updateProject,
-    deleteProject,
+    projects: projectContext.projects,
+    addProject: projectContext.addProject,
+    updateProject: projectContext.updateProject,
+    deleteProject: projectContext.deleteProject,
     
     // Subcontractors
-    subcontractors: subcontractors || [],
-    addSubcontractor,
-    updateSubcontractor,
-    deleteSubcontractor,
+    subcontractors: subcontractorContext.subcontractors,
+    addSubcontractor: subcontractorContext.addSubcontractor,
+    updateSubcontractor: subcontractorContext.updateSubcontractor,
+    deleteSubcontractor: subcontractorContext.deleteSubcontractor,
     
     // Trades
-    trades: trades || [],
-    addTrade,
-    updateTrade,
-    deleteTrade,
-    bulkDeleteTrades,
+    trades: tradeContext.trades,
+    addTrade: tradeContext.addTrade,
+    updateTrade: tradeContext.updateTrade,
+    deleteTrade: tradeContext.deleteTrade,
+    bulkDeleteTrades: tradeContext.bulkDeleteTrades,
     
     // Trade Items
-    tradeItems: tradeItems || [],
-    addTradeItem,
-    updateTradeItem,
-    deleteTradeItem,
-    bulkDeleteTradeItems,
+    tradeItems: tradeContext.tradeItems,
+    addTradeItem: tradeContext.addTradeItem,
+    updateTradeItem: tradeContext.updateTradeItem,
+    deleteTradeItem: tradeContext.deleteTradeItem,
+    bulkDeleteTradeItems: tradeContext.bulkDeleteTradeItems,
     
     // Responsibilities
-    responsibilities: responsibilities || [],
-    addResponsibility,
-    updateResponsibility,
-    deleteResponsibility,
+    responsibilities: responsibilityContext.responsibilities,
+    addResponsibility: responsibilityContext.addResponsibility,
+    updateResponsibility: responsibilityContext.updateResponsibility,
+    deleteResponsibility: responsibilityContext.deleteResponsibility,
     
     // Subcontracts
-    subcontracts: subcontracts || [],
-    addSubcontract,
-    updateSubcontract,
-    deleteSubcontract,
-    deleteManySubcontracts,
+    subcontracts: subcontractContext.subcontracts,
+    addSubcontract: subcontractContext.addSubcontract,
+    updateSubcontract: subcontractContext.updateSubcontract,
+    deleteSubcontract: subcontractContext.deleteSubcontract,
+    deleteManySubcontracts: subcontractContext.deleteManySubcontracts,
     
     // Loading state
     isLoading
@@ -121,6 +70,24 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     <DataContext.Provider value={value}>
       {children}
     </DataContext.Provider>
+  );
+}
+
+export function DataProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <ProjectProvider>
+      <SubcontractorProvider>
+        <ResponsibilityProvider>
+          <TradeProvider>
+            <SubcontractProvider>
+              <DataContextProvider>
+                {children}
+              </DataContextProvider>
+            </SubcontractProvider>
+          </TradeProvider>
+        </ResponsibilityProvider>
+      </SubcontractorProvider>
+    </ProjectProvider>
   );
 }
 
