@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Upload } from 'lucide-react';
 import { FormData } from '@/types/subcontract';
 import { formatCurrency } from '@/utils/currency';
+import { useSubcontractHelpers } from '@/hooks/subcontract/useSubcontractHelpers';
 
 interface DocumentsReviewStepProps {
   formData: FormData;
@@ -23,6 +24,8 @@ export function DocumentsReviewStep({
   onFileUpload,
   renderExtraFields,
 }: DocumentsReviewStepProps) {
+  const { getProjectName, getSubcontractorName } = useSubcontractHelpers();
+
   return (
     <div className="space-y-6">
       <div>
@@ -54,8 +57,8 @@ export function DocumentsReviewStep({
       <div className="border rounded-lg p-4 space-y-4">
         <h3 className="font-semibold">Contract Summary</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-          <div><strong>Project:</strong> {formData.project}</div>
-          <div><strong>Subcontractor:</strong> {formData.subcontractor}</div>
+          <div><strong>Project:</strong> {getProjectName(formData.project)}</div>
+          <div><strong>Subcontractor:</strong> {getSubcontractorName(formData.subcontractor)}</div>
           <div><strong>Total Items:</strong> {formData.tradeItems.length}</div>
           <div className="md:col-span-2"><strong>Contract Total:</strong> <span className="text-lg font-semibold text-primary">{formatCurrency(totalAmount)}</span></div>
         </div>
@@ -85,4 +88,3 @@ export function DocumentsReviewStep({
     </div>
   );
 }
-
