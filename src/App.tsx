@@ -122,7 +122,7 @@ function App() {
               </AuthGuard>
             } />
             
-            <Route path="/trades/:id" element={
+            <Route path="/trades/:tradeId" element={
               <AuthGuard>
                 <Layout>
                   <DataProvider>
