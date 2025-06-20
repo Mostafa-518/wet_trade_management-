@@ -10,16 +10,16 @@ export function useAlerts() {
   const { data: alerts = [], isLoading } = useQuery({
     queryKey: ['alerts'],
     queryFn: () => alertService.getWithDetails(),
-    staleTime: 30 * 1000, // 30 seconds
-    refetchInterval: 60 * 1000, // Refetch every 60 seconds
+    staleTime: 0, // Always consider data stale for immediate refresh
+    refetchInterval: 5 * 1000, // Refetch every 5 seconds
     refetchIntervalInBackground: true, // Continue refetching when tab is not active
   });
 
   const { data: unreadCount = 0 } = useQuery({
     queryKey: ['alerts', 'unread-count'],
     queryFn: () => alertService.getUnreadCount(),
-    staleTime: 15 * 1000, // 15 seconds
-    refetchInterval: 30 * 1000, // Refetch every 30 seconds
+    staleTime: 0, // Always consider data stale for immediate refresh
+    refetchInterval: 3 * 1000, // Refetch every 3 seconds
     refetchIntervalInBackground: true, // Continue refetching when tab is not active
   });
 
