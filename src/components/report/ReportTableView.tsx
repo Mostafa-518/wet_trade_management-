@@ -8,6 +8,14 @@ interface ReportTableViewProps {
 }
 
 export function ReportTableView({ tableData }: ReportTableViewProps) {
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'EGP',
+      minimumFractionDigits: 0
+    }).format(amount);
+  };
+
   if (tableData.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
@@ -39,8 +47,8 @@ export function ReportTableView({ tableData }: ReportTableViewProps) {
               {tableData.map((row, index) => (
                 <TableRow key={index}>
                   <TableCell className="font-medium">{row.item}</TableCell>
-                  <TableCell className="text-right">${row.averageRate.toFixed(2)}</TableCell>
-                  <TableCell className="text-right">${row.totalAmount.toLocaleString()}</TableCell>
+                  <TableCell className="text-right">{formatCurrency(row.averageRate)}</TableCell>
+                  <TableCell className="text-right">{formatCurrency(row.totalAmount)}</TableCell>
                   <TableCell className="text-right">{row.totalQuantity.toLocaleString()}</TableCell>
                   <TableCell className="text-right">{row.wastage}%</TableCell>
                   <TableCell>{row.unit}</TableCell>
