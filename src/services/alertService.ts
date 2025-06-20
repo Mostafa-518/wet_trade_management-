@@ -1,13 +1,41 @@
 
 import { BaseService } from './base/BaseService';
-import { Alert, AlertInsert, AlertUpdate } from '@/types/alert';
+import { Alert } from '@/types/alert';
 
-export class AlertService extends BaseService<Alert, AlertInsert, AlertUpdate> {
+export class AlertService extends BaseService {
   constructor() {
     super('alerts');
   }
 
-  async getUnreadCount() {
+  async getAlerts(): Promise<Alert[]> {
+    const { data, error } = await this.client
+      .from('alerts')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
+  }
+
+  async markAsRead(alertId: string): Promise<void> {
+    const { error } = await this.client
+      .from('alerts')
+      .update({ is_read: true })
+      .eq('id', alertId);
+    
+    if (error) throw error;
+  }
+
+  async dismissAlert(alertId: string): Promise<void> {
+    const { error } = await this.client
+      .from('alerts')
+      .update({ is_dismissed: true })
+      .eq('id', alertId);
+    
+    if (error) throw error;
+  }
+
+  async getUnreadCount(): Promise<number> {
     const { count, error } = await this.client
       .from('alerts')
       .select('*', { count: 'exact', head: true })
@@ -16,39 +44,6 @@ export class AlertService extends BaseService<Alert, AlertInsert, AlertUpdate> {
     
     if (error) throw error;
     return count || 0;
-  }
-
-  async markAsRead(id: string) {
-    const { error } = await this.client
-      .from('alerts')
-      .update({ is_read: true, updated_at: new Date().toISOString() })
-      .eq('id', id);
-    
-    if (error) throw error;
-  }
-
-  async markAsDismissed(id: string) {
-    const { error } = await this.client
-      .from('alerts')
-      .update({ is_dismissed: true, updated_at: new Date().toISOString() })
-      .eq('id', id);
-    
-    if (error) throw error;
-  }
-
-  async getWithDetails() {
-    const { data, error } = await this.client
-      .from('alerts')
-      .select(`
-        *,
-        projects(name, code),
-        subcontractors(company_name, representative_name)
-      `)
-      .eq('is_dismissed', false)
-      .order('created_at', { ascending: false });
-    
-    if (error) throw error;
-    return data;
   }
 }
 
