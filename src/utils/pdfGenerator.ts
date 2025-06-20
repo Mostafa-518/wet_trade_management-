@@ -201,8 +201,8 @@ export const generateSubcontractPDF = ({
     doc.text(splitDescription, 20, yPosition);
   }
 
-  // Footer
-  const pageCount = doc.internal.getNumberOfPages();
+  // Footer - Fixed the method call
+  const pageCount = (doc as any).internal.pages.length - 1; // Fixed: use pages.length instead of getNumberOfPages()
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     doc.setFontSize(8);
