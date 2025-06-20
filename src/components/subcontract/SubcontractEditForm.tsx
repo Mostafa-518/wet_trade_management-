@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +6,7 @@ import { Subcontract } from '@/types/subcontract';
 import { useData } from '@/contexts/DataContext';
 import { useSubcontractHelpers } from '@/hooks/subcontract/useSubcontractHelpers';
 import { SubcontractEditFields } from './SubcontractEditFields';
-import { TradeItemsList } from './TradeItemsList';
+import { TradeItemForm } from './TradeItemForm';
 import { ResponsibilitiesStep } from './ResponsibilitiesStep';
 
 interface SubcontractEditFormProps {
@@ -120,7 +119,7 @@ export function SubcontractEditForm({ subcontract, onSave, onClose }: Subcontrac
         </TabsContent>
 
         <TabsContent value="trades" className="space-y-4">
-          <TradeItemsList
+          <TradeItemForm
             selectedItems={selectedTradeItems || []}
             onItemsChange={setSelectedTradeItems}
             trades={trades || []}
