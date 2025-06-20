@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { SubcontractStepperProps } from '@/types/subcontract';
 import { ProjectSubcontractorStep } from '@/components/subcontract/ProjectSubcontractorStep';
-import { TradeItemsList } from '@/components/subcontract/TradeItemsList';
+import { TradeItemForm } from '@/components/subcontract/TradeItemForm';
 import { ResponsibilitiesStep } from '@/components/subcontract/ResponsibilitiesStep';
 import { DocumentsReviewStep } from '@/components/subcontract/DocumentsReviewStep';
 import { ContractTypeSelector } from '@/components/subcontract/ContractTypeSelector';
@@ -98,7 +97,7 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
         return <ProjectSubcontractorStep formData={formData} setFormData={setFormData} />;
       case 2:
         return (
-          <TradeItemsList
+          <TradeItemForm
             selectedItems={formData.tradeItems}
             onItemsChange={(items) => setFormData(prev => ({ ...prev, tradeItems: items }))}
             trades={trades || []}

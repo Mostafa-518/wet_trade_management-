@@ -1,162 +1,229 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus } from 'lucide-react';
-import { useData } from '@/contexts/DataContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Plus, Trash2 } from 'lucide-react';
 import { TradeItem } from '@/types/subcontract';
+import { Trade } from '@/types/trade';
+import { TradeItem as TradeItemType } from '@/types/trade';
 
 interface TradeItemFormProps {
-  currentTradeItem: Partial<TradeItem>;
-  setCurrentTradeItem: React.Dispatch<React.SetStateAction<Partial<TradeItem>>>;
-  onAddItem: () => void;
+  selectedItems: TradeItem[];
+  onItemsChange: (items: TradeItem[]) => void;
+  trades: Trade[];
+  tradeItems: TradeItemType[];
 }
 
-export function TradeItemForm({ currentTradeItem, setCurrentTradeItem, onAddItem }: TradeItemFormProps) {
-  const { trades, tradeItems } = useData();
-  const [availableItems, setAvailableItems] = useState<any[]>([]);
+export function TradeItemForm({ selectedItems, onItemsChange, trades, tradeItems }: TradeItemFormProps) {
+  const [formData, setFormData] = useState({
+    trade: '',
+    item: '',
+    quantity: '',
+    unitPrice: '',
+    wastagePercentage: '0'
+  });
 
-  // Filter items based on selected trade
-  useEffect(() => {
-    if (currentTradeItem.trade) {
-      const selectedTrade = trades.find(t => t.name === currentTradeItem.trade);
-      if (selectedTrade) {
-        const items = tradeItems.filter(item => item.trade_id === selectedTrade.id);
-        setAvailableItems(items);
-      }
-    } else {
-      setAvailableItems([]);
-    }
-  }, [currentTradeItem.trade, trades, tradeItems]);
-
-  // Calculate total when quantity, unit price, or wastage changes
-  useEffect(() => {
-    const quantity = currentTradeItem.quantity || 0;
-    const unitPrice = currentTradeItem.unitPrice || 0;
-    const wastagePercentage = currentTradeItem.wastagePercentage || 0;
-    
-    const baseAmount = quantity * unitPrice;
-    const wastageAmount = baseAmount * (wastagePercentage / 100);
-    const total = baseAmount + wastageAmount;
-    
-    setCurrentTradeItem(prev => ({ ...prev, total }));
-  }, [currentTradeItem.quantity, currentTradeItem.unitPrice, currentTradeItem.wastagePercentage, setCurrentTradeItem]);
-
-  const handleTradeChange = (tradeName: string) => {
-    setCurrentTradeItem(prev => ({
-      ...prev,
-      trade: tradeName,
-      item: '',
-      unit: ''
-    }));
+  const getTradeItems = (tradeId: string) => {
+    return tradeItems?.filter(item => item.trade_id === tradeId) || [];
   };
 
-  const handleItemChange = (itemName: string) => {
-    const selectedItem = availableItems.find(item => item.name === itemName);
-    setCurrentTradeItem(prev => ({
-      ...prev,
-      item: itemName,
-      unit: selectedItem?.unit || ''
-    }));
+  const getSelectedTradeItem = () => {
+    if (!formData.trade || !formData.item) return null;
+    return tradeItems?.find(item => item.trade_id === formData.trade && item.name === formData.item) || null;
+  };
+
+  const handleAddItem = () => {
+    const selectedTradeItem = getSelectedTradeItem();
+    const selectedTrade = trades?.find(t => t.id === formData.trade);
+    
+    const quantity = parseFloat(formData.quantity);
+    const unitPrice = parseFloat(formData.unitPrice);
+    const wastagePercentage = parseFloat(formData.wastagePercentage) || 0;
+    
+    if (!selectedTradeItem || !selectedTrade || quantity <= 0 || unitPrice <= 0) {
+      return;
+    }
+
+    const baseTotal = quantity * unitPrice;
+    const wastageAmount = baseTotal * (wastagePercentage / 100);
+    const total = baseTotal + wastageAmount;
+
+    const newItem: TradeItem = {
+      id: `temp-${Date.now()}`,
+      trade: selectedTrade.name,
+      item: selectedTradeItem.name,
+      unit: selectedTradeItem.unit || '',
+      quantity: quantity,
+      unitPrice: unitPrice,
+      total: total,
+      wastagePercentage: wastagePercentage
+    };
+
+    onItemsChange([...(selectedItems || []), newItem]);
+    
+    // Reset form
+    setFormData({
+      trade: '',
+      item: '',
+      quantity: '',
+      unitPrice: '',
+      wastagePercentage: '0'
+    });
+  };
+
+  const handleRemoveItem = (id: string) => {
+    onItemsChange((selectedItems || []).filter(item => item.id !== id));
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'EGP',
+      minimumFractionDigits: 0
+    }).format(amount);
   };
 
   return (
-    <div className="space-y-4 p-4 border rounded-lg">
-      <h3 className="font-semibold">Add Trade Item</h3>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div>
-          <Label htmlFor="trade">Trade</Label>
-          <Select value={currentTradeItem.trade || ''} onValueChange={handleTradeChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select trade" />
-            </SelectTrigger>
-            <SelectContent>
-              {trades.map(trade => (
-                <SelectItem key={trade.id} value={trade.name}>
-                  {trade.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Add Trade Item</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label>Trade</Label>
+              <Select 
+                value={formData.trade} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, trade: value, item: '' }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select trade" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(trades || []).map(trade => (
+                    <SelectItem key={trade.id} value={trade.id}>
+                      {trade.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-        <div>
-          <Label htmlFor="item">Item</Label>
-          <Select value={currentTradeItem.item || ''} onValueChange={handleItemChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select item" />
-            </SelectTrigger>
-            <SelectContent>
-              {availableItems.map(item => (
-                <SelectItem key={item.id} value={item.name}>
-                  {item.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+            <div>
+              <Label>Item</Label>
+              <Select 
+                value={formData.item} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, item: value }))}
+                disabled={!formData.trade}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select item" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getTradeItems(formData.trade).map(item => (
+                    <SelectItem key={item.id} value={item.name}>
+                      {item.name} ({item.unit})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-        <div>
-          <Label htmlFor="unit">Unit</Label>
-          <Input
-            id="unit"
-            value={currentTradeItem.unit || ''}
-            onChange={(e) => setCurrentTradeItem(prev => ({ ...prev, unit: e.target.value }))}
-            placeholder="Unit"
-            readOnly
-          />
-        </div>
+            <div>
+              <Label>Quantity</Label>
+              <Input
+                type="number"
+                value={formData.quantity}
+                onChange={(e) => setFormData(prev => ({ ...prev, quantity: e.target.value }))}
+                placeholder="Enter quantity"
+              />
+            </div>
 
-        <div>
-          <Label htmlFor="quantity">Quantity</Label>
-          <Input
-            id="quantity"
-            type="number"
-            value={currentTradeItem.quantity || ''}
-            onChange={(e) => setCurrentTradeItem(prev => ({ ...prev, quantity: Number(e.target.value) }))}
-            placeholder="Quantity"
-          />
-        </div>
+            <div>
+              <Label>Unit Price (EGP)</Label>
+              <Input
+                type="number"
+                value={formData.unitPrice}
+                onChange={(e) => setFormData(prev => ({ ...prev, unitPrice: e.target.value }))}
+                placeholder="Enter unit price"
+              />
+            </div>
 
-        <div>
-          <Label htmlFor="unitPrice">Unit Price</Label>
-          <Input
-            id="unitPrice"
-            type="number"
-            step="0.01"
-            value={currentTradeItem.unitPrice || ''}
-            onChange={(e) => setCurrentTradeItem(prev => ({ ...prev, unitPrice: Number(e.target.value) }))}
-            placeholder="Unit price"
-          />
-        </div>
+            <div>
+              <Label>Wastage %</Label>
+              <Input
+                type="number"
+                value={formData.wastagePercentage}
+                onChange={(e) => setFormData(prev => ({ ...prev, wastagePercentage: e.target.value }))}
+                placeholder="Enter wastage percentage"
+                min="0"
+              />
+            </div>
+          </div>
 
-        <div>
-          <Label htmlFor="wastagePercentage">Wastage %</Label>
-          <Input
-            id="wastagePercentage"
-            type="number"
-            step="0.1"
-            min="0"
-            max="100"
-            value={currentTradeItem.wastagePercentage || ''}
-            onChange={(e) => setCurrentTradeItem(prev => ({ ...prev, wastagePercentage: Number(e.target.value) }))}
-            placeholder="Wastage percentage"
-          />
-        </div>
-      </div>
+          <Button 
+            onClick={handleAddItem} 
+            className="w-full"
+            disabled={!formData.trade || !formData.item || !formData.quantity || !formData.unitPrice}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Item
+          </Button>
+        </CardContent>
+      </Card>
 
-      <div className="flex items-center gap-4">
-        <div className="text-lg font-semibold">
-          Total: EGP {(currentTradeItem.total || 0).toLocaleString()}
-        </div>
-        <Button onClick={onAddItem} className="ml-auto">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Item
-        </Button>
-      </div>
+      {/* Selected Items List */}
+      {(selectedItems || []).length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Selected Items ({(selectedItems || []).length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {(selectedItems || []).map((item) => {
+                const baseAmount = item.quantity * item.unitPrice;
+                const wastageAmount = baseAmount * ((item.wastagePercentage || 0) / 100);
+                
+                return (
+                  <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex-1">
+                      <div className="font-medium">{item.trade} - {item.item}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {item.quantity} {item.unit} × {formatCurrency(item.unitPrice)} = {formatCurrency(baseAmount)}
+                        {(item.wastagePercentage || 0) > 0 && (
+                          <span className="ml-2 text-orange-600">
+                            + {item.wastagePercentage}% wastage ({formatCurrency(wastageAmount)})
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-sm font-medium text-green-600">
+                        Total: {formatCurrency(item.total)}
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoveItem(item.id)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+              <div className="text-lg font-bold text-green-800">
+                Contract Total: {formatCurrency((selectedItems || []).reduce((sum, item) => sum + item.total, 0))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
