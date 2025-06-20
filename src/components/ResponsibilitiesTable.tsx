@@ -8,15 +8,16 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
 import { Responsibility, ResponsibilitySearchFilters } from '@/types/responsibility';
+import { responsibilityCategories } from '@/constants/responsibility';
 import { useData } from '@/contexts/DataContext';
 import { useToast } from '@/hooks/use-toast';
 import { usePagination } from '@/hooks/usePagination';
 import { PaginationControls } from '@/components/PaginationControls';
 
 interface ResponsibilitiesTableProps {
-  onCreateNew: () => void;
-  onEdit: (responsibility: Responsibility) => void;
-  onDelete: (responsibilityId: string) => void;
+  onCreateNew?: () => void;
+  onEdit?: (responsibility: Responsibility) => void;
+  onDelete?: (responsibilityId: string) => void;
   onViewDetail: (responsibilityId: string) => void;
 }
 
@@ -60,11 +61,13 @@ export function ResponsibilitiesTable({ onCreateNew, onEdit, onDelete, onViewDet
   };
   
   const handleDelete = (responsibilityId: string) => {
-    onDelete(responsibilityId);
-    toast({
-      title: "Responsibility deleted",
-      description: "The responsibility has been successfully deleted."
-    });
+    if (onDelete) {
+      onDelete(responsibilityId);
+      toast({
+        title: "Responsibility deleted",
+        description: "The responsibility has been successfully deleted."
+      });
+    }
   };
 
   return (
@@ -74,10 +77,12 @@ export function ResponsibilitiesTable({ onCreateNew, onEdit, onDelete, onViewDet
           <h1 className="text-3xl font-bold">Responsibilities</h1>
           <p className="text-muted-foreground">Manage responsibility types and assignments</p>
         </div>
-        <Button onClick={onCreateNew} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Add Responsibility
-        </Button>
+        {onCreateNew && (
+          <Button onClick={onCreateNew} className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Add Responsibility
+          </Button>
+        )}
       </div>
 
       {/* Search and Filters */}
@@ -172,22 +177,26 @@ export function ResponsibilitiesTable({ onCreateNew, onEdit, onDelete, onViewDet
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onEdit(responsibility)}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(responsibility.id)}
-                        className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {onEdit && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onEdit(responsibility)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {onDelete && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(responsibility.id)}
+                          className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

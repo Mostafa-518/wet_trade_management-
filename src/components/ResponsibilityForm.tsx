@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Save } from 'lucide-react';
 import { Responsibility, ResponsibilityFormData } from '@/types/responsibility';
+import { responsibilityCategories } from '@/constants/responsibility';
 
 interface ResponsibilityFormProps {
   responsibility?: Responsibility | null;
@@ -33,7 +34,7 @@ export function ResponsibilityForm({ responsibility, onSubmit, onCancel }: Respo
       newErrors.name = 'Responsibility name is required';
     }
 
-    if (!formData.description.trim()) {
+    if (!formData.description?.trim()) {
       newErrors.description = 'Description is required';
     }
 
