@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 import { AuthProvider } from '@/hooks/useAuth';
+import { QueryProvider } from '@/components/providers/QueryProvider';
 
 const container = document.getElementById("root");
 if (!container) {
@@ -13,8 +14,10 @@ if (!container) {
 const root = createRoot(container);
 root.render(
   <React.StrictMode>
-    <AuthProvider>
-      <App />
-    </AuthProvider>
+    <QueryProvider>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </QueryProvider>
   </React.StrictMode>
 );
