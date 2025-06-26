@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -21,6 +22,7 @@ import {
   exportTableToExcel,
   exportGraphsToPDF,
 } from "@/utils/report/reportExporter";
+import { useEffect } from "react";
 
 export function Report() {
   const navigate = useNavigate();
@@ -34,11 +36,49 @@ export function Report() {
     filteredSubcontracts,
   } = useReportData();
 
+  // Add debugging to track when component mounts and data loads
+  useEffect(() => {
+    console.log('Report component mounted');
+    console.log('Report data:', reportData);
+    console.log('Is loading:', isLoading);
+    console.log('Filter options:', filterOptions);
+  }, [reportData, isLoading, filterOptions]);
+
+  // Add error boundary-like error handling
+  if (!reportData && !isLoading) {
+    console.error('Report data is null and not loading');
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="text-center">
+          <p className="text-lg text-red-600 mb-4">Error loading report data</p>
+          <Button onClick={() => window.location.reload()}>
+            Reload Page
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-96">
         <Loader2 className="h-8 w-8 animate-spin" />
         <span className="ml-2">Loading report data...</span>
+      </div>
+    );
+  }
+
+  // Ensure reportData exists before proceeding
+  if (!reportData) {
+    console.warn('Report data is still null after loading');
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="text-center">
+          <p className="text-lg mb-4">No report data available</p>
+          <Button onClick={() => window.location.reload()}>
+            Reload Page
+          </Button>
+        </div>
       </div>
     );
   }
