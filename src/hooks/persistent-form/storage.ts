@@ -12,14 +12,14 @@ export function createStorageOperations<T extends Record<string, any>>(
       console.log('Loading from storage with key:', storageKey);
       const storedData = storage.getItem(storageKey);
       if (storedData) {
-        const parsed = JSON.parse(storedData);
+        const parsed = JSON.parse(storedData) as Record<string, any>;
         console.log('Parsed storage data:', parsed);
         
         // Only return non-empty values
         const filteredData: Partial<T> = {};
         Object.entries(parsed).forEach(([key, value]) => {
           if (value !== null && value !== undefined && value !== '') {
-            filteredData[key as keyof T] = value;
+            filteredData[key as keyof T] = value as T[keyof T];
           }
         });
         
