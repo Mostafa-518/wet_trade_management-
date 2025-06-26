@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { ProjectSearchFilters } from '@/types/project';
+import { usePersistentFormState } from '@/hooks/usePersistentFormState';
 
 interface ProjectsTableFiltersProps {
   searchFilters: ProjectSearchFilters;
@@ -17,6 +18,32 @@ export function ProjectsTableFilters({
   onFilterChange, 
   onClearFilters 
 }: ProjectsTableFiltersProps) {
+  // Use persistent form state for filters
+  const {
+    formValues,
+    handleChange,
+    resetForm,
+    getInputProps
+  } = usePersistentFormState(searchFilters, {
+    customKey: 'projects-filters',
+    syncWithUrl: true, // Allow shareable filter URLs
+    debounceMs: 200
+  });
+
+  // Sync with parent component when values change
+  React.useEffect(() => {
+    Object.entries(formValues).forEach(([key, value]) => {
+      if (searchFilters[key as keyof ProjectSearchFilters] !== value) {
+        onFilterChange(key as keyof ProjectSearchFilters, value as string);
+      }
+    });
+  }, [formValues, searchFilters, onFilterChange]);
+
+  const handleClearFilters = () => {
+    resetForm();
+    onClearFilters();
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -31,29 +58,26 @@ export function ProjectsTableFilters({
             <label className="text-sm font-medium mb-1 block">Project Name</label>
             <Input
               placeholder="Search by project name..."
-              value={searchFilters.name}
-              onChange={(e) => onFilterChange('name', e.target.value)}
+              {...getInputProps('name')}
             />
           </div>
           <div>
             <label className="text-sm font-medium mb-1 block">Project Code</label>
             <Input
               placeholder="Search by project code..."
-              value={searchFilters.code}
-              onChange={(e) => onFilterChange('code', e.target.value)}
+              {...getInputProps('code')}
             />
           </div>
           <div>
             <label className="text-sm font-medium mb-1 block">Location</label>
             <Input
               placeholder="Search by location..."
-              value={searchFilters.location}
-              onChange={(e) => onFilterChange('location', e.target.value)}
+              {...getInputProps('location')}
             />
           </div>
         </div>
         <div className="mt-4">
-          <Button variant="outline" onClick={onClearFilters}>
+          <Button variant="outline" onClick={handleClearFilters}>
             Clear Filters
           </Button>
         </div>
