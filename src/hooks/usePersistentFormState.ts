@@ -180,12 +180,12 @@ export function usePersistentFormState<T extends Record<string, any>>(
     clearField,
     // Utility functions for common input patterns
     getInputProps: (field: keyof T) => ({
-      value: formValues[field] || '',
+      value: String(formValues[field] || ''),
       onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => 
         handleChange(field, e.target.value)
     }),
     getSelectProps: (field: keyof T) => ({
-      value: formValues[field] || '',
+      value: String(formValues[field] || ''),
       onValueChange: (value: string) => handleChange(field, value)
     }),
     getCheckboxProps: (field: keyof T) => ({
