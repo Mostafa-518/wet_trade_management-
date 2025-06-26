@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Subcontract } from '@/types/subcontract';
-import { usePersistentFormState } from '@/hooks/usePersistentFormState';
+import { usePersistentFormState } from '@/hooks/persistent-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';

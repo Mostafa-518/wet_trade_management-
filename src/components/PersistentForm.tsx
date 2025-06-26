@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { usePersistentFormState, PersistentFormOptions } from '@/hooks/usePersistentFormState';
+import { usePersistentFormState, PersistentFormOptions } from '@/hooks/persistent-form';
 
 interface PersistentFormProps<T extends Record<string, any>> {
   initialValues: T;

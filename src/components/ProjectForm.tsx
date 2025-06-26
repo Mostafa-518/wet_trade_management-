@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft } from 'lucide-react';
 import { Project, ProjectFormData } from '@/types/project';
-import { usePersistentFormState } from '@/hooks/usePersistentFormState';
+import { usePersistentFormState } from '@/hooks/persistent-form';
 
 interface ProjectFormProps {
   project?: Project | null;

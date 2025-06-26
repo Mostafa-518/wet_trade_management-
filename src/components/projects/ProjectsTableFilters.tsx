@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { ProjectSearchFilters } from '@/types/project';
-import { usePersistentFormState } from '@/hooks/usePersistentFormState';
+import { usePersistentFormState } from '@/hooks/persistent-form';
 
 interface ProjectsTableFiltersProps {
   searchFilters: ProjectSearchFilters;
