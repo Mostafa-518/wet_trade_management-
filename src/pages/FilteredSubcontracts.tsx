@@ -26,32 +26,33 @@ export function FilteredSubcontracts() {
   const {
     formValues: filters,
     handleChange,
+    handleBatchChange,
     resetForm,
     hasPersistedData
   } = usePersistentFormState(initialFilters, {
     customKey: 'filtered-subcontracts',
     syncWithUrl: true,
-    expirationHours: 24
+    expirationHours: 24,
+    debounceMs: 100
   });
 
-  // Parse URL parameters on mount
+  // Parse URL parameters on mount and update form state
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const urlFilters: Record<string, string> = {};
     
     urlParams.forEach((value, key) => {
-      if (key in initialFilters) {
+      if (key in initialFilters && value) {
         urlFilters[key] = value;
       }
     });
 
     // Update form with URL parameters if they exist
     if (Object.keys(urlFilters).length > 0) {
-      Object.entries(urlFilters).forEach(([key, value]) => {
-        handleChange(key as keyof typeof initialFilters, value);
-      });
+      console.log('Loading filters from URL:', urlFilters);
+      handleBatchChange(urlFilters);
     }
-  }, [location.search, handleChange]);
+  }, [location.search, handleBatchChange]);
 
   // Filter subcontracts based on current filters
   const filteredSubcontracts = subcontracts.filter(subcontract => {
