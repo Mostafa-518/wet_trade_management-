@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { ReportTableView } from "@/components/report/ReportTableView";
 import { ReportGraphsView } from "@/components/report/ReportGraphsView";
 import { useToast } from "@/hooks/use-toast";
+import { FormResetButton } from "@/components/FormResetButton";
 import {
   exportTableToExcel,
   exportGraphsToPDF,
@@ -28,6 +29,7 @@ export function Report() {
     reportData,
     filterOptions,
     updateFilter,
+    resetFilters,
     isLoading,
     filteredSubcontracts,
   } = useReportData();
@@ -169,6 +171,14 @@ export function Report() {
     }
   };
 
+  // Check if any filters are applied (not default values)
+  const hasAppliedFilters = Object.entries(reportData.filters).some(([key, value]) => {
+    if (key === 'facilities') {
+      return Array.isArray(value) && value.length > 0;
+    }
+    return value !== 'all' && value !== 'by-project' && value !== 'name';
+  });
+
   return (
     <div className="space-y-6 print:space-y-4">
       {/* Header Section */}
@@ -177,6 +187,14 @@ export function Report() {
           Report
         </h1>
         <div className="flex gap-2 print:hidden">
+          <FormResetButton 
+            onReset={resetFilters}
+            hasData={hasAppliedFilters}
+            variant="outline"
+            size="sm"
+          >
+            Reset All Filters
+          </FormResetButton>
           <Button onClick={handlePrint} variant="outline" size="sm">
             <Printer className="h-4 w-4 mr-2" />
             Print/PDF

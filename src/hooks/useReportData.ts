@@ -1,7 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { 
   ReportFilters, 
   SubcontractWithDetails, 
@@ -10,18 +10,31 @@ import {
 import { generateFilterOptions } from '@/utils/report/filterOptions';
 import { filterSubcontracts } from '@/utils/report/subcontractFilter';
 import { processReportData } from '@/utils/report/reportDataProcessor';
+import { usePersistentFormState } from '@/hooks/persistent-form';
+
+const initialFilters: ReportFilters = {
+  month: 'all',
+  year: 'all',
+  location: 'all',
+  trades: 'all',
+  projectName: 'all',
+  projectCode: 'all',
+  presentData: 'by-project',
+  projectFilterType: 'name',
+  facilities: []
+};
 
 export function useReportData() {
-  const [filters, setFilters] = useState<ReportFilters>({
-    month: 'all',
-    year: 'all',
-    location: 'all',
-    trades: 'all',
-    projectName: 'all',
-    projectCode: 'all',
-    presentData: 'by-project',
-    projectFilterType: 'name',
-    facilities: []
+  // Use persistent form state for filters
+  const {
+    formValues: filters,
+    handleChange,
+    resetForm: resetFilters
+  } = usePersistentFormState<ReportFilters>(initialFilters, {
+    customKey: 'report-filters',
+    syncWithUrl: true,
+    expirationHours: 24,
+    debounceMs: 100
   });
 
   // Fetch all subcontracts with related data
@@ -90,39 +103,37 @@ export function useReportData() {
 
   const updateFilter = (key: keyof ReportFilters, value: string | string[]) => {
     console.log(`Updating filter ${key} to:`, value);
-    setFilters(prev => {
-      const newFilters = { ...prev, [key]: value };
-      
-      // When switching project filter type, reset the other project filter
-      if (key === 'projectFilterType') {
-        if (value === 'name') {
-          newFilters.projectCode = 'all';
-        } else if (value === 'code') {
-          newFilters.projectName = 'all';
-        }
+    
+    // Handle special cases for project filter switching
+    if (key === 'projectFilterType') {
+      if (value === 'name') {
+        handleChange('projectCode', 'all');
+      } else if (value === 'code') {
+        handleChange('projectName', 'all');
       }
-      
-      // When changing project name, switch to name filter type and reset code
-      if (key === 'projectName' && value !== 'all' && value !== 'All') {
-        newFilters.projectFilterType = 'name';
-        newFilters.projectCode = 'all';
-      }
-      
-      // When changing project code, switch to code filter type and reset name
-      if (key === 'projectCode' && value !== 'all' && value !== 'All') {
-        newFilters.projectFilterType = 'code';
-        newFilters.projectName = 'all';
-      }
-      
-      console.log('New filters state:', newFilters);
-      return newFilters;
-    });
+    }
+    
+    // When changing project name, switch to name filter type and reset code
+    if (key === 'projectName' && value !== 'all' && value !== 'All') {
+      handleChange('projectFilterType', 'name');
+      handleChange('projectCode', 'all');
+    }
+    
+    // When changing project code, switch to code filter type and reset name
+    if (key === 'projectCode' && value !== 'all' && value !== 'All') {
+      handleChange('projectFilterType', 'code');
+      handleChange('projectName', 'all');
+    }
+    
+    // Update the filter
+    handleChange(key, value);
   };
 
   return {
     reportData,
     filterOptions,
     updateFilter,
+    resetFilters,
     isLoading: subcontractsLoading,
     refetch,
     filteredSubcontracts // Expose filtered subcontracts for graphs
