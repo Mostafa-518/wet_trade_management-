@@ -55,30 +55,30 @@ export function FilteredSubcontracts() {
 
   // Filter subcontracts based on current filters
   const filteredSubcontracts = subcontracts.filter(subcontract => {
-    if (filters.month && subcontract.date_of_issuing) {
+    if (filters.month && subcontract.dateOfIssuing) {
       const monthIndex = ['January', 'February', 'March', 'April', 'May', 'June',
                          'July', 'August', 'September', 'October', 'November', 'December']
                          .indexOf(filters.month);
       if (monthIndex !== -1) {
-        const subcontractMonth = new Date(subcontract.date_of_issuing).getMonth();
+        const subcontractMonth = new Date(subcontract.dateOfIssuing).getMonth();
         if (subcontractMonth !== monthIndex) return false;
       }
     }
 
-    if (filters.year && subcontract.date_of_issuing) {
-      const subcontractYear = new Date(subcontract.date_of_issuing).getFullYear().toString();
+    if (filters.year && subcontract.dateOfIssuing) {
+      const subcontractYear = new Date(subcontract.dateOfIssuing).getFullYear().toString();
       if (subcontractYear !== filters.year) return false;
     }
 
-    if (filters.location && subcontract.projects?.location !== filters.location) {
+    if (filters.location && subcontract.project !== filters.location) {
       return false;
     }
 
-    if (filters.projectName && subcontract.projects?.name !== filters.projectName) {
+    if (filters.projectName && subcontract.project !== filters.projectName) {
       return false;
     }
 
-    if (filters.projectCode && subcontract.projects?.code !== filters.projectCode) {
+    if (filters.projectCode && subcontract.project !== filters.projectCode) {
       return false;
     }
 
