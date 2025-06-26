@@ -98,8 +98,8 @@ export function ProjectComparisonChart({ tableData, subcontracts, isLoading }: P
         <div className="bg-white p-3 border rounded-lg shadow-lg">
           <p className="font-semibold">{`${data.projectName} (${data.projectCode})`}</p>
           <p className="text-blue-600">{`Trade Item: ${selectedTradeItem}`}</p>
-          <p className="text-green-600">{`Average Rate: $${data.averageRate.toFixed(2)}`}</p>
-          <p className="text-orange-600">{`Total Amount: $${data.totalAmount.toLocaleString()}`}</p>
+          <p className="text-green-600">{`Average Rate: EGP ${data.averageRate.toFixed(2)}`}</p>
+          <p className="text-orange-600">{`Total Amount: EGP ${data.totalAmount.toLocaleString()}`}</p>
           <p className="text-red-600">{`Wastage: ${data.wastage.toFixed(1)}%`}</p>
           <p className="text-gray-600">{`Quantity: ${data.quantity.toLocaleString()}`}</p>
         </div>
@@ -160,7 +160,7 @@ export function ProjectComparisonChart({ tableData, subcontracts, isLoading }: P
             <ResponsiveContainer width="100%" height="100%">
               <BarChart 
                 data={projectComparisonData} 
-                margin={{ top: 20, right: 30, left: 20, bottom: 100 }}
+                margin={{ top: 60, right: 30, left: 20, bottom: 100 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
@@ -172,15 +172,16 @@ export function ProjectComparisonChart({ tableData, subcontracts, isLoading }: P
                   interval={0}
                 />
                 <YAxis 
-                  label={{ value: 'Average Rate ($)', angle: -90, position: 'insideLeft' }}
-                  fontSize={12}
+                  label={{ value: 'Average Rate (EGP)', angle: -90, position: 'outsideLeft', dx: -30, 
+    style: { textAnchor: 'middle' }, }}
+                  fontSize={12} interval={0}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend />
                 <Bar 
                   dataKey="averageRate" 
                   fill="#3b82f6" 
-                  name="Average Rate ($)"
+                  name="Average Rate (EGP)"
                   radius={[4, 4, 0, 0]}
                 />
               </BarChart>
@@ -196,11 +197,11 @@ export function ProjectComparisonChart({ tableData, subcontracts, isLoading }: P
                 <span className="font-medium">Projects Analyzed:</span> {projectComparisonData.length}
               </div>
               <div>
-                <span className="font-medium">Highest Rate:</span> $
+                <span className="font-medium">Highest Rate:</span> EGP 
                 {Math.max(...projectComparisonData.map(p => p.averageRate)).toFixed(2)}
               </div>
               <div>
-                <span className="font-medium">Lowest Rate:</span> $
+                <span className="font-medium">Lowest Rate:</span> EGP 
                 {Math.min(...projectComparisonData.map(p => p.averageRate)).toFixed(2)}
               </div>
             </div>

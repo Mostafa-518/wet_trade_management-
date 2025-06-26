@@ -41,7 +41,7 @@ export function SubcontractorsTableContent({
     hasPreviousPage,
     totalItems,
     itemsPerPage,
-  } = usePagination({ data: filteredSubcontractors, itemsPerPage: 10 });
+  } = usePagination({ data: filteredSubcontractors, itemsPerPage: 5 });
 
   return (
     <Card>
@@ -49,6 +49,15 @@ export function SubcontractorsTableContent({
         <CardTitle>Subcontractors ({filteredSubcontractors.length})</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={goToPage}
+          hasNextPage={hasNextPage}
+          hasPreviousPage={hasPreviousPage}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+        />
         <Table>
           <TableHeader>
             <TableRow>
@@ -113,15 +122,7 @@ export function SubcontractorsTableContent({
           </TableBody>
         </Table>
         
-        <PaginationControls
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={goToPage}
-          hasNextPage={hasNextPage}
-          hasPreviousPage={hasPreviousPage}
-          totalItems={totalItems}
-          itemsPerPage={itemsPerPage}
-        />
+        
       </CardContent>
     </Card>
   );

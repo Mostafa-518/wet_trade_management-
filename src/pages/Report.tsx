@@ -1,27 +1,36 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { X, Printer, Download } from 'lucide-react';
-import { useReportData } from '@/hooks/useReportData';
-import { Loader2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { ReportTableView } from '@/components/report/ReportTableView';
-import { ReportGraphsView } from '@/components/report/ReportGraphsView';
-import { useToast } from '@/hooks/use-toast';
-import { exportTableToExcel, exportGraphsToPDF } from '@/utils/report/reportExporter';
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { X, Printer, Download } from "lucide-react";
+import { useReportData } from "@/hooks/useReportData";
+import { Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ReportTableView } from "@/components/report/ReportTableView";
+import { ReportGraphsView } from "@/components/report/ReportGraphsView";
+import { useToast } from "@/hooks/use-toast";
+import {
+  exportTableToExcel,
+  exportGraphsToPDF,
+} from "@/utils/report/reportExporter";
 
 export function Report() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { reportData, filterOptions, updateFilter, isLoading, filteredSubcontracts } = useReportData();
+  const {
+    reportData,
+    filterOptions,
+    updateFilter,
+    isLoading,
+    filteredSubcontracts,
+  } = useReportData();
 
   if (isLoading) {
     return (
@@ -32,56 +41,77 @@ export function Report() {
     );
   }
 
-  const isPresentDataByProject = reportData.filters.presentData === 'by-project';
+  const isPresentDataByProject =
+    reportData.filters.presentData === "by-project";
 
   const handleFacilityToggle = (facility: string) => {
-    if (facility === 'All') {
-      updateFilter('facilities', []);
+    if (facility === "All") {
+      updateFilter("facilities", []);
       return;
     }
 
     const currentFacilities = reportData.filters.facilities;
     const newFacilities = currentFacilities.includes(facility)
-      ? currentFacilities.filter(f => f !== facility)
+      ? currentFacilities.filter((f) => f !== facility)
       : [...currentFacilities, facility];
-    
-    updateFilter('facilities', newFacilities);
+
+    updateFilter("facilities", newFacilities);
   };
 
   const removeFacility = (facility: string) => {
-    const newFacilities = reportData.filters.facilities.filter(f => f !== facility);
-    updateFilter('facilities', newFacilities);
+    const newFacilities = reportData.filters.facilities.filter(
+      (f) => f !== facility
+    );
+    updateFilter("facilities", newFacilities);
   };
 
   const handleNavigateToFilteredSubcontracts = () => {
     // Create URL parameters from current filters
     const params = new URLSearchParams();
-    
-    if (reportData.filters.month !== 'all' && reportData.filters.month !== 'All') {
-      params.set('month', reportData.filters.month);
+
+    if (
+      reportData.filters.month !== "all" &&
+      reportData.filters.month !== "All"
+    ) {
+      params.set("month", reportData.filters.month);
     }
-    if (reportData.filters.year !== 'all' && reportData.filters.year !== 'All') {
-      params.set('year', reportData.filters.year);
+    if (
+      reportData.filters.year !== "all" &&
+      reportData.filters.year !== "All"
+    ) {
+      params.set("year", reportData.filters.year);
     }
-    if (reportData.filters.location !== 'all' && reportData.filters.location !== 'All') {
-      params.set('location', reportData.filters.location);
+    if (
+      reportData.filters.location !== "all" &&
+      reportData.filters.location !== "All"
+    ) {
+      params.set("location", reportData.filters.location);
     }
-    if (reportData.filters.trades !== 'all' && reportData.filters.trades !== 'All') {
-      params.set('trades', reportData.filters.trades);
+    if (
+      reportData.filters.trades !== "all" &&
+      reportData.filters.trades !== "All"
+    ) {
+      params.set("trades", reportData.filters.trades);
     }
-    if (reportData.filters.projectName !== 'all' && reportData.filters.projectName !== 'All') {
-      params.set('projectName', reportData.filters.projectName);
+    if (
+      reportData.filters.projectName !== "all" &&
+      reportData.filters.projectName !== "All"
+    ) {
+      params.set("projectName", reportData.filters.projectName);
     }
-    if (reportData.filters.projectCode !== 'all' && reportData.filters.projectCode !== 'All') {
-      params.set('projectCode', reportData.filters.projectCode);
+    if (
+      reportData.filters.projectCode !== "all" &&
+      reportData.filters.projectCode !== "All"
+    ) {
+      params.set("projectCode", reportData.filters.projectCode);
     }
     if (reportData.filters.facilities.length > 0) {
-      params.set('facilities', reportData.filters.facilities.join(','));
+      params.set("facilities", reportData.filters.facilities.join(","));
     }
-    
+
     // Navigate to the new filtered subcontracts page
     const queryString = params.toString();
-    navigate(`/reports/subcontracts${queryString ? `?${queryString}` : ''}`);
+    navigate(`/reports/subcontracts${queryString ? `?${queryString}` : ""}`);
   };
 
   const handlePrint = () => {
@@ -90,7 +120,7 @@ export function Report() {
 
   const handleExportTable = async () => {
     const result = exportTableToExcel(reportData.tableData, reportData.filters);
-    
+
     if (result.success) {
       toast({
         title: "Export Successful",
@@ -107,10 +137,10 @@ export function Report() {
 
   const handleExportTableToPDF = async () => {
     const result = await exportGraphsToPDF(reportData.filters);
-    
+
     if (result.success) {
       toast({
-        title: "Export Successful", 
+        title: "Export Successful",
         description: "Table exported to PDF (print dialog opened)",
       });
     } else {
@@ -124,10 +154,10 @@ export function Report() {
 
   const handleExportGraphs = async () => {
     const result = await exportGraphsToPDF(reportData.filters);
-    
+
     if (result.success) {
       toast({
-        title: "Export Successful", 
+        title: "Export Successful",
         description: "Graphs exported to PDF (print dialog opened)",
       });
     } else {
@@ -143,13 +173,11 @@ export function Report() {
     <div className="space-y-6 print:space-y-4">
       {/* Header Section */}
       <div className="flex items-center justify-between print:justify-center">
-        <h1 className="text-3xl font-bold tracking-tight print:text-2xl">Report</h1>
+        <h1 className="text-3xl font-bold tracking-tight print:text-2xl">
+          Report
+        </h1>
         <div className="flex gap-2 print:hidden">
-          <Button 
-            onClick={handlePrint} 
-            variant="outline" 
-            size="sm"
-          >
+          <Button onClick={handlePrint} variant="outline" size="sm">
             <Printer className="h-4 w-4 mr-2" />
             Print/PDF
           </Button>
@@ -168,16 +196,19 @@ export function Report() {
               <Badge variant="outline" className="bg-gray-50">
                 {reportData.filters.presentData}
               </Badge>
-              <Select 
-                value={reportData.filters.presentData} 
-                onValueChange={(value) => updateFilter('presentData', value)}
+              <Select
+                value={reportData.filters.presentData}
+                onValueChange={(value) => updateFilter("presentData", value)}
               >
-                <SelectTrigger className="w-8 h-8 p-0 border-0 print:hidden">
+                <SelectTrigger className="w-auto h-8 p-0 border-0 print:hidden">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {filterOptions.presentDataOptions.map((option) => (
-                    <SelectItem key={option} value={option.toLowerCase().replace(' ', '-')}>
+                    <SelectItem
+                      key={option}
+                      value={option.toLowerCase().replace(" ", "-")}
+                    >
                       {option}
                     </SelectItem>
                   ))}
@@ -195,7 +226,9 @@ export function Report() {
         {/* Total Subcontracts Card */}
         <Card className="print:shadow-none">
           <CardHeader className="pb-3 print:pb-2">
-            <CardTitle className="text-sm font-medium">No. Of All Subcontract:</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              No. Of All Subcontract:
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-center print:text-lg">
@@ -211,9 +244,9 @@ export function Report() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 print:grid-cols-4 print:gap-2">
             <div className="space-y-2 print:space-y-1">
               <label className="text-sm font-medium">Month:</label>
-              <Select 
-                value={reportData.filters.month} 
-                onValueChange={(value) => updateFilter('month', value)}
+              <Select
+                value={reportData.filters.month}
+                onValueChange={(value) => updateFilter("month", value)}
               >
                 <SelectTrigger className="print:border-none print:shadow-none">
                   <SelectValue />
@@ -230,9 +263,9 @@ export function Report() {
 
             <div className="space-y-2 print:space-y-1">
               <label className="text-sm font-medium">Year:</label>
-              <Select 
-                value={reportData.filters.year} 
-                onValueChange={(value) => updateFilter('year', value)}
+              <Select
+                value={reportData.filters.year}
+                onValueChange={(value) => updateFilter("year", value)}
               >
                 <SelectTrigger className="print:border-none print:shadow-none">
                   <SelectValue />
@@ -251,9 +284,9 @@ export function Report() {
             {!isPresentDataByProject && (
               <div className="space-y-2 print:space-y-1">
                 <label className="text-sm font-medium">Location of work:</label>
-                <Select 
-                  value={reportData.filters.location} 
-                  onValueChange={(value) => updateFilter('location', value)}
+                <Select
+                  value={reportData.filters.location}
+                  onValueChange={(value) => updateFilter("location", value)}
                 >
                   <SelectTrigger className="print:border-none print:shadow-none">
                     <SelectValue />
@@ -272,27 +305,45 @@ export function Report() {
             {isPresentDataByProject && (
               <div className="space-y-2 print:space-y-1">
                 <label className="text-sm font-medium">
-                  {reportData.filters.projectFilterType === 'name' ? 'Project Name:' : 'Project Code:'}
+                  {reportData.filters.projectFilterType === "name"
+                    ? "Project Name:"
+                    : "Project Code:"}
                 </label>
                 <div className="flex gap-2">
-                  <Select 
-                    value={reportData.filters.projectFilterType === 'name' ? reportData.filters.projectName : reportData.filters.projectCode}
-                    onValueChange={(value) => updateFilter(reportData.filters.projectFilterType === 'name' ? 'projectName' : 'projectCode', value)}
+                  <Select
+                    value={
+                      reportData.filters.projectFilterType === "name"
+                        ? reportData.filters.projectName
+                        : reportData.filters.projectCode
+                    }
+                    onValueChange={(value) =>
+                      updateFilter(
+                        reportData.filters.projectFilterType === "name"
+                          ? "projectName"
+                          : "projectCode",
+                        value
+                      )
+                    }
                   >
                     <SelectTrigger className="flex-1 print:border-none print:shadow-none">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {(reportData.filters.projectFilterType === 'name' ? filterOptions.projectNames : filterOptions.projectCodes).map((option) => (
+                      {(reportData.filters.projectFilterType === "name"
+                        ? filterOptions.projectNames
+                        : filterOptions.projectCodes
+                      ).map((option) => (
                         <SelectItem key={option} value={option}>
                           {option}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <Select 
+                  <Select
                     value={reportData.filters.projectFilterType}
-                    onValueChange={(value) => updateFilter('projectFilterType', value)}
+                    onValueChange={(value) =>
+                      updateFilter("projectFilterType", value)
+                    }
                   >
                     <SelectTrigger className="w-20 print:hidden">
                       <SelectValue />
@@ -308,9 +359,9 @@ export function Report() {
 
             <div className="space-y-2 print:space-y-1">
               <label className="text-sm font-medium">Trades:</label>
-              <Select 
-                value={reportData.filters.trades} 
-                onValueChange={(value) => updateFilter('trades', value)}
+              <Select
+                value={reportData.filters.trades}
+                onValueChange={(value) => updateFilter("trades", value)}
               >
                 <SelectTrigger className="print:border-none print:shadow-none">
                   <SelectValue />
@@ -327,26 +378,34 @@ export function Report() {
 
             {/* Facilities Filter */}
             <div className="space-y-2 print:space-y-1">
-              <label className="text-sm font-medium">Facilities (Responsibilities):</label>
+              <label className="text-sm font-medium">
+                Facilities (Responsibilities):
+              </label>
               <Select onValueChange={handleFacilityToggle}>
                 <SelectTrigger className="print:border-none print:shadow-none">
                   <SelectValue placeholder="Select facilities..." />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="All">Clear All</SelectItem>
-                  {filterOptions.facilities.filter(f => f !== 'All').map((facility) => (
-                    <SelectItem key={facility} value={facility}>
-                      {facility}
-                    </SelectItem>
-                  ))}
+                  {filterOptions.facilities
+                    .filter((f) => f !== "All")
+                    .map((facility) => (
+                      <SelectItem key={facility} value={facility}>
+                        {facility}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
-              
+
               {/* Show selected facilities */}
               {reportData.filters.facilities.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-2 print:gap-0.5">
                   {reportData.filters.facilities.map((facility) => (
-                    <Badge key={facility} variant="secondary" className="flex items-center gap-1 print:text-xs">
+                    <Badge
+                      key={facility}
+                      variant="secondary"
+                      className="flex items-center gap-1 print:text-xs"
+                    >
                       {facility}
                       <Button
                         variant="ghost"
@@ -367,14 +426,15 @@ export function Report() {
 
       {/* Current Subcontracts Card */}
       <div className="flex justify-center print:break-inside-avoid">
-        <Card 
+        <Card
           className="w-auto cursor-pointer hover:shadow-lg transition-shadow print:shadow-none print:cursor-default"
           onClick={handleNavigateToFilteredSubcontracts}
         >
           <CardContent className="pt-6 print:pt-4">
             <div className="text-center">
               <div className="text-lg font-semibold print:text-base">
-                No. Of Subcontract: [{reportData.currentSubcontracts}] Subcontract
+                No. Of Subcontract: [{reportData.currentSubcontracts}]
+                Subcontract
               </div>
             </div>
           </CardContent>
@@ -387,22 +447,22 @@ export function Report() {
           <TabsTrigger value="table">Table View</TabsTrigger>
           <TabsTrigger value="graphs">Graphs View</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="table" className="mt-6">
           <div className="space-y-4">
             <div className="flex justify-end gap-2">
-              <Button 
+              <Button
                 onClick={handleExportTable}
-                variant="outline" 
+                variant="outline"
                 size="sm"
                 disabled={isLoading || reportData.tableData.length === 0}
               >
                 <Download className="h-4 w-4 mr-2" />
                 Export Table to Excel
               </Button>
-              <Button 
+              <Button
                 onClick={handleExportTableToPDF}
-                variant="outline" 
+                variant="outline"
                 size="sm"
                 disabled={isLoading || reportData.tableData.length === 0}
               >
@@ -413,13 +473,13 @@ export function Report() {
             <ReportTableView tableData={reportData.tableData} />
           </div>
         </TabsContent>
-        
+
         <TabsContent value="graphs" className="mt-6">
           <div className="space-y-4">
             <div className="flex justify-end">
-              <Button 
+              <Button
                 onClick={handleExportGraphs}
-                variant="outline" 
+                variant="outline"
                 size="sm"
                 disabled={isLoading || reportData.tableData.length === 0}
               >
@@ -427,8 +487,8 @@ export function Report() {
                 Export Graphs to PDF
               </Button>
             </div>
-            <ReportGraphsView 
-              tableData={reportData.tableData} 
+            <ReportGraphsView
+              tableData={reportData.tableData}
               subcontracts={filteredSubcontracts}
               isLoading={isLoading}
             />

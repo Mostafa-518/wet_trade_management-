@@ -51,7 +51,7 @@ export function SubcontractTableContent({
     hasPreviousPage,
     totalItems,
     itemsPerPage,
-  } = usePagination({ data: filteredData, itemsPerPage: 10 });
+  } = usePagination({ data: filteredData, itemsPerPage: 5 });
 
   return (
     <Card>
@@ -59,6 +59,15 @@ export function SubcontractTableContent({
         <CardTitle>Subcontracts ({filteredData.length})</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={goToPage}
+          hasNextPage={hasNextPage}
+          hasPreviousPage={hasPreviousPage}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+        />
         {selectedIds.size > 0 && (
           <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
             <span className="font-medium">{selectedIds.size} selected</span>
@@ -104,15 +113,7 @@ export function SubcontractTableContent({
           </Table>
         </div>
         
-        <PaginationControls
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={goToPage}
-          hasNextPage={hasNextPage}
-          hasPreviousPage={hasPreviousPage}
-          totalItems={totalItems}
-          itemsPerPage={itemsPerPage}
-        />
+        
       </CardContent>
     </Card>
   );

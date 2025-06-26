@@ -9,13 +9,14 @@ interface PDFGeneratorOptions {
   subcontractorData?: any;
 }
 
-export const generateSubcontractPDF = ({ 
+export const generateSubcontractPDF = async ({ 
   subcontract, 
   projectName, 
   subcontractorName, 
   subcontractorData 
 }: PDFGeneratorOptions) => {
-  const doc = new jsPDF();
+  const jsPDFModule = await import('jspdf'); // 👈 dynamic import
+  const doc = new jsPDFModule.default();     // 👈 use .default
   const pageWidth = doc.internal.pageSize.getWidth();
   let yPosition = 20;
 

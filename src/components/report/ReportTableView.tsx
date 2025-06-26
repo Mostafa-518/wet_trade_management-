@@ -1,7 +1,13 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ReportTableData } from '@/types/report';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { ReportTableData } from "@/types/report";
 
 interface ReportTableViewProps {
   tableData: ReportTableData[];
@@ -9,10 +15,10 @@ interface ReportTableViewProps {
 
 export function ReportTableView({ tableData }: ReportTableViewProps) {
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'EGP',
-      minimumFractionDigits: 0
+    return new Intl.NumberFormat("en-US", {
+      // style: "currency",
+      // currency: "EGP",
+      minimumFractionDigits: 2,
     }).format(amount);
   };
 
@@ -35,24 +41,34 @@ export function ReportTableView({ tableData }: ReportTableViewProps) {
             <TableHeader>
               <TableRow>
                 <TableHead>Item</TableHead>
-                <TableHead className="text-right">Average Rate</TableHead>
-                <TableHead className="text-right">Total Amount</TableHead>
-                <TableHead className="text-right">Total Quantity</TableHead>
-                <TableHead className="text-right">Wastage %</TableHead>
+                <TableHead className="text-center">
+                  Average Rate<div className="text-center">EGP</div>
+                </TableHead>
+                <TableHead className="text-center">
+                  Total Amount<div className="text-center">EGP</div>
+                </TableHead>
+                <TableHead className="text-center">Total Quantity</TableHead>
+                <TableHead className="text-center">Wastage %</TableHead>
                 <TableHead>Unit</TableHead>
-                <TableHead className="text-right">Count</TableHead>
+                {/* <TableHead className="text-right">Count</TableHead> */}
               </TableRow>
             </TableHeader>
             <TableBody>
               {tableData.map((row, index) => (
                 <TableRow key={index}>
                   <TableCell className="font-medium">{row.item}</TableCell>
-                  <TableCell className="text-right">{formatCurrency(row.averageRate)}</TableCell>
-                  <TableCell className="text-right">{formatCurrency(row.totalAmount)}</TableCell>
-                  <TableCell className="text-right">{row.totalQuantity.toLocaleString()}</TableCell>
+                  <TableCell className="text-right">
+                    {formatCurrency(row.averageRate)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {formatCurrency(row.totalAmount)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {row.totalQuantity.toLocaleString()}
+                  </TableCell>
                   <TableCell className="text-right">{row.wastage}%</TableCell>
                   <TableCell>{row.unit}</TableCell>
-                  <TableCell className="text-right">{row.count}</TableCell>
+                  {/* <TableCell className="text-right">{row.count}</TableCell> */}
                 </TableRow>
               ))}
             </TableBody>

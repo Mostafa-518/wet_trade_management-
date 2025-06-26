@@ -14,7 +14,7 @@ import { processReportData } from '@/utils/report/reportDataProcessor';
 export function useReportData() {
   const [filters, setFilters] = useState<ReportFilters>({
     month: 'all',
-    year: '2024',
+    year: 'all',
     location: 'all',
     trades: 'all',
     projectName: 'all',

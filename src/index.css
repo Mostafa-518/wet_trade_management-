@@ -109,7 +109,7 @@ html {
 
   body {
     -webkit-print-color-adjust: exact;
-    color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   .print\:hidden {
@@ -210,9 +210,9 @@ html {
 
   /* Ensure charts print properly */
   .recharts-wrapper {
-    color-adjust: exact;
-    -webkit-print-color-adjust: exact;
-  }
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
 
   /* Hide pagination when printing */
   nav[role="navigation"][aria-label="pagination"] {

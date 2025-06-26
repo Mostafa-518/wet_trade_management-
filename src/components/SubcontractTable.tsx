@@ -66,6 +66,8 @@ export function SubcontractTable({ onCreateNew, onViewDetail, reportFilters }: S
         onFileUpload={handleFileUpload}
         onDownloadTemplate={downloadTemplate}
       />
+      <SubcontractTableSummary filteredData={filteredData} />
+
 
       <SubcontractTableSearch
         searchTerm={searchTerm}
@@ -91,7 +93,7 @@ export function SubcontractTable({ onCreateNew, onViewDetail, reportFilters }: S
         onBulkDelete={handleBulkDelete}
       />
 
-      <SubcontractTableSummary filteredData={filteredData} />
+      {/* <SubcontractTableSummary filteredData={filteredData} /> */}
 
       {editingSubcontract && (
         <SubcontractEditModal

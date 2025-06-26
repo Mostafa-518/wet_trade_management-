@@ -20,6 +20,9 @@ import {
 import { useReportData } from '@/hooks/useReportData';
 import { DashboardAlerts } from '@/components/DashboardAlerts';
 
+
+
+
 export function Dashboard() {
   const navigate = useNavigate();
   const { reportData, isLoading } = useReportData();
@@ -122,9 +125,9 @@ export function Dashboard() {
       <DashboardAlerts />
 
       {/* KPI Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card 
-          className="cursor-pointer hover:shadow-lg transition-shadow"
+          className="cursor-pointer hover:shadow-lg transition-shadow text-center"
           onClick={handleNavigateToSubcontracts}
         >
           <CardContent className="p-6">
@@ -132,7 +135,7 @@ export function Dashboard() {
             <div className="text-sm text-muted-foreground">Total Subcontracts</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className='text-center'>
           <CardContent className="p-6">
             <div className="text-2xl font-bold text-green-600">
               EGP {(totalValue / 1000000).toFixed(1)}M
@@ -140,14 +143,14 @@ export function Dashboard() {
             <div className="text-sm text-muted-foreground">Total Contract Value</div>
           </CardContent>
         </Card>
-        <Card>
+        {/* <Card>
           <CardContent className="p-6">
             <div className="text-2xl font-bold text-orange-600">
               {totalQuantity.toLocaleString()}
             </div>
             <div className="text-sm text-muted-foreground">Total Quantity of Items</div>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
 
       {/* Charts Tabs */}

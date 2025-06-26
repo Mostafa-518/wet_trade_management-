@@ -16,7 +16,7 @@ export function SubcontractTableSummary({ filteredData }: SubcontractTableSummar
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-card rounded-lg">
       <div className="text-center">
         <div className="text-2xl font-bold">{filteredData.length}</div>
         <div className="text-sm text-muted-foreground">Total Contracts</div>

@@ -39,7 +39,7 @@ export function ProjectsTableContent({
     hasPreviousPage,
     totalItems,
     itemsPerPage,
-  } = usePagination({ data: filteredProjects, itemsPerPage: 10 });
+  } = usePagination({ data: filteredProjects, itemsPerPage: 5 });
 
   return (
     <Card>
@@ -47,6 +47,15 @@ export function ProjectsTableContent({
         <CardTitle>Projects ({filteredProjects.length})</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={goToPage}
+          hasNextPage={hasNextPage}
+          hasPreviousPage={hasPreviousPage}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+        />
         <Table>
           <TableHeader>
             <TableRow>
@@ -120,15 +129,7 @@ export function ProjectsTableContent({
           </TableBody>
         </Table>
         
-        <PaginationControls
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={goToPage}
-          hasNextPage={hasNextPage}
-          hasPreviousPage={hasPreviousPage}
-          totalItems={totalItems}
-          itemsPerPage={itemsPerPage}
-        />
+        
       </CardContent>
     </Card>
   );
