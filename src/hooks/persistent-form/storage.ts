@@ -9,10 +9,14 @@ export function createStorageOperations<T extends Record<string, any>>(
 ) {
   const loadFromStorage = (): Partial<T> => {
     try {
+      console.log('Loading from storage with key:', storageKey);
       const storedData = storage.getItem(storageKey);
       if (storedData) {
-        return JSON.parse(storedData);
+        const parsed = JSON.parse(storedData);
+        console.log('Parsed storage data:', parsed);
+        return parsed;
       }
+      console.log('No data found in storage');
     } catch (error) {
       console.warn('Failed to load from storage:', error);
     }
@@ -27,6 +31,7 @@ export function createStorageOperations<T extends Record<string, any>>(
         delete valuesToSave[field as keyof T];
       });
       
+      console.log('Saving to storage:', storageKey, valuesToSave);
       storage.setItem(storageKey, JSON.stringify(valuesToSave));
     } catch (error) {
       console.warn('Failed to save to storage:', error);
@@ -35,6 +40,7 @@ export function createStorageOperations<T extends Record<string, any>>(
 
   const clearStorage = (): void => {
     try {
+      console.log('Clearing storage for key:', storageKey);
       storage.removeItem(storageKey);
     } catch (error) {
       console.warn('Failed to clear storage:', error);

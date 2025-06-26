@@ -40,15 +40,19 @@ export function usePersistentFormState<T extends Record<string, any>>(
   // Load initial state from storage and URL
   const loadPersistedState = useCallback((): T => {
     try {
+      console.log('Loading persisted state for key:', storageKey);
+      
       // Start with initial values
       let persistedState = { ...initialValues };
 
       // Load from storage
       const storedData = loadFromStorage();
+      console.log('Loaded from storage:', storedData);
       persistedState = { ...persistedState, ...storedData };
 
       // Load from URL if enabled
-      const urlData = loadFromUrl();
+      const urlData = loadFromUrl(location.search);
+      console.log('Loaded from URL:', urlData);
       persistedState = { ...persistedState, ...urlData };
 
       // Filter out excluded fields
@@ -58,12 +62,13 @@ export function usePersistentFormState<T extends Record<string, any>>(
         }
       });
 
+      console.log('Final persisted state:', persistedState);
       return persistedState;
     } catch (error) {
       console.warn('Failed to load persisted form state:', error);
       return initialValues;
     }
-  }, [initialValues, loadFromStorage, loadFromUrl, excludeFields]);
+  }, [initialValues, loadFromStorage, loadFromUrl, excludeFields, storageKey, location.search]);
 
   const [formValues, setFormValues] = useState<T>(loadPersistedState);
 
@@ -72,35 +77,40 @@ export function usePersistentFormState<T extends Record<string, any>>(
 
   // Generic change handler for all input types
   const handleChange = useCallback((field: keyof T, value: any) => {
+    console.log('Form value changed:', field, value);
     setFormValues(prev => {
       const newValues = { ...prev, [field]: value };
+      console.log('Saving new values:', newValues);
       debouncedSave(newValues);
-      updateUrl(newValues);
+      updateUrl(newValues, location);
       return newValues;
     });
-  }, [debouncedSave, updateUrl]);
+  }, [debouncedSave, updateUrl, location]);
 
   // Batch update multiple fields
   const handleBatchChange = useCallback((updates: Partial<T>) => {
     setFormValues(prev => {
       const newValues = { ...prev, ...updates };
       debouncedSave(newValues);
-      updateUrl(newValues);
+      updateUrl(newValues, location);
       return newValues;
     });
-  }, [debouncedSave, updateUrl]);
+  }, [debouncedSave, updateUrl, location]);
 
   // Reset form to initial values
   const resetForm = useCallback(() => {
+    console.log('Resetting form to initial values');
     setFormValues(initialValues);
     clearStorage();
-    clearUrl();
-  }, [initialValues, clearStorage, clearUrl]);
+    clearUrl(location.pathname);
+  }, [initialValues, clearStorage, clearUrl, location.pathname]);
 
-  // Load state when location changes
+  // Load state when location changes or component mounts
   useEffect(() => {
-    setFormValues(loadPersistedState());
-  }, [loadPersistedState]);
+    console.log('Location changed, reloading persisted state');
+    const persistedState = loadPersistedState();
+    setFormValues(persistedState);
+  }, [location.pathname, location.search]);
 
   // Create form helpers
   const formHelpers = createFormHelpers(formValues, handleChange, initialValues);

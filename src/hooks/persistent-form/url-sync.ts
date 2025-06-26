@@ -1,18 +1,13 @@
 
-import { useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
-
 export function createUrlSyncOperations<T extends Record<string, any>>(
   syncWithUrl: boolean,
   excludeFields: string[]
 ) {
-  const location = useLocation();
-
-  const loadFromUrl = useCallback((): Partial<T> => {
+  const loadFromUrl = (currentSearch: string): Partial<T> => {
     if (!syncWithUrl) return {};
 
     try {
-      const urlParams = new URLSearchParams(location.search);
+      const urlParams = new URLSearchParams(currentSearch);
       const urlData: Partial<T> = {};
       
       urlParams.forEach((value, key) => {
@@ -31,13 +26,13 @@ export function createUrlSyncOperations<T extends Record<string, any>>(
       console.warn('Failed to load from URL:', error);
       return {};
     }
-  }, [syncWithUrl, location.search, excludeFields]);
+  };
 
-  const updateUrl = useCallback((values: T) => {
-    if (!syncWithUrl) return;
+  const updateUrl = (values: T, currentLocation: { pathname: string; search: string }) => {
+    if (!syncWithUrl || typeof window === 'undefined') return;
 
     try {
-      const searchParams = new URLSearchParams(location.search);
+      const searchParams = new URLSearchParams(currentLocation.search);
       
       Object.entries(values).forEach(([key, value]) => {
         if (!excludeFields.includes(key) && value !== undefined && value !== null && value !== '') {
@@ -50,26 +45,26 @@ export function createUrlSyncOperations<T extends Record<string, any>>(
       });
 
       const newSearch = searchParams.toString();
-      const newUrl = `${location.pathname}${newSearch ? `?${newSearch}` : ''}`;
+      const newUrl = `${currentLocation.pathname}${newSearch ? `?${newSearch}` : ''}`;
       
       // Only update if URL actually changed
-      if (newUrl !== `${location.pathname}${location.search}`) {
+      if (newUrl !== `${currentLocation.pathname}${currentLocation.search}`) {
         window.history.replaceState({}, '', newUrl);
       }
     } catch (error) {
       console.warn('Failed to update URL:', error);
     }
-  }, [syncWithUrl, location, excludeFields]);
+  };
 
-  const clearUrl = useCallback(() => {
-    if (!syncWithUrl) return;
+  const clearUrl = (currentPathname: string) => {
+    if (!syncWithUrl || typeof window === 'undefined') return;
     
     try {
-      window.history.replaceState({}, '', location.pathname);
+      window.history.replaceState({}, '', currentPathname);
     } catch (error) {
       console.warn('Failed to clear URL:', error);
     }
-  }, [syncWithUrl, location.pathname]);
+  };
 
   return {
     loadFromUrl,
