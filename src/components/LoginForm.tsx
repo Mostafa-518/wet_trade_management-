@@ -30,7 +30,8 @@ export function LoginForm() {
     customKey: 'login-form',
     syncWithUrl: false, // Don't sync login credentials with URL for security
     excludeFields: ['password'], // Don't persist password for security
-    expirationHours: 1
+    expirationHours: 1,
+    debounceMs: 100
   });
 
   const handleSubmit = async (e: React.FormEvent) => {

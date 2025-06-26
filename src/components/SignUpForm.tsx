@@ -31,7 +31,8 @@ export function SignUpForm() {
     customKey: 'signup-form',
     syncWithUrl: false, // Don't sync credentials with URL for security
     excludeFields: ['password', 'confirmPassword'], // Don't persist passwords for security
-    expirationHours: 1
+    expirationHours: 1,
+    debounceMs: 100
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
