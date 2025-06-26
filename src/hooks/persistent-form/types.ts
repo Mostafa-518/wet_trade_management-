@@ -10,6 +10,10 @@ export interface PersistentFormOptions {
   debounceMs?: number;
   // Fields to exclude from persistence
   excludeFields?: string[];
+  // Auto-expiration time in hours (default: 1 hour)
+  expirationHours?: number;
+  // Whether to enable reset functionality
+  enableReset?: boolean;
 }
 
 export interface FormInputProps {
@@ -30,4 +34,15 @@ export interface FormCheckboxProps {
 export interface FormSwitchProps {
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
+}
+
+export interface FormRadioProps {
+  value: string;
+  onValueChange: (value: string) => void;
+}
+
+export interface StoredFormData<T> {
+  data: T;
+  timestamp: number;
+  version?: string;
 }

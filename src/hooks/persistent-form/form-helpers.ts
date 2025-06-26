@@ -1,6 +1,6 @@
 
 import { useCallback } from 'react';
-import { FormInputProps, FormSelectProps, FormCheckboxProps, FormSwitchProps } from './types';
+import { FormInputProps, FormSelectProps, FormCheckboxProps, FormSwitchProps, FormRadioProps } from './types';
 
 export function createFormHelpers<T extends Record<string, any>>(
   formValues: T,
@@ -28,15 +28,50 @@ export function createFormHelpers<T extends Record<string, any>>(
     onCheckedChange: (checked: boolean) => handleChange(field, checked)
   }), [formValues, handleChange]);
 
+  const getRadioProps = useCallback((field: keyof T, optionValue: string): FormRadioProps => ({
+    value: optionValue,
+    onValueChange: (value: string) => handleChange(field, value)
+  }), [handleChange]);
+
+  const getNumberInputProps = useCallback((field: keyof T) => ({
+    value: formValues[field] || '',
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      handleChange(field, value === '' ? '' : Number(value));
+    }
+  }), [formValues, handleChange]);
+
+  const getDateInputProps = useCallback((field: keyof T) => ({
+    value: formValues[field] || '',
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => 
+      handleChange(field, e.target.value)
+  }), [formValues, handleChange]);
+
+  const getMultiSelectProps = useCallback((field: keyof T) => ({
+    value: formValues[field] || [],
+    onChange: (values: string[]) => handleChange(field, values)
+  }), [formValues, handleChange]);
+
   const clearField = useCallback((field: keyof T) => {
     handleChange(field, initialValues[field]);
   }, [handleChange, initialValues]);
+
+  const clearAllFields = useCallback(() => {
+    Object.keys(formValues).forEach(key => {
+      handleChange(key as keyof T, initialValues[key as keyof T]);
+    });
+  }, [formValues, handleChange, initialValues]);
 
   return {
     getInputProps,
     getSelectProps,
     getCheckboxProps,
     getSwitchProps,
-    clearField
+    getRadioProps,
+    getNumberInputProps,
+    getDateInputProps,
+    getMultiSelectProps,
+    clearField,
+    clearAllFields
   };
 }

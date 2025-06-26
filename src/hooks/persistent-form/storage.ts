@@ -1,23 +1,34 @@
 
-import { PersistentFormOptions } from './types';
+import { PersistentFormOptions, StoredFormData } from './types';
 
 export function createStorageOperations<T extends Record<string, any>>(
   storageKey: string,
   storage: Storage,
   initialValues: T,
-  excludeFields: string[]
+  excludeFields: string[],
+  expirationHours: number = 1
 ) {
   const loadFromStorage = (): Partial<T> => {
     try {
       console.log('Loading from storage with key:', storageKey);
       const storedData = storage.getItem(storageKey);
       if (storedData) {
-        const parsed = JSON.parse(storedData) as Record<string, any>;
+        const parsed = JSON.parse(storedData) as StoredFormData<Record<string, any>>;
         console.log('Parsed storage data:', parsed);
+        
+        // Check if data has expired
+        const now = Date.now();
+        const expirationTime = parsed.timestamp + (expirationHours * 60 * 60 * 1000);
+        
+        if (now > expirationTime) {
+          console.log('Storage data expired, clearing...');
+          storage.removeItem(storageKey);
+          return {};
+        }
         
         // Only return non-empty values
         const filteredData: Partial<T> = {};
-        Object.entries(parsed).forEach(([key, value]) => {
+        Object.entries(parsed.data || {}).forEach(([key, value]) => {
           if (value !== null && value !== undefined && value !== '') {
             filteredData[key as keyof T] = value as T[keyof T];
           }
@@ -28,6 +39,8 @@ export function createStorageOperations<T extends Record<string, any>>(
       console.log('No data found in storage');
     } catch (error) {
       console.warn('Failed to load from storage:', error);
+      // Clear corrupted data
+      storage.removeItem(storageKey);
     }
     return {};
   };
@@ -43,8 +56,20 @@ export function createStorageOperations<T extends Record<string, any>>(
         }
       });
       
-      console.log('Saving to storage:', storageKey, valuesToSave);
-      storage.setItem(storageKey, JSON.stringify(valuesToSave));
+      // Only save if there's actual data to persist
+      if (Object.keys(valuesToSave).length > 0) {
+        const dataToStore: StoredFormData<Partial<T>> = {
+          data: valuesToSave,
+          timestamp: Date.now(),
+          version: '1.0'
+        };
+        
+        console.log('Saving to storage:', storageKey, dataToStore);
+        storage.setItem(storageKey, JSON.stringify(dataToStore));
+      } else {
+        // Clear storage if no data to save
+        clearStorage();
+      }
     } catch (error) {
       console.warn('Failed to save to storage:', error);
     }
@@ -59,10 +84,26 @@ export function createStorageOperations<T extends Record<string, any>>(
     }
   };
 
+  const isStorageExpired = (): boolean => {
+    try {
+      const storedData = storage.getItem(storageKey);
+      if (!storedData) return false;
+      
+      const parsed = JSON.parse(storedData) as StoredFormData<any>;
+      const now = Date.now();
+      const expirationTime = parsed.timestamp + (expirationHours * 60 * 60 * 1000);
+      
+      return now > expirationTime;
+    } catch {
+      return true; // Consider expired if can't parse
+    }
+  };
+
   return {
     loadFromStorage,
     saveToStorage,
-    clearStorage
+    clearStorage,
+    isStorageExpired
   };
 }
 

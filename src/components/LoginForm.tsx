@@ -6,20 +6,39 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
+import { usePersistentFormState } from '@/hooks/persistent-form';
+import { FormResetButton } from '@/components/FormResetButton';
+
+interface LoginFormData {
+  email: string;
+  password: string;
+}
 
 export function LoginForm() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
   const navigate = useNavigate();
+
+  const {
+    formValues,
+    getInputProps,
+    resetForm,
+    hasPersistedData
+  } = usePersistentFormState<LoginFormData>({
+    email: '',
+    password: ''
+  }, {
+    customKey: 'login-form',
+    excludeFields: ['password'], // Don't persist password for security
+    expirationHours: 24 // Keep email for longer
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      await signIn(email, password);
+      await signIn(formValues.email, formValues.password);
       navigate('/dashboard');
     } catch (error) {
       // Error handling is done in the signIn function
@@ -42,10 +61,9 @@ export function LoginForm() {
               <Input
                 id="email"
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 required
+                {...getInputProps('email')}
               />
             </div>
             <div className="space-y-2">
@@ -53,15 +71,22 @@ export function LoginForm() {
               <Input
                 id="password"
                 type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 required
+                {...getInputProps('password')}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Signing in...' : 'Sign In'}
-            </Button>
+            <div className="flex gap-2">
+              <Button type="submit" className="flex-1" disabled={loading}>
+                {loading ? 'Signing in...' : 'Sign In'}
+              </Button>
+              <FormResetButton 
+                onReset={resetForm}
+                hasData={hasPersistedData()}
+                variant="ghost"
+                size="default"
+              />
+            </div>
           </form>
           <div className="mt-4 text-center">
             <p className="text-sm text-gray-600">

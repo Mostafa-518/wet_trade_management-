@@ -6,21 +6,42 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
+import { usePersistentFormState } from '@/hooks/persistent-form';
+import { FormResetButton } from '@/components/FormResetButton';
+
+interface SignUpFormData {
+  email: string;
+  password: string;
+  fullName: string;
+}
 
 export function SignUpForm() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
+
+  const {
+    formValues,
+    getInputProps,
+    resetForm,
+    hasPersistedData
+  } = usePersistentFormState<SignUpFormData>({
+    email: '',
+    password: '',
+    fullName: ''
+  }, {
+    customKey: 'signup-form',
+    excludeFields: ['password'], // Don't persist password for security
+    expirationHours: 24
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      await signUp(email, password, fullName);
+      await signUp(formValues.email, formValues.password, formValues.fullName);
+      resetForm(); // Clear form on successful signup
       navigate('/login');
     } catch (error) {
       // Error handling is done in the signUp function
@@ -43,10 +64,9 @@ export function SignUpForm() {
               <Input
                 id="fullName"
                 type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
                 placeholder="Enter your full name"
                 required
+                {...getInputProps('fullName')}
               />
             </div>
             <div className="space-y-2">
@@ -54,10 +74,9 @@ export function SignUpForm() {
               <Input
                 id="email"
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 required
+                {...getInputProps('email')}
               />
             </div>
             <div className="space-y-2">
@@ -65,16 +84,23 @@ export function SignUpForm() {
               <Input
                 id="password"
                 type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 required
                 minLength={6}
+                {...getInputProps('password')}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Creating account...' : 'Sign Up'}
-            </Button>
+            <div className="flex gap-2">
+              <Button type="submit" className="flex-1" disabled={loading}>
+                {loading ? 'Creating account...' : 'Sign Up'}
+              </Button>
+              <FormResetButton 
+                onReset={resetForm}
+                hasData={hasPersistedData()}
+                variant="ghost"
+                size="default"
+              />
+            </div>
           </form>
           <div className="mt-4 text-center">
             <p className="text-sm text-gray-600">

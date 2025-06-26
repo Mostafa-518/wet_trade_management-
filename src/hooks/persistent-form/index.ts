@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { PersistentFormOptions } from './types';
 import { createStorageOperations, createDebouncedSave } from './storage';
 import { createUrlSyncOperations } from './url-sync';
@@ -14,20 +14,24 @@ export function usePersistentFormState<T extends Record<string, any>>(
     syncWithUrl = false,
     storageType = 'localStorage',
     debounceMs = 300,
-    excludeFields = []
+    excludeFields = [],
+    expirationHours = 1,
+    enableReset = true
   } = options;
 
   // Generate storage key based on current path or custom key
   const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
   const storageKey = customKey || `form-state-${currentPath}`;
   const storage = storageType === 'localStorage' ? localStorage : sessionStorage;
+  const initializedRef = useRef(false);
 
   // Create storage operations
-  const { loadFromStorage, saveToStorage, clearStorage } = createStorageOperations(
+  const { loadFromStorage, saveToStorage, clearStorage, isStorageExpired } = createStorageOperations(
     storageKey,
     storage,
     initialValues,
-    excludeFields
+    excludeFields,
+    expirationHours
   );
 
   // Create URL sync operations
@@ -44,14 +48,19 @@ export function usePersistentFormState<T extends Record<string, any>>(
       // Start with initial values
       let persistedState = { ...initialValues };
 
-      // Load from storage first
-      const storedData = loadFromStorage();
-      if (storedData && Object.keys(storedData).length > 0) {
-        console.log('Loaded from storage:', storedData);
-        persistedState = { ...persistedState, ...storedData };
+      // Load from storage first (if not expired)
+      if (!isStorageExpired()) {
+        const storedData = loadFromStorage();
+        if (storedData && Object.keys(storedData).length > 0) {
+          console.log('Loaded from storage:', storedData);
+          persistedState = { ...persistedState, ...storedData };
+        }
+      } else {
+        console.log('Storage data expired, using initial values');
+        clearStorage();
       }
 
-      // Load from URL if enabled
+      // Load from URL if enabled (URL takes precedence)
       if (syncWithUrl && typeof window !== 'undefined') {
         const urlData = loadFromUrl(window.location.search);
         if (urlData && Object.keys(urlData).length > 0) {
@@ -73,9 +82,13 @@ export function usePersistentFormState<T extends Record<string, any>>(
       console.warn('Failed to load persisted form state:', error);
       return initialValues;
     }
-  }, [initialValues, storageKey, syncWithUrl]);
+  }, [initialValues, storageKey, syncWithUrl, isStorageExpired, loadFromStorage, loadFromUrl, clearStorage, excludeFields]);
 
-  const [formValues, setFormValues] = useState<T>(() => loadPersistedState());
+  const [formValues, setFormValues] = useState<T>(() => {
+    const persisted = loadPersistedState();
+    initializedRef.current = true;
+    return persisted;
+  });
 
   // Create debounced save function
   const debouncedSave = createDebouncedSave(saveToStorage, debounceMs);
@@ -132,17 +145,53 @@ export function usePersistentFormState<T extends Record<string, any>>(
     }
   }, [initialValues, clearStorage, clearUrl, syncWithUrl]);
 
+  // Check if form has any persisted data
+  const hasPersistedData = useCallback(() => {
+    return Object.keys(formValues).some(key => {
+      const currentValue = formValues[key as keyof T];
+      const initialValue = initialValues[key as keyof T];
+      return currentValue !== initialValue && currentValue !== '' && currentValue !== null && currentValue !== undefined;
+    });
+  }, [formValues, initialValues]);
+
   // Reload persisted state when returning to the page
   useEffect(() => {
+    if (!initializedRef.current) return;
+
     const handleFocus = () => {
-      console.log('Window focused, reloading persisted state');
-      const persistedState = loadPersistedState();
-      setFormValues(persistedState);
+      console.log('Window focused, checking for updated persisted state');
+      if (!isStorageExpired()) {
+        const persistedState = loadPersistedState();
+        setFormValues(persistedState);
+      } else {
+        console.log('Storage expired on focus, clearing...');
+        clearStorage();
+        setFormValues(initialValues);
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        handleFocus();
+      }
     };
 
     window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-  }, [loadPersistedState]);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [loadPersistedState, isStorageExpired, clearStorage, initialValues]);
+
+  // Auto-cleanup expired data on mount
+  useEffect(() => {
+    if (isStorageExpired()) {
+      console.log('Storage expired on mount, clearing...');
+      clearStorage();
+    }
+  }, [isStorageExpired, clearStorage]);
 
   // Create form helpers
   const formHelpers = createFormHelpers(formValues, handleChange, initialValues);
@@ -152,6 +201,8 @@ export function usePersistentFormState<T extends Record<string, any>>(
     handleChange,
     handleBatchChange,
     resetForm,
+    hasPersistedData,
+    isExpired: isStorageExpired,
     ...formHelpers
   };
 }
