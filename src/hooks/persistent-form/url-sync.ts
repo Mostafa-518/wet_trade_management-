@@ -11,7 +11,7 @@ export function createUrlSyncOperations<T extends Record<string, any>>(
       const urlData: Partial<T> = {};
       
       urlParams.forEach((value, key) => {
-        if (!excludeFields.includes(key)) {
+        if (!excludeFields.includes(key) && value !== '' && value !== null) {
           // Try to parse as JSON for complex values, fallback to string
           try {
             urlData[key as keyof T] = JSON.parse(value);

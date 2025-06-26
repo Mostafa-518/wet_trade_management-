@@ -14,7 +14,16 @@ export function createStorageOperations<T extends Record<string, any>>(
       if (storedData) {
         const parsed = JSON.parse(storedData);
         console.log('Parsed storage data:', parsed);
-        return parsed;
+        
+        // Only return non-empty values
+        const filteredData: Partial<T> = {};
+        Object.entries(parsed).forEach(([key, value]) => {
+          if (value !== null && value !== undefined && value !== '') {
+            filteredData[key as keyof T] = value;
+          }
+        });
+        
+        return filteredData;
       }
       console.log('No data found in storage');
     } catch (error) {
@@ -25,10 +34,13 @@ export function createStorageOperations<T extends Record<string, any>>(
 
   const saveToStorage = (values: T): void => {
     try {
-      // Filter out excluded fields before saving
-      const valuesToSave = { ...values };
-      excludeFields.forEach(field => {
-        delete valuesToSave[field as keyof T];
+      // Filter out excluded fields and empty values before saving
+      const valuesToSave: Partial<T> = {};
+      
+      Object.entries(values).forEach(([key, value]) => {
+        if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+          valuesToSave[key as keyof T] = value;
+        }
       });
       
       console.log('Saving to storage:', storageKey, valuesToSave);
