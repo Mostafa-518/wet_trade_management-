@@ -1,6 +1,5 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
 import { PersistentFormOptions } from './types';
 import { createStorageOperations, createDebouncedSave } from './storage';
 import { createUrlSyncOperations } from './url-sync';
@@ -10,7 +9,6 @@ export function usePersistentFormState<T extends Record<string, any>>(
   initialValues: T,
   options: PersistentFormOptions = {}
 ) {
-  const location = useLocation();
   const {
     customKey,
     syncWithUrl = false,
@@ -20,7 +18,8 @@ export function usePersistentFormState<T extends Record<string, any>>(
   } = options;
 
   // Generate storage key based on current path or custom key
-  const storageKey = customKey || `form-state-${location.pathname}`;
+  const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
+  const storageKey = customKey || `form-state-${currentPath}`;
   const storage = storageType === 'localStorage' ? localStorage : sessionStorage;
 
   // Create storage operations
@@ -51,9 +50,11 @@ export function usePersistentFormState<T extends Record<string, any>>(
       persistedState = { ...persistedState, ...storedData };
 
       // Load from URL if enabled
-      const urlData = loadFromUrl(location.search);
-      console.log('Loaded from URL:', urlData);
-      persistedState = { ...persistedState, ...urlData };
+      if (syncWithUrl && typeof window !== 'undefined') {
+        const urlData = loadFromUrl(window.location.search);
+        console.log('Loaded from URL:', urlData);
+        persistedState = { ...persistedState, ...urlData };
+      }
 
       // Filter out excluded fields
       excludeFields.forEach(field => {
@@ -68,7 +69,7 @@ export function usePersistentFormState<T extends Record<string, any>>(
       console.warn('Failed to load persisted form state:', error);
       return initialValues;
     }
-  }, [initialValues, loadFromStorage, loadFromUrl, excludeFields, storageKey, location.search]);
+  }, [initialValues, loadFromStorage, loadFromUrl, excludeFields, storageKey, syncWithUrl]);
 
   const [formValues, setFormValues] = useState<T>(loadPersistedState);
 
@@ -82,35 +83,49 @@ export function usePersistentFormState<T extends Record<string, any>>(
       const newValues = { ...prev, [field]: value };
       console.log('Saving new values:', newValues);
       debouncedSave(newValues);
-      updateUrl(newValues, location);
+      
+      if (syncWithUrl && typeof window !== 'undefined') {
+        updateUrl(newValues, { 
+          pathname: window.location.pathname, 
+          search: window.location.search 
+        });
+      }
       return newValues;
     });
-  }, [debouncedSave, updateUrl, location]);
+  }, [debouncedSave, updateUrl, syncWithUrl]);
 
   // Batch update multiple fields
   const handleBatchChange = useCallback((updates: Partial<T>) => {
     setFormValues(prev => {
       const newValues = { ...prev, ...updates };
       debouncedSave(newValues);
-      updateUrl(newValues, location);
+      
+      if (syncWithUrl && typeof window !== 'undefined') {
+        updateUrl(newValues, { 
+          pathname: window.location.pathname, 
+          search: window.location.search 
+        });
+      }
       return newValues;
     });
-  }, [debouncedSave, updateUrl, location]);
+  }, [debouncedSave, updateUrl, syncWithUrl]);
 
   // Reset form to initial values
   const resetForm = useCallback(() => {
     console.log('Resetting form to initial values');
     setFormValues(initialValues);
     clearStorage();
-    clearUrl(location.pathname);
-  }, [initialValues, clearStorage, clearUrl, location.pathname]);
+    if (syncWithUrl && typeof window !== 'undefined') {
+      clearUrl(window.location.pathname);
+    }
+  }, [initialValues, clearStorage, clearUrl, syncWithUrl]);
 
-  // Load state when location changes or component mounts
+  // Load state when component mounts or when storage key changes
   useEffect(() => {
-    console.log('Location changed, reloading persisted state');
+    console.log('Storage key or initial values changed, reloading persisted state');
     const persistedState = loadPersistedState();
     setFormValues(persistedState);
-  }, [location.pathname, location.search]);
+  }, [storageKey]);
 
   // Create form helpers
   const formHelpers = createFormHelpers(formValues, handleChange, initialValues);

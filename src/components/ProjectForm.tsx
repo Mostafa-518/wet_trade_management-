@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -46,7 +47,7 @@ export function ProjectForm({ project, onSubmit, onCancel }: ProjectFormProps) {
       handleChange('code', project.code);
       handleChange('location', project.location);
     }
-  }, [project, isEditing]);
+  }, [project, isEditing, handleChange]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
