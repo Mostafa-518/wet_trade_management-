@@ -62,8 +62,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className="flex flex-col bg-gray-100  h-lvh">
-      <div className="flex flex-1 h-full">
+    <div className="flex flex-col bg-gray-100  h-screen">
+      <div className="flex flex-1 h-80vh overflow-hidden">
         {/* Sidebar */}
         <div
           className={`${
@@ -216,7 +216,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Full Width Footer */}
-      <footer className="fixed bottom-0 w-full border-t py-4 text-center text-sm text-gray-500 bg-white">
+      <footer className="h-12 w-full border-t py-4 text-left my-auto text-sm text-gray-500 bg-white">
         ©️ {new Date().getFullYear()} Developed by{" "}
         <span className="font-semibold text-gray-700">Eng. Mostafa Ashraf</span>
       </footer>
