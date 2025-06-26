@@ -1,233 +1,140 @@
-import React from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+
+import { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { SubcontractTable } from '@/components/SubcontractTable';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Eye, Edit } from 'lucide-react';
-import { useData } from '@/contexts/DataContext';
-import { useSubcontractHelpers } from '@/hooks/subcontract/useSubcontractHelpers';
-import { useSubcontractFiltering } from '@/hooks/subcontract/useSubcontractFiltering';
-import { formatCurrency, formatDate } from '@/components/subcontract/SubcontractTableHelpers';
+import { ArrowLeft } from 'lucide-react';
+import { useSubcontracts } from '@/hooks/useSubcontracts';
+import { usePersistentFormState } from '@/hooks/persistent-form';
+import { FormResetButton } from '@/components/FormResetButton';
+
+const initialFilters = {
+  month: '',
+  year: '',
+  location: '',
+  trades: '',
+  projectName: '',
+  projectCode: '',
+  facilities: ''
+};
 
 export function FilteredSubcontracts() {
+  const location = useLocation();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const { subcontracts, projects, subcontractors, isLoading } = useData();
-  const { getProjectName, getSubcontractorName } = useSubcontractHelpers();
+  const { data: subcontracts = [], isLoading } = useSubcontracts();
 
-  // Extract filter parameters from URL
-  const projectId = searchParams.get('projectId');
-  const subcontractorId = searchParams.get('subcontractorId');
-  const month = searchParams.get('month');
-  const year = searchParams.get('year');
-  const location = searchParams.get('location');
-  const trades = searchParams.get('trades');
-  const projectName = searchParams.get('projectName');
-  const projectCode = searchParams.get('projectCode');
-  const facilities = searchParams.get('facilities')?.split(',').filter(Boolean) || [];
+  const {
+    formValues: filters,
+    handleChange,
+    resetForm,
+    hasPersistedData
+  } = usePersistentFormState(initialFilters, {
+    customKey: 'filtered-subcontracts',
+    syncWithUrl: true,
+    expirationHours: 24
+  });
 
-  // Build report filters object
-  const reportFilters = {
-    month: month || 'all',
-    year: year || 'all',
-    location: location || 'all',
-    trades: trades || 'all',
-    projectName: projectName || 'all',
-    projectCode: projectCode || 'all',
-    facilities: facilities
+  // Parse URL parameters on mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const urlFilters: Record<string, string> = {};
+    
+    urlParams.forEach((value, key) => {
+      if (key in initialFilters) {
+        urlFilters[key] = value;
+      }
+    });
+
+    // Update form with URL parameters if they exist
+    if (Object.keys(urlFilters).length > 0) {
+      Object.entries(urlFilters).forEach(([key, value]) => {
+        handleChange(key as keyof typeof initialFilters, value);
+      });
+    }
+  }, [location.search, handleChange]);
+
+  // Filter subcontracts based on current filters
+  const filteredSubcontracts = subcontracts.filter(subcontract => {
+    if (filters.month && subcontract.date_of_issuing) {
+      const monthIndex = ['January', 'February', 'March', 'April', 'May', 'June',
+                         'July', 'August', 'September', 'October', 'November', 'December']
+                         .indexOf(filters.month);
+      if (monthIndex !== -1) {
+        const subcontractMonth = new Date(subcontract.date_of_issuing).getMonth();
+        if (subcontractMonth !== monthIndex) return false;
+      }
+    }
+
+    if (filters.year && subcontract.date_of_issuing) {
+      const subcontractYear = new Date(subcontract.date_of_issuing).getFullYear().toString();
+      if (subcontractYear !== filters.year) return false;
+    }
+
+    if (filters.location && subcontract.projects?.location !== filters.location) {
+      return false;
+    }
+
+    if (filters.projectName && subcontract.projects?.name !== filters.projectName) {
+      return false;
+    }
+
+    if (filters.projectCode && subcontract.projects?.code !== filters.projectCode) {
+      return false;
+    }
+
+    return true;
+  });
+
+  const handleGoBack = () => {
+    navigate('/report');
   };
-
-  // Apply filtering
-  const filteredSubcontracts = useSubcontractFiltering(subcontracts, reportFilters);
-
-  // Generate header title based on filters
-  const getHeaderTitle = () => {
-    if (projectId && projects.length > 0) {
-      const project = projects.find(p => p.id === projectId);
-      return `Subcontracts for Project: ${project?.name || 'Unknown Project'}`;
-    }
-    if (subcontractorId && subcontractors.length > 0) {
-      const subcontractor = subcontractors.find(s => s.id === subcontractorId);
-      return `Subcontracts for Subcontractor: ${subcontractor?.companyName || 'Unknown Subcontractor'}`;
-    }
-    if (projectName && projectName !== 'all') {
-      return `Subcontracts for Project: ${projectName}`;
-    }
-    if (location && location !== 'all') {
-      return `Subcontracts for Location: ${location}`;
-    }
-    if (trades && trades !== 'all') {
-      return `Subcontracts for Trade: ${trades}`;
-    }
-    return 'Filtered Subcontracts';
-  };
-
-  const handleViewSubcontract = (subcontractId: string) => {
-    navigate(`/subcontracts/${subcontractId}`);
-  };
-
-  const handleEditSubcontract = (subcontractId: string) => {
-    navigate(`/subcontracts/${subcontractId}?edit=true`);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading subcontracts...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button 
-            variant="outline" 
-            onClick={() => navigate('/report')}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
+        <div className="flex items-center space-x-4">
+          <Button onClick={handleGoBack} variant="outline" size="sm">
+            <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Report
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">{getHeaderTitle()}</h1>
-            <p className="text-muted-foreground">
-              {filteredSubcontracts.length} subcontract{filteredSubcontracts.length !== 1 ? 's' : ''} found
-            </p>
-          </div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Filtered Subcontracts ({filteredSubcontracts.length})
+          </h1>
         </div>
+        <FormResetButton 
+          onReset={resetForm}
+          hasData={hasPersistedData()}
+          variant="outline"
+          size="sm"
+        >
+          Clear All Filters
+        </FormResetButton>
       </div>
 
-      {/* Applied Filters Summary */}
-      {Object.values(reportFilters).some(filter => 
-        Array.isArray(filter) ? filter.length > 0 : filter !== 'all'
-      ) && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Applied Filters</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {reportFilters.month !== 'all' && (
-                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                  Month: {reportFilters.month}
-                </span>
-              )}
-              {reportFilters.year !== 'all' && (
-                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                  Year: {reportFilters.year}
-                </span>
-              )}
-              {reportFilters.location !== 'all' && (
-                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                  Location: {reportFilters.location}
-                </span>
-              )}
-              {reportFilters.trades !== 'all' && (
-                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                  Trade: {reportFilters.trades}
-                </span>
-              )}
-              {reportFilters.projectName !== 'all' && (
-                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                  Project: {reportFilters.projectName}
-                </span>
-              )}
-              {reportFilters.facilities.length > 0 && (
-                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                  Facilities: {reportFilters.facilities.join(', ')}
-                </span>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Subcontracts List */}
-      {filteredSubcontracts.length === 0 ? (
-        <Card>
-          <CardContent className="py-12">
-            <div className="text-center text-muted-foreground">
-              <p className="text-lg mb-2">No subcontracts found for this context.</p>
-              <p>Try adjusting your filters or check if data exists for the selected criteria.</p>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4">
-          {filteredSubcontracts.map((subcontract) => (
-            <Card key={subcontract.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-center">
-                  <div className="md:col-span-2">
-                    <h3 className="font-semibold text-lg text-blue-600">
-                      {subcontract.contractId}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {formatDate(subcontract.dateOfIssuing)}
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <p className="font-medium">{getProjectName(subcontract.project)}</p>
-                    <p className="text-sm text-muted-foreground">Project</p>
-                  </div>
-                  
-                  <div>
-                    <p className="font-medium">{getSubcontractorName(subcontract.subcontractor)}</p>
-                    <p className="text-sm text-muted-foreground">Subcontractor</p>
-                  </div>
-                  
-                  <div>
-                    <p className="font-medium">{formatCurrency(subcontract.totalValue || 0)}</p>
-                    <p className="text-sm text-muted-foreground">Total Value</p>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 justify-end">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleViewSubcontract(subcontract.id)}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      View
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleEditSubcontract(subcontract.id)}
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
-                      Edit
-                    </Button>
-                  </div>
-                </div>
-                
-                {/* Trade Items Summary */}
-                {subcontract.tradeItems && subcontract.tradeItems.length > 0 && (
-                  <div className="mt-4 pt-4 border-t">
-                    <p className="text-sm text-muted-foreground mb-2">Trade Items:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {subcontract.tradeItems.map((item, idx) => (
-                        <span 
-                          key={idx}
-                          className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs"
-                        >
-                          {item.trade} - {item.item}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+      {/* Show active filters */}
+      {hasPersistedData() && (
+        <div className="bg-blue-50 p-4 rounded-lg">
+          <h3 className="font-medium text-blue-900 mb-2">Active Filters:</h3>
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(filters).map(([key, value]) => {
+              if (value) {
+                return (
+                  <span key={key} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
+                    {key}: {value}
+                  </span>
+                );
+              }
+              return null;
+            })}
+          </div>
         </div>
       )}
+
+      <SubcontractTable
+        subcontracts={filteredSubcontracts}
+        isLoading={isLoading}
+        showCreateButton={false}
+      />
     </div>
   );
 }
