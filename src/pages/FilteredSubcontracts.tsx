@@ -21,7 +21,7 @@ const initialFilters = {
 export function FilteredSubcontracts() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { data: subcontracts = [], isLoading } = useSubcontracts();
+  const { subcontracts = [], isLoading } = useSubcontracts();
 
   const {
     formValues: filters,
@@ -89,6 +89,10 @@ export function FilteredSubcontracts() {
     navigate('/report');
   };
 
+  const handleViewDetail = (contractId: string) => {
+    navigate(`/subcontract/${contractId}`);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -131,9 +135,8 @@ export function FilteredSubcontracts() {
       )}
 
       <SubcontractTable
-        subcontracts={filteredSubcontracts}
-        isLoading={isLoading}
-        showCreateButton={false}
+        onViewDetail={handleViewDetail}
+        reportFilters={filteredSubcontracts}
       />
     </div>
   );
