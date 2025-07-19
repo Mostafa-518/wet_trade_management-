@@ -14,8 +14,8 @@ export function filterSubcontracts(
     
     // Month filter
     if (filters.month !== 'all' && filters.month !== 'All') {
-      const monthIndex = ['January', 'February', 'March', 'April', 'May', 'June',
-                         'July', 'August', 'September', 'October', 'November', 'December'].indexOf(filters.month);
+      const monthIndex = ['january', 'february', 'march', 'april', 'may', 'june',
+                         'july', 'august', 'september', 'october', 'november', 'december'].indexOf(filters.month);
       if (monthIndex !== -1 && subcontract.date_of_issuing) {
         const subcontractMonth = new Date(subcontract.date_of_issuing).getMonth();
         if (subcontractMonth !== monthIndex) {
