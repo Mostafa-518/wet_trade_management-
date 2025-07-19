@@ -69,10 +69,11 @@ export function FilteredSubcontracts() {
     navigate(`/subcontracts/${subcontractId}?edit=true`);
   };
 
-    const handleClick = () => {
-    // Completely reset to #/report with no query parameters
-    window.location.hash = '#/report';
-    window.location.search = ''; // Remove any ?query
+     const handleClick = () => {
+    // This removes the query string and navigates to /report
+    navigate('/report', { replace: true });
+    // Clear the query string manually
+    window.history.replaceState(null, '', window.location.origin + window.location.pathname + '#/report');
   };
 
   if (isLoading) {
