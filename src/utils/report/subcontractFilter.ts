@@ -1,6 +1,17 @@
 
 import { SubcontractWithDetails, ReportFilters } from '@/types/report';
 
+
+const monthNames = [
+  'january', 'february', 'march', 'april', 'may', 'june',
+  'july', 'august', 'september', 'october', 'november', 'december'
+];
+
+const isAll = (value: string | undefined | null) =>
+  !value || value.toLowerCase() === 'all';
+
+
+
 export function filterSubcontracts(
   subcontracts: SubcontractWithDetails[], 
   filters: ReportFilters
@@ -13,20 +24,22 @@ export function filterSubcontracts(
     console.log(`\n--- Processing Subcontract ${subcontract.contract_number} ---`);
     
     // Month filter
-    if (filters.month !== 'all' && filters.month !== 'All') {
-      const monthIndex = ['january', 'february', 'march', 'april', 'may', 'june',
-                         'july', 'august', 'september', 'october', 'november', 'december'].indexOf(filters.month);
-      if (monthIndex !== -1 && subcontract.date_of_issuing) {
-        const subcontractMonth = new Date(subcontract.date_of_issuing).getMonth();
-        if (subcontractMonth !== monthIndex) {
-          console.log(`❌ Month filter failed: expected ${filters.month}, got month ${subcontractMonth}`);
-          return false;
-        }
+    if (!isAll(filters.month)) {
+      if (!subcontract.date_of_issuing) {
+        console.log(`❌ Month filter failed: missing date`);
+        return false;
+      }
+
+      const subcontractMonthName =
+        monthNames[new Date(subcontract.date_of_issuing).getMonth()];
+      if (subcontractMonthName !== filters.month) {
+        console.log(`❌ Month filter failed: expected ${filters.month}, got ${subcontractMonthName}`);
+        return false;
       }
     }
 
     // Year filter
-    if (filters.year !== 'all' && filters.year !== 'All') {
+    if (!isAll(filters.year)) {
       if (subcontract.date_of_issuing) {
         const subcontractYear = new Date(subcontract.date_of_issuing).getFullYear().toString();
         if (subcontractYear !== filters.year) {
