@@ -69,6 +69,12 @@ export function FilteredSubcontracts() {
     navigate(`/subcontracts/${subcontractId}?edit=true`);
   };
 
+    const handleClick = () => {
+    // Completely reset to #/report with no query parameters
+    window.location.hash = '#/report';
+    window.location.search = ''; // Remove any ?query
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -87,7 +93,7 @@ export function FilteredSubcontracts() {
         <div className="flex items-center gap-4">
           <Button 
             variant="outline" 
-            onClick={() => navigate('/report', { replace: true })}
+            onClick={handleClick}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
