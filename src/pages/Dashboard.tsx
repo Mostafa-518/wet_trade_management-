@@ -19,7 +19,6 @@ import {
 } from 'recharts';
 import { useReportData } from '@/hooks/useReportData';
 import { DashboardAlerts } from '@/components/DashboardAlerts';
-import { UserRoleDebug } from '@/components/UserRoleDebug';
 
 
 
