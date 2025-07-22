@@ -95,9 +95,12 @@ export function useUserMutations() {
     },
     onSuccess: (data) => {
       console.log('User update successful:', data);
-      // Invalidate both users list and user profile queries to refresh data
+      // Invalidate all related queries to refresh data everywhere
       queryClient.invalidateQueries({ queryKey: ['users'] });
       queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['auth'] });
+      // Force a complete refresh of the users table
+      queryClient.refetchQueries({ queryKey: ['users'] });
       toast({
         title: "User updated",
         description: "The user has been successfully updated.",

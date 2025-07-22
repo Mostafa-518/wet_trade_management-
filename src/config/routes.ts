@@ -21,5 +21,6 @@ export const ROUTES = {
   FILTERED_SUBCONTRACTS: '/reports/subcontracts',
   USERS: '/users',
   USER_DETAIL: '/users/:id',
+  ROLE_MANAGEMENT: '/admin/roles',
   PROFILE: '/profile',
 } as const;

@@ -29,10 +29,12 @@ export function UserManagement() {
     queryFn: async () => {
       const data = await UserService.getAll();
       return data.map(user => {
-        let normalizedRole: 'admin' | 'manager' | 'viewer';
+        let normalizedRole: 'admin' | 'project_manager' | 'supervisor' | 'viewer';
         if (user.role === 'admin') normalizedRole = 'admin';
         else if (user.role === 'viewer') normalizedRole = 'viewer';
-        else normalizedRole = 'manager';
+        else if (user.role === 'project_manager') normalizedRole = 'project_manager';
+        else if (user.role === 'supervisor') normalizedRole = 'supervisor';
+        else normalizedRole = 'viewer'; // fallback
         return {
           id: user.id,
           name: user.full_name || '',

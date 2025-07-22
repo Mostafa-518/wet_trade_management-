@@ -22,6 +22,7 @@ import { UserDetail } from "@/pages/UserDetail";
 import { Profile } from "@/pages/Profile";
 import { Dashboard } from "@/pages/Dashboard";
 import { Alerts } from "@/pages/Alerts";
+import { RoleManagementPage } from "@/pages/RoleManagement";
 
 function App() {
   return (
@@ -216,6 +217,18 @@ function App() {
               <Layout>
                 <DataProvider>
                   <UserDetail />
+                </DataProvider>
+              </Layout>
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/admin/roles"
+          element={
+            <AuthGuard>
+              <Layout>
+                <DataProvider>
+                  <RoleManagementPage />
                 </DataProvider>
               </Layout>
             </AuthGuard>

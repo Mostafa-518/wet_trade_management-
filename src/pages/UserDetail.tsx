@@ -23,7 +23,7 @@ const mockUsers = [
     email: 'jane.smith@example.com',
     phone: '+1 234 567 8901',
     department: 'Project Management',
-    role: 'manager' as const,
+    role: 'project_manager' as const,
     status: 'active' as const,
     avatar: '',
     createdAt: '2024-02-20T10:15:00Z',
