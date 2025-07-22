@@ -55,7 +55,9 @@ export function useUserMutations() {
       return data.user;
     },
     onSuccess: () => {
+      // Invalidate both users list and user profile queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['userProfile'] });
       toast({
         title: "User created",
         description: "The new user has been successfully created. They will receive a confirmation email.",
@@ -93,7 +95,9 @@ export function useUserMutations() {
     },
     onSuccess: (data) => {
       console.log('User update successful:', data);
+      // Invalidate both users list and user profile queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['userProfile'] });
       toast({
         title: "User updated",
         description: "The user has been successfully updated.",
@@ -114,7 +118,9 @@ export function useUserMutations() {
       return await UserService.delete(userId);
     },
     onSuccess: () => {
+      // Invalidate both users list and user profile queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['userProfile'] });
       toast({
         title: "User profile deleted",
         description: "The user profile has been successfully deleted.",

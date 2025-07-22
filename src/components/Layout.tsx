@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { usePermissions } from "@/hooks/usePermissions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ROUTES } from "@/config/routes";
 import { AlertBadge } from "./AlertBadge";
@@ -35,6 +36,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { userProfile, isLoading } = useUserProfile();
+  const { canManageUsers, hasPermission } = usePermissions();
 
   const handleSignOut = async () => {
     await signOut();
@@ -47,19 +49,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   const navigationItems = [
     { to: ROUTES.DASHBOARD, label: "Dashboard", icon: Home },
-    { to: ROUTES.PROJECTS, label: "Projects", icon: FolderOpen },
-    { to: ROUTES.SUBCONTRACTORS, label: "Subcontractors", icon: Users },
-    { to: ROUTES.TRADES, label: "Trades", icon: Wrench },
+    { to: ROUTES.PROJECTS, label: "Projects", icon: FolderOpen, permission: 'manage_projects' },
+    { to: ROUTES.SUBCONTRACTORS, label: "Subcontractors", icon: Users, permission: 'manage_subcontractors' },
+    { to: ROUTES.TRADES, label: "Trades", icon: Wrench, permission: 'manage_trades' },
     {
       to: ROUTES.RESPONSIBILITIES,
       label: "Responsibilities",
       icon: ClipboardList,
+      permission: 'manage_responsibilities'
     },
-    { to: ROUTES.SUBCONTRACTS, label: "Subcontracts", icon: FileText },
+    { to: ROUTES.SUBCONTRACTS, label: "Subcontracts", icon: FileText, permission: 'manage_subcontracts' },
     { to: ROUTES.ALERTS, label: "Alerts", icon: Bell },
-    { to: ROUTES.REPORT, label: "Reports", icon: BarChart3 },
-    { to: ROUTES.USERS, label: "Users", icon: UserCheck },
-  ];
+    { to: ROUTES.REPORT, label: "Reports", icon: BarChart3, permission: 'view_reports' },
+    ...(canManageUsers ? [{ to: ROUTES.USERS, label: "Users", icon: UserCheck, permission: 'manage_users' }] : []),
+  ].filter(item => !item.permission || hasPermission(item.permission as any));
 
   return (
     <div className="flex flex-col bg-gray-100  h-screen">

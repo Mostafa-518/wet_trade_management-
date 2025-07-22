@@ -3,10 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ProjectsTable } from '@/components/ProjectsTable';
 import { ProjectForm } from '@/components/ProjectForm';
+import { PermissionGuard } from '@/components/PermissionGuard';
 import { Project, ProjectFormData } from '@/types/project';
 import { useData } from '@/contexts/DataContext';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { usePermissions } from '@/hooks/usePermissions';
 
 export function Projects() {
   const navigate = useNavigate();
@@ -17,7 +19,7 @@ export function Projects() {
   const { addProject, updateProject, deleteProject } = useData();
   const { toast } = useToast();
   const { profile } = useAuth();
-  const canModify = profile?.role !== 'viewer';
+  const { canModify } = usePermissions();
 
   // Handle edit project state from navigation
   useEffect(() => {
@@ -88,11 +90,13 @@ export function Projects() {
   }
 
   return (
-    <ProjectsTable 
-      onCreateNew={canModify ? handleCreateNew : undefined}
-      onViewDetail={handleViewDetail}
-      onEdit={canModify ? handleEdit : undefined}
-      onDelete={canModify ? handleDelete : undefined}
-    />
+    <PermissionGuard permission="manage_projects">
+      <ProjectsTable 
+        onCreateNew={canModify ? handleCreateNew : undefined}
+        onViewDetail={handleViewDetail}
+        onEdit={canModify ? handleEdit : undefined}
+        onDelete={canModify ? handleDelete : undefined}
+      />
+    </PermissionGuard>
   );
 }

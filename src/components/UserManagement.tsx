@@ -9,10 +9,12 @@ import { useUserMutations } from '@/hooks/useUserMutations';
 import { UserService } from '@/services/userService';
 import { User } from '@/types/user';
 import { useAuth } from '@/hooks/useAuth';
+import { usePermissions } from '@/hooks/usePermissions';
 
 export function UserManagement() {
   const location = useLocation();
   const { profile } = useAuth();
+  const { canManageUsers } = usePermissions();
   const { createUserMutation, updateUserMutation, deleteUserMutation } = useUserMutations();
   
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -44,7 +46,9 @@ export function UserManagement() {
           avatar: user.avatar_url
         };
       });
-    }
+    },
+    staleTime: 0, // Always refetch to ensure fresh data
+    refetchOnWindowFocus: true, // Refetch when window gains focus
   });
 
   React.useEffect(() => {
@@ -107,13 +111,11 @@ export function UserManagement() {
     setSelectedUser(null);
   };
 
-  const canModify = profile?.role !== 'viewer';
-  
-  // Debug information about user role
-  console.log('UserManagement: User profile and role check:', {
+  // Debug information about user role and permissions
+  console.log('UserManagement: User profile and permissions check:', {
     profile,
     profileRole: profile?.role,
-    canModify
+    canManageUsers
   });
 
   if (isDetailOpen && selectedUser) {
@@ -121,7 +123,7 @@ export function UserManagement() {
       <UserDetailView
         user={selectedUser}
         onBack={handleDetailBack}
-        onEdit={canModify ? handleEditUser : () => {}}
+        onEdit={canManageUsers ? handleEditUser : () => {}}
       />
     );
   }
@@ -130,12 +132,12 @@ export function UserManagement() {
     <>
       <UsersTable
         users={users}
-        onAdd={canModify ? handleAddUser : undefined}
-        onEdit={canModify ? handleEditUser : undefined}
-        onDelete={canModify ? handleDeleteUser : undefined}
+        onAdd={canManageUsers ? handleAddUser : undefined}
+        onEdit={canManageUsers ? handleEditUser : undefined}
+        onDelete={canManageUsers ? handleDeleteUser : undefined}
         onView={handleViewUser}
         loading={isLoading}
-        canModify={canModify}
+        canModify={canManageUsers}
       />
 
       <UserDialogs
@@ -147,7 +149,7 @@ export function UserManagement() {
         onFormSubmit={handleFormSubmit}
         onFormCancel={handleFormCancel}
         onConfirmDelete={confirmDelete}
-        canModify={canModify}
+        canModify={canManageUsers}
         isDeleting={deleteUserMutation.isPending}
       />
     </>
