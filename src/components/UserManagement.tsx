@@ -108,6 +108,13 @@ export function UserManagement() {
   };
 
   const canModify = profile?.role !== 'viewer';
+  
+  // Debug information about user role
+  console.log('UserManagement: User profile and role check:', {
+    profile,
+    profileRole: profile?.role,
+    canModify
+  });
 
   if (isDetailOpen && selectedUser) {
     return (

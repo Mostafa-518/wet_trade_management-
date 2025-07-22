@@ -19,6 +19,7 @@ import {
 } from 'recharts';
 import { useReportData } from '@/hooks/useReportData';
 import { DashboardAlerts } from '@/components/DashboardAlerts';
+import { UserRoleDebug } from '@/components/UserRoleDebug';
 
 
 
@@ -123,6 +124,9 @@ export function Dashboard() {
 
       {/* Alert System */}
       <DashboardAlerts />
+      
+      {/* User Role Debug */}
+      <UserRoleDebug />
 
       {/* KPI Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
