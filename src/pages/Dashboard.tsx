@@ -125,10 +125,7 @@ export function Dashboard() {
       {/* Alert System */}
       <DashboardAlerts />
       
-      {/* User Role Debug */}
-      <UserRoleDebug />
-
-      {/* KPI Metrics */}
+         {/* KPI Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card 
           className="cursor-pointer hover:shadow-lg transition-shadow text-center"
