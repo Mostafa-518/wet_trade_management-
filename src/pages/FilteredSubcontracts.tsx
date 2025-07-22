@@ -72,9 +72,7 @@ export function FilteredSubcontracts() {
      const handleClick = () => {
     // This removes the query string and navigates to /report
     navigate('/report', { replace: true });
-    // Clear the query string manually
-    window.history.replaceState(null, '', window.location.origin + window.location.pathname + '#/report');
-  };
+ };
 
   if (isLoading) {
     return (
