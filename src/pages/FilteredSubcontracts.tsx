@@ -72,6 +72,8 @@ export function FilteredSubcontracts() {
      const handleClick = () => {
     // This removes the query string and navigates to /report
     navigate('/report', { replace: true });
+       window.location.hash = '#/report'; // force hash reset
+  window.location.search = ''; // just in case
  };
 
   if (isLoading) {
