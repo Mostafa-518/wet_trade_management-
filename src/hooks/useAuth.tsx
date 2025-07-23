@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { AuthService } from '@/services/authService';
 import { UserProfile } from '@/services/types';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface AuthContextType {
   user: User | null;
@@ -22,6 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     console.log('AuthProvider: Setting up auth state listener...');
@@ -37,8 +39,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           fetchUserProfile(user.id);
         }, 0);
       } else {
+        // Clear all user data and invalidate queries on sign out
         setProfile(null);
         setSession(null);
+        // Clear all cached data to prevent stale data
+        queryClient.clear();
       }
       setLoading(false);
     });
@@ -82,6 +87,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async (email: string, password: string) => {
     console.log('AuthProvider: Sign in attempt for:', email);
     try {
+      // Clear any existing cached data before signing in
+      queryClient.clear();
+      
       const result = await AuthService.signIn(email, password);
       const user = result?.user;
       const session = result?.session;
@@ -89,6 +97,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       if (user) {
         await fetchUserProfile(user.id);
+        // Invalidate and refetch all queries for the new user
+        queryClient.invalidateQueries();
       }
       return { error: null };
     } catch (error) {
@@ -117,6 +127,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setSession(null);
       setProfile(null);
+      // Clear all cached data to prevent stale data
+      queryClient.clear();
     } catch (error) {
       console.error('AuthProvider: Sign out error:', error);
       throw error;
@@ -128,6 +140,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const updatedProfile = await AuthService.updateProfile(updates);
       setProfile(updatedProfile);
+      // Invalidate user-related queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['users'] });
       return updatedProfile;
     } catch (error) {
       console.error('AuthProvider: Update profile error:', error);
