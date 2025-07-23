@@ -33,6 +33,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log('AuthProvider: Auth state changed:', { user });
       setUser(user);
       
+      // Always clear profile immediately when auth state changes
+      setProfile(null);
+      
       if (user) {
         // Defer profile fetch to avoid blocking
         setTimeout(() => {
@@ -40,7 +43,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }, 0);
       } else {
         // Clear all user data and invalidate queries on sign out
-        setProfile(null);
         setSession(null);
         // Clear all cached data to prevent stale data
         queryClient.clear();
@@ -74,6 +76,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchUserProfile = async (userId: string) => {
     try {
       console.log('AuthProvider: Fetching user profile for:', userId);
+      // Clear profile first to avoid showing stale data
+      setProfile(null);
       const userProfile = await AuthService.getUserProfile();
       console.log('AuthProvider: User profile fetched:', userProfile);
       setProfile(userProfile);
@@ -87,8 +91,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async (email: string, password: string) => {
     console.log('AuthProvider: Sign in attempt for:', email);
     try {
-      // Clear any existing cached data before signing in
+      // Clear any existing cached data and profile before signing in
       queryClient.clear();
+      setProfile(null);
       
       const result = await AuthService.signIn(email, password);
       const user = result?.user;
