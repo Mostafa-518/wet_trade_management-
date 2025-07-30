@@ -72,8 +72,8 @@ export function SubcontractorsTableContent({
               <TableHead>Representative</TableHead>
               <TableHead>Commercial Registration</TableHead>
               <TableHead>Tax Card No.</TableHead>
-              <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
+              <TableHead>Email</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -91,8 +91,8 @@ export function SubcontractorsTableContent({
                 <TableCell>{sc.representativeName}</TableCell>
                 <TableCell>{sc.commercialRegistration}</TableCell>
                 <TableCell>{sc.taxCardNo}</TableCell>
-                <TableCell>{sc.email}</TableCell>
                 <TableCell>{sc.phone}</TableCell>
+                <TableCell>{sc.email}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
                     <Button variant="ghost" size="sm" onClick={() => onViewDetail(sc.id)} className="h-8 w-8 p-0">
