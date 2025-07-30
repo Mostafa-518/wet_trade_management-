@@ -91,7 +91,7 @@ export function SubcontractorsTableContent({
                 <TableCell>{sc.representativeName}</TableCell>
                 <TableCell>{sc.commercialRegistration}</TableCell>
                 <TableCell>{sc.taxCardNo}</TableCell>
-                <TableCell>{sc.phone}</TableCell>
+                <TableCell>{sc.Phone}</TableCell>
                 <TableCell>{sc.email}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
