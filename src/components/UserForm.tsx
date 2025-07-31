@@ -232,15 +232,30 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
           </Button>
           <Button 
             type="button"
-            onClick={(e) => {
+            onClick={async (e) => {
               console.log('=== BUTTON CLICKED ===');
               console.log('Event:', e);
               console.log('Form state:', form.formState);
               console.log('Form values:', form.getValues());
               console.log('Form errors:', form.formState.errors);
+              console.log('Form is valid:', form.formState.isValid);
               
-              // Trigger form submission manually
-              form.handleSubmit(handleSubmit)();
+              // Try to validate manually first
+              const isValid = await form.trigger();
+              console.log('Manual validation result:', isValid);
+              console.log('Errors after manual validation:', form.formState.errors);
+              
+              if (isValid) {
+                console.log('Form is valid, calling handleSubmit directly...');
+                try {
+                  const formData = form.getValues();
+                  await handleSubmit(formData);
+                } catch (error) {
+                  console.error('Direct handleSubmit error:', error);
+                }
+              } else {
+                console.log('Form validation failed!');
+              }
             }}
             disabled={form.formState.isSubmitting} 
             className="w-full sm:w-auto"
