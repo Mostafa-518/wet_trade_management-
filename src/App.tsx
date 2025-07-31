@@ -1,28 +1,34 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { HashRouter as Router, Route, Routes } from "react-router-dom";
-import Index from "@/pages/Index";
 import { Login } from "@/pages/Login";
 import { SignUp } from "@/pages/SignUp";
 import { AuthGuard } from "@/components/AuthGuard";
 import { Layout } from "@/components/Layout";
 import { DataProvider } from "@/contexts/DataContext";
-import { Projects } from "@/pages/Projects";
-import { ProjectDetail } from "@/pages/ProjectDetail";
-import { Subcontractors } from "@/pages/Subcontractors";
-import { SubcontractorDetail } from "@/pages/SubcontractorDetail";
-import { Trades } from "@/pages/Trades";
-import { TradeDetail } from "@/pages/TradeDetail";
-import { Responsibilities } from "@/pages/Responsibilities";
-import { Subcontracts } from "@/pages/Subcontracts";
-import { SubcontractDetail } from "@/pages/SubcontractDetail";
-import { Report } from "@/pages/Report";
-import { FilteredSubcontracts } from "@/pages/FilteredSubcontracts";
-import { Users } from "@/pages/Users";
-import { UserDetail } from "@/pages/UserDetail";
-import { Profile } from "@/pages/Profile";
-import { Dashboard } from "@/pages/Dashboard";
-import { Alerts } from "@/pages/Alerts";
-import { RoleManagementPage } from "@/pages/RoleManagement";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
+
+// Lazy load components for better performance
+const Index = lazy(() => import("@/pages/Index"));
+const Projects = lazy(() => import("@/pages/Projects").then(m => ({ default: m.Projects })));
+const ProjectDetail = lazy(() => import("@/pages/ProjectDetail").then(m => ({ default: m.ProjectDetail })));
+const Subcontractors = lazy(() => import("@/pages/Subcontractors").then(m => ({ default: m.Subcontractors })));
+const SubcontractorDetail = lazy(() => import("@/pages/SubcontractorDetail").then(m => ({ default: m.SubcontractorDetail })));
+const Trades = lazy(() => import("@/pages/Trades").then(m => ({ default: m.Trades })));
+const TradeDetail = lazy(() => import("@/pages/TradeDetail").then(m => ({ default: m.TradeDetail })));
+const Responsibilities = lazy(() => import("@/pages/Responsibilities").then(m => ({ default: m.Responsibilities })));
+const Subcontracts = lazy(() => import("@/pages/Subcontracts").then(m => ({ default: m.Subcontracts })));
+const SubcontractDetail = lazy(() => import("@/pages/SubcontractDetail").then(m => ({ default: m.SubcontractDetail })));
+const Report = lazy(() => import("@/pages/Report").then(m => ({ default: m.Report })));
+const FilteredSubcontracts = lazy(() => import("@/pages/FilteredSubcontracts").then(m => ({ default: m.FilteredSubcontracts })));
+const Users = lazy(() => import("@/pages/Users").then(m => ({ default: m.Users })));
+const UserDetail = lazy(() => import("@/pages/UserDetail").then(m => ({ default: m.UserDetail })));
+const Profile = lazy(() => import("@/pages/Profile").then(m => ({ default: m.Profile })));
+const Dashboard = lazy(() => import("@/pages/Dashboard").then(m => ({ default: m.Dashboard })));
+const Alerts = lazy(() => import("@/pages/Alerts").then(m => ({ default: m.Alerts })));
+const RoleManagementPage = lazy(() => import("@/pages/RoleManagement").then(m => ({ default: m.RoleManagementPage })));
+
+// Loading fallback
+const PageLoading = () => <div className="p-6"><TableSkeleton columns={5} rows={3} /></div>;
 
 function App() {
   return (
@@ -36,7 +42,9 @@ function App() {
             <AuthGuard>
               <Layout>
                 <DataProvider>
-                  <Index />
+                  <Suspense fallback={<PageLoading />}>
+                    <Index />
+                  </Suspense>
                 </DataProvider>
               </Layout>
             </AuthGuard>
