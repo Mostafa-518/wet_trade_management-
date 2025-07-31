@@ -155,25 +155,7 @@ export const queryClientUtils = {
     };
   },
 
-  /**
-   * Log cache contents for debugging
-   */
-  logCache: () => {
-    const cache = queryClient.getQueryCache();
-    const queries = cache.getAll();
-    
-    console.group('Query Cache Contents');
-    queries.forEach(query => {
-      console.log({
-        queryKey: query.queryKey,
-        status: query.state.status,
-        dataUpdatedAt: new Date(query.state.dataUpdatedAt),
-        isStale: query.isStale(),
-        isFetching: query.state.fetchStatus === 'fetching',
-      });
-    });
-    console.groupEnd();
-  },
+
 };
 
 export default queryClient;
