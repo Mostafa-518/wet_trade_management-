@@ -1,92 +1,78 @@
 
-import { useQuery } from '@tanstack/react-query';
 import { projectService } from '@/services';
 import { ProjectFormData } from '@/types/project';
-import { useToast } from '@/hooks/use-toast';
+import { useListQuery } from '@/hooks/core/useApiQuery';
+import { useCreateMutation, useUpdateMutation, useDeleteMutation } from '@/hooks/core/useApiMutation';
+import { queryKeys } from '@/lib/query/keys';
 
 export function useProjects() {
-  const { toast } = useToast();
+  // Enhanced query with better error handling
+  const projectsQuery = useListQuery(
+    'projects',
+    () => projectService.getAll(),
+    {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    }
+  );
 
-  const { data: projects = [], refetch: refetchProjects, isLoading: projectsLoading } = useQuery({
-    queryKey: ['projects'],
-    queryFn: () => projectService.getAll(),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+  // Enhanced mutations with automatic cache invalidation
+  const createMutation = useCreateMutation(
+    'projects',
+    (data: ProjectFormData) => projectService.create({
+      name: data.name,
+      code: data.code,
+      location: data.location
+    }),
+    {
+      successMessage: "Project created successfully",
+    }
+  );
 
-  const addProject = async (data: ProjectFormData): Promise<void> => {
-    try {
-      await projectService.create({
+  const updateMutation = useUpdateMutation(
+    'projects',
+    ({ id, ...data }: { id: string } & ProjectFormData) => 
+      projectService.update(id, {
         name: data.name,
         code: data.code,
         location: data.location
-      });
-      refetchProjects();
-      toast({
-        title: "Success",
-        description: "Project created successfully",
-      });
-    } catch (error) {
-      console.error('Error adding project:', error);
-      toast({
-        title: "Error",
-        description: "Failed to add project",
-        variant: "destructive"
-      });
-      throw error;
+      }),
+    {
+      successMessage: "Project updated successfully",
     }
-  };
+  );
 
-  const updateProject = async (id: string, data: ProjectFormData): Promise<void> => {
-    try {
-      await projectService.update(id, {
-        name: data.name,
-        code: data.code,
-        location: data.location
-      });
-      refetchProjects();
-      toast({
-        title: "Success",
-        description: "Project updated successfully",
-      });
-    } catch (error) {
-      console.error('Error updating project:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update project",
-        variant: "destructive"
-      });
-      throw error;
+  const deleteMutation = useDeleteMutation(
+    'projects',
+    ({ id }: { id: string }) => projectService.delete(id),
+    {
+      successMessage: "Project deleted successfully",
     }
-  };
-
-  const deleteProject = async (id: string): Promise<void> => {
-    try {
-      await projectService.delete(id);
-      refetchProjects();
-      toast({
-        title: "Success",
-        description: "Project deleted successfully",
-      });
-    } catch (error) {
-      console.error('Error deleting project:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete project",
-        variant: "destructive"
-      });
-      throw error;
-    }
-  };
+  );
 
   return {
-    projects: projects.map(p => ({
+    // Data
+    projects: (projectsQuery.data || []).map(p => ({
       ...p,
       createdAt: p.created_at,
       updatedAt: p.updated_at
     })),
-    addProject,
-    updateProject,
-    deleteProject,
-    isLoading: projectsLoading
+    isLoading: projectsQuery.isLoading,
+    error: projectsQuery.error,
+    
+    // Actions with enhanced error handling
+    addProject: createMutation.mutateAsync,
+    updateProject: (id: string, data: ProjectFormData) => 
+      updateMutation.mutateAsync({ id, ...data }),
+    deleteProject: (id: string) => 
+      deleteMutation.mutateAsync({ id }),
+    
+    // Mutation states
+    isCreating: createMutation.isPending,
+    isUpdating: updateMutation.isPending,
+    isDeleting: deleteMutation.isPending,
+    
+    // Utilities
+    refresh: projectsQuery.refetch,
+    asyncState: projectsQuery.asyncState,
   };
 }
