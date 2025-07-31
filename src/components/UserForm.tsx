@@ -24,20 +24,23 @@ import {
 import { AvatarUpload } from '@/components/AvatarUpload';
 import { User } from '@/types/user';
 
-const userSchema = z.object({
+// Create dynamic schema based on whether we're editing or creating
+const createUserSchema = (isEditing: boolean) => z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
   role: z.enum(['admin', 'project_manager', 'supervisor', 'viewer']),
   department: z.string().optional(),
   status: z.enum(['active', 'inactive', 'suspended']),
   phone: z.string().optional(),
-  password: z.string().optional().refine((val) => !val || val.length >= 6, {
-    message: 'Password must be at least 6 characters',
-  }),
+  password: isEditing 
+    ? z.string().optional() 
+    : z.string().optional().refine((val) => !val || val.length >= 6, {
+        message: 'Password must be at least 6 characters',
+      }),
   avatar: z.string().optional(),
 });
 
-type UserFormData = z.infer<typeof userSchema>;
+type UserFormData = z.infer<ReturnType<typeof createUserSchema>>;
 
 interface UserFormProps {
   user?: User;
@@ -49,7 +52,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(user?.avatar || null);
 
   const form = useForm<UserFormData>({
-    resolver: zodResolver(userSchema),
+    resolver: zodResolver(createUserSchema(!!user)),
     defaultValues: {
       name: user?.name || '',
       email: user?.email || '',
@@ -239,7 +242,8 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
               console.log('Event:', e);
               console.log('Form state:', form.formState);
               console.log('Form values:', form.getValues());
-              console.log('Form errors:', form.formState.errors);
+              console.log('Password value specifically:', form.getValues().password);
+              console.log('Password length:', form.getValues().password?.length);
               console.log('Form is valid:', form.formState.isValid);
               
               // Try to validate manually first
