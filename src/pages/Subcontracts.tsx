@@ -48,8 +48,21 @@ export function Subcontracts() {
       console.log('Found projectCode filter:', filters.projectCode);
     }
     if (searchParams.get('facilities')) {
-      filters.facilities = searchParams.get('facilities')?.split(',') || [];
-      console.log('Found facilities filter:', filters.facilities);
+      try {
+        // Handle both JSON array format and comma-separated format
+        const facilitiesParam = searchParams.get('facilities');
+        if (facilitiesParam?.startsWith('[') && facilitiesParam.endsWith(']')) {
+          // JSON array format from report page
+          filters.facilities = JSON.parse(facilitiesParam);
+        } else {
+          // Comma-separated format
+          filters.facilities = facilitiesParam?.split(',') || [];
+        }
+        console.log('Found facilities filter:', filters.facilities);
+      } catch (error) {
+        console.error('Error parsing facilities parameter:', error);
+        filters.facilities = [];
+      }
     }
     
     console.log('Final parsed filters:', filters);
