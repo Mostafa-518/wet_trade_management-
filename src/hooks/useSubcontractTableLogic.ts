@@ -1,4 +1,5 @@
 
+import { useMemo } from 'react';
 import { useData } from '@/contexts/DataContext';
 import { useSubcontractHelpers } from './subcontract/useSubcontractHelpers';
 import { useSubcontractSearch } from './subcontract/useSubcontractSearch';
@@ -11,7 +12,7 @@ export function useSubcontractTableLogic(reportFilters?: any) {
   
   const { getProjectName, getProjectCode, getSubcontractorName } = useSubcontractHelpers();
   
-  // Apply report filters if provided
+  // Apply report filters if provided - memoize to prevent unnecessary recalculations
   const preFilteredSubcontracts = useSubcontractFiltering(subcontracts, reportFilters);
   
   const {
@@ -38,7 +39,8 @@ export function useSubcontractTableLogic(reportFilters?: any) {
     setShowAdvancedSearch,
   } = useSubcontractEditing(updateSubcontract);
 
-  return {
+  // Memoize the return object to prevent unnecessary re-renders
+  return useMemo(() => ({
     subcontracts: preFilteredSubcontracts,
     filteredData,
     searchTerm,
@@ -60,5 +62,27 @@ export function useSubcontractTableLogic(reportFilters?: any) {
     deleteSubcontract,
     setEditingSubcontract,
     setShowAdvancedSearch,
-  };
+  }), [
+    preFilteredSubcontracts,
+    filteredData,
+    searchTerm,
+    showAdvancedSearch,
+    editingSubcontract,
+    selectedIds,
+    allSelected,
+    isLoading,
+    getProjectName,
+    getProjectCode,
+    getSubcontractorName,
+    handleSimpleSearch,
+    handleAdvancedSearch,
+    handleEdit,
+    handleSaveEdit,
+    toggleAll,
+    toggleOne,
+    handleBulkDelete,
+    deleteSubcontract,
+    setEditingSubcontract,
+    setShowAdvancedSearch,
+  ]);
 }

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { TableSelectionCheckbox } from '@/components/TableSelectionCheckbox';
 import { SubcontractTableActions } from './SubcontractTableActions';
@@ -22,7 +22,7 @@ interface SubcontractTableRowProps {
   onDelete: (id: string) => Promise<void>;
 }
 
-export function SubcontractTableRow({
+const SubcontractTableRow = memo(function SubcontractTableRow({
   contract,
   isSelected,
   getProjectName,
@@ -32,6 +32,24 @@ export function SubcontractTableRow({
   onEdit,
   onDelete
 }: SubcontractTableRowProps) {
+  // Memoize computed values
+  const projectName = useMemo(() => getProjectName(contract.project), [getProjectName, contract.project]);
+  const subcontractorName = useMemo(() => getSubcontractorName(contract.subcontractor), [getSubcontractorName, contract.subcontractor]);
+  const formattedDate = useMemo(() => formatDate(contract.dateOfIssuing), [contract.dateOfIssuing]);
+  const formattedResponsibilities = useMemo(() => formatResponsibilities(contract.responsibilities), [contract.responsibilities]);
+  const totalValue = useMemo(() => formatCurrency(contract.totalValue ?? 0), [contract.totalValue]);
+
+  // Memoize callbacks
+  const handleToggle = useCallback(() => onToggleOne(contract.id), [onToggleOne, contract.id]);
+  const handleView = useCallback(() => onViewDetail(contract.id), [onViewDetail, contract.id]);
+  const handleEdit = useCallback(() => onEdit(contract), [onEdit, contract]);
+  const handleDelete = useCallback(async () => {
+    try {
+      await onDelete(contract.id);
+    } catch {
+      // toast already handled
+    }
+  }, [onDelete, contract.id]);
   if (contract.tradeItems && contract.tradeItems.length > 0) {
     // Render multiple rows for each trade item
     return (
@@ -40,14 +58,14 @@ export function SubcontractTableRow({
           <TableRow 
             key={`${contract.id}-${item.id}`}
             className="cursor-pointer hover:bg-muted/50"
-            onClick={() => onViewDetail(contract.id)}
+            onClick={handleView}
           >
             {idx === 0 && (
               <>
                 <TableCell rowSpan={contract.tradeItems.length} onClick={e => e.stopPropagation()}>
                   <TableSelectionCheckbox
                     checked={isSelected}
-                    onCheckedChange={() => onToggleOne(contract.id)}
+                    onCheckedChange={handleToggle}
                     ariaLabel={`Select contract ${contract.contractId}`}
                   />
                 </TableCell>
@@ -55,13 +73,13 @@ export function SubcontractTableRow({
                   {contract.contractId}
                 </TableCell>
                 <TableCell rowSpan={contract.tradeItems.length}>
-                  {formatDate(contract.dateOfIssuing)}
+                  {formattedDate}
                 </TableCell>
                 <TableCell rowSpan={contract.tradeItems.length}>
-                  {getProjectName(contract.project)}
+                  {projectName}
                 </TableCell>
                 <TableCell rowSpan={contract.tradeItems.length}>
-                  {getSubcontractorName(contract.subcontractor)}
+                  {subcontractorName}
                 </TableCell>
               </>
             )}
@@ -76,20 +94,14 @@ export function SubcontractTableRow({
             {idx === 0 && (
               <>
                 <TableCell rowSpan={contract.tradeItems.length}>
-                  {formatResponsibilities(contract.responsibilities)}
+                  {formattedResponsibilities}
                 </TableCell>
                 <TableCell rowSpan={contract.tradeItems.length} onClick={(e) => e.stopPropagation()}>
                   <SubcontractTableActions
                     contractId={contract.id}
-                    onView={onViewDetail}
-                    onEdit={() => onEdit(contract)}
-                    onDelete={async () => {
-                      try {
-                        await onDelete(contract.id);
-                      } catch {
-                        // toast already handled
-                      }
-                    }}
+                    onView={handleView}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
                   />
                 </TableCell>
               </>
@@ -105,39 +117,35 @@ export function SubcontractTableRow({
     <TableRow 
       key={contract.id}
       className="cursor-pointer hover:bg-muted/50"
-      onClick={() => onViewDetail(contract.id)}
+      onClick={handleView}
     >
       <TableCell onClick={e => e.stopPropagation()}>
         <TableSelectionCheckbox
           checked={isSelected}
-          onCheckedChange={() => onToggleOne(contract.id)}
+          onCheckedChange={handleToggle}
           ariaLabel={`Select contract ${contract.contractId}`}
         />
       </TableCell>
       <TableCell className="font-medium text-blue-600">{contract.contractId}</TableCell>
-      <TableCell>{formatDate(contract.dateOfIssuing)}</TableCell>
-      <TableCell>{getProjectName(contract.project)}</TableCell>
-      <TableCell>{getSubcontractorName(contract.subcontractor)}</TableCell>
+      <TableCell>{formattedDate}</TableCell>
+      <TableCell>{projectName}</TableCell>
+      <TableCell>{subcontractorName}</TableCell>
       <TableCell className="text-muted-foreground">-</TableCell>
       <TableCell className="text-muted-foreground">-</TableCell>
       <TableCell className="text-muted-foreground">-</TableCell>
       <TableCell className="text-muted-foreground">-</TableCell>
-      <TableCell className="text-right font-medium">{formatCurrency(contract.totalValue ?? 0)}</TableCell>
-      <TableCell>{formatResponsibilities(contract.responsibilities)}</TableCell>
+      <TableCell className="text-right font-medium">{totalValue}</TableCell>
+      <TableCell>{formattedResponsibilities}</TableCell>
       <TableCell onClick={(e) => e.stopPropagation()}>
         <SubcontractTableActions
           contractId={contract.id}
-          onView={onViewDetail}
-          onEdit={() => onEdit(contract)}
-          onDelete={async () => {
-            try {
-              await onDelete(contract.id);
-            } catch {
-              // toast already handled
-            }
-          }}
+          onView={handleView}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
         />
       </TableCell>
     </TableRow>
   );
-}
+});
+
+export { SubcontractTableRow };

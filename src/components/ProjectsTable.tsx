@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo, useMemo, useCallback } from 'react';
 import { Project } from '@/types/project';
 import { ImportPreviewDialog } from './ImportPreviewDialog';
 import { ProjectsTableHeader } from './projects/ProjectsTableHeader';
@@ -15,7 +15,7 @@ interface ProjectsTableProps {
   onDelete?: (projectId: string) => void;
 }
 
-export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: ProjectsTableProps) {
+const ProjectsTable = memo(function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: ProjectsTableProps) {
   const {
     searchFilters,
     selectedIds,
@@ -34,11 +34,15 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
     setImportedData,
   } = useProjectsTable();
 
-  const previewColumns = [
+  // Memoize preview columns to prevent re-creation
+  const previewColumns = useMemo(() => [
     { key: "name", label: "Name" },
     { key: "code", label: "Code" },
     { key: "location", label: "Location" },
-  ];
+  ], []);
+
+  // Memoize handlers
+  const handleCloseImport = useCallback(() => setImportedData(null), [setImportedData]);
 
   return (
     <div className="space-y-6">
@@ -57,7 +61,7 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
           data={importedData}
           columns={previewColumns}
           onImport={handleImport}
-          onClose={() => setImportedData(null)}
+          onClose={handleCloseImport}
         />
       )}
 
@@ -89,4 +93,6 @@ export function ProjectsTable({ onCreateNew, onViewDetail, onEdit, onDelete }: P
       />
     </div>
   );
-}
+});
+
+export { ProjectsTable };

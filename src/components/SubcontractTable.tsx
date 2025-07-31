@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useMemo, useCallback } from 'react';
 import { SubcontractEditModal } from './subcontract/SubcontractEditModal';
 import { SubcontractTableHeader } from './subcontract/SubcontractTableHeader';
 import { SubcontractTableSearch } from './subcontract/SubcontractTableSearch';
@@ -14,7 +14,7 @@ interface SubcontractTableProps {
   reportFilters?: any;
 }
 
-export function SubcontractTable({ onCreateNew, onViewDetail, reportFilters }: SubcontractTableProps) {
+const SubcontractTable = memo(function SubcontractTable({ onCreateNew, onViewDetail, reportFilters }: SubcontractTableProps) {
   const {
     subcontracts,
     filteredData,
@@ -47,6 +47,29 @@ export function SubcontractTable({ onCreateNew, onViewDetail, reportFilters }: S
     processImport,
     downloadTemplate
   } = useSubcontractsImport();
+
+  // Memoize import columns to prevent re-creation on every render
+  const importColumns = useMemo(() => [
+    { key: 'Date of Issuing', label: 'Date of Issuing' },
+    { key: 'Project Name', label: 'Project Name' },
+    { key: 'Subcontractor Company', label: 'Subcontractor Company' },
+    { key: 'Type of contract', label: 'Type of Contract' },
+    { key: 'Trades', label: 'Trades' },
+    { key: 'Items', label: 'Items' },
+    { key: 'QTY', label: 'Quantity' },
+    { key: 'Rate', label: 'Rate' },
+    { key: 'wastage', label: 'Wastage %' },
+    { key: 'Responsibilities', label: 'Responsibilities' }
+  ], []);
+
+  // Memoize handlers to prevent re-creation
+  const handleCloseEdit = useCallback(() => {
+    setEditingSubcontract(null);
+  }, [setEditingSubcontract]);
+
+  const handleClosePreview = useCallback(() => {
+    setShowPreview(false);
+  }, [setShowPreview]);
 
   if (isLoading) {
     return (
@@ -99,27 +122,16 @@ export function SubcontractTable({ onCreateNew, onViewDetail, reportFilters }: S
         <SubcontractEditModal
           subcontract={editingSubcontract}
           open={!!editingSubcontract}
-          onClose={() => setEditingSubcontract(null)}
+          onClose={handleCloseEdit}
           onSave={handleSaveEdit}
         />
       )}
 
       <ImportPreviewDialog
         open={showPreview}
-        onClose={() => setShowPreview(false)}
+        onClose={handleClosePreview}
         data={importData}
-        columns={[
-          { key: 'Date of Issuing', label: 'Date of Issuing' },
-          { key: 'Project Name', label: 'Project Name' },
-          { key: 'Subcontractor Company', label: 'Subcontractor Company' },
-          { key: 'Type of contract', label: 'Type of Contract' },
-          { key: 'Trades', label: 'Trades' },
-          { key: 'Items', label: 'Items' },
-          { key: 'QTY', label: 'Quantity' },
-          { key: 'Rate', label: 'Rate' },
-          { key: 'wastage', label: 'Wastage %' },
-          { key: 'Responsibilities', label: 'Responsibilities' }
-        ]}
+        columns={importColumns}
         onImport={processImport}
       />
 
@@ -135,4 +147,6 @@ export function SubcontractTable({ onCreateNew, onViewDetail, reportFilters }: S
       )}
     </div>
   );
-}
+});
+
+export { SubcontractTable };
