@@ -87,14 +87,6 @@ export function setupResponseInterceptors(apiInstance: AxiosInstance) {
       const startTime = config.metadata?.startTime;
       const duration = startTime ? Date.now() - startTime : 0;
 
-      // Log response in development
-      if (process.env.NODE_ENV === 'development') {
-        console.group(`✅ API Response [${requestId}] - ${duration}ms`);
-        console.log('Status:', response.status);
-        console.log('Headers:', response.headers);
-        console.log('Data:', response.data);
-        console.groupEnd();
-      }
 
       // Add response metadata
       response.metadata = {
