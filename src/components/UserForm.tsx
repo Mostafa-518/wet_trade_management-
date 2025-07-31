@@ -28,7 +28,7 @@ const userSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
   role: z.enum(['admin', 'project_manager', 'supervisor', 'viewer']),
-  department: z.string().min(1, 'Department is required'),
+  department: z.string().optional(),
   status: z.enum(['active', 'inactive', 'suspended']),
   phone: z.string().optional(),
   password: z.string().min(6, 'Password must be at least 6 characters').optional(),
@@ -82,11 +82,13 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
     <Form {...form}>
       <form 
         onSubmit={(e) => {
+          e.preventDefault();
           console.log('UserForm: Form submit event triggered');
           console.log('UserForm: Form errors:', form.formState.errors);
           console.log('UserForm: Form values:', form.getValues());
+          console.log('UserForm: Form is valid?', form.formState.isValid);
           return form.handleSubmit(handleSubmit)(e);
-        }} 
+        }}
         className="space-y-6"
       >
         {/* Avatar Upload Section */}
