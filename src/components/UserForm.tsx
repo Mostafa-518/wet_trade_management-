@@ -229,14 +229,19 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
             Cancel
           </Button>
           <Button 
-            type="submit" 
+            type="button"
+            onClick={(e) => {
+              console.log('=== BUTTON CLICKED ===');
+              console.log('Event:', e);
+              console.log('Form state:', form.formState);
+              console.log('Form values:', form.getValues());
+              console.log('Form errors:', form.formState.errors);
+              
+              // Trigger form submission manually
+              form.handleSubmit(handleSubmit)();
+            }}
             disabled={form.formState.isSubmitting} 
             className="w-full sm:w-auto"
-            onClick={(e) => {
-              console.log('UserForm: Update button clicked!', { e, formState: form.formState });
-              console.log('UserForm: Form is valid?', form.formState.isValid);
-              console.log('UserForm: Form values before submit:', form.getValues());
-            }}
           >
             {form.formState.isSubmitting 
               ? (user ? 'Updating...' : 'Creating...') 
