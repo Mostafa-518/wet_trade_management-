@@ -16,4 +16,5 @@ class SubcontractorService {
   }
 }
 
+// Force refresh
 export default new SubcontractorService();
