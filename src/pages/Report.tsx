@@ -23,8 +23,9 @@ import {
   exportGraphsToPDF,
 } from "@/utils/report/reportExporter";
 import { useEffect } from "react";
+import { PageErrorBoundary } from "@/components/PageErrorBoundary";
 
-export function Report() {
+function ReportContent() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const {
@@ -148,7 +149,8 @@ export function Report() {
       params.set("projectCode", reportData.filters.projectCode);
     }
     if (reportData.filters.facilities.length > 0) {
-      params.set("facilities", reportData.filters.facilities.join(","));
+      // Encode facilities as JSON to handle special characters and arrays properly
+      params.set("facilities", JSON.stringify(reportData.filters.facilities));
     }
 
     // Navigate to the new filtered subcontracts page
@@ -559,5 +561,13 @@ export function Report() {
         <ReportTableView tableData={reportData.tableData} />
       </div>
     </div>
+  );
+}
+
+export function Report() {
+  return (
+    <PageErrorBoundary pageName="Report">
+      <ReportContent />
+    </PageErrorBoundary>
   );
 }

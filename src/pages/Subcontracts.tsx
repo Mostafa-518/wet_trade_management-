@@ -6,8 +6,9 @@ import { SubcontractStepper } from '@/components/SubcontractStepper';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useData } from '@/contexts/DataContext';
+import { PageErrorBoundary } from '@/components/PageErrorBoundary';
 
-export function Subcontracts() {
+function SubcontractsContent() {
   const navigate = useNavigate();
   const location = useLocation();
   const [showStepper, setShowStepper] = useState(false);
@@ -139,5 +140,13 @@ export function Subcontracts() {
       onViewDetail={handleViewDetail}
       reportFilters={reportFilters}
     />
+  );
+}
+
+export function Subcontracts() {
+  return (
+    <PageErrorBoundary pageName="Subcontracts">
+      <SubcontractsContent />
+    </PageErrorBoundary>
   );
 }
