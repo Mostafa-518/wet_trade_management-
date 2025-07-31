@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export function useSubcontracts() {
+export function useSubcontracts(trades: any[] = [], tradeItems: any[] = [], responsibilities: any[] = [], projects: any[] = []) {
   const [subcontracts] = useState([]);
   const [isLoading] = useState(false);
 

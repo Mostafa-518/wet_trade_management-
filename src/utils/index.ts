@@ -16,4 +16,4 @@ export * from './report/reportExporter';
 export * from './report/subcontractFilter';
 
 // Subcontract utilities
-// export * from './subcontract';
+export * from './subcontract';
