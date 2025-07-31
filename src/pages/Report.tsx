@@ -155,7 +155,7 @@ function ReportContent() {
 
     // Navigate to the new filtered subcontracts page
     const queryString = params.toString();
-    navigate(`/reports/subcontracts${queryString ? `?${queryString}` : ""}`);
+    navigate(`/subcontracts${queryString ? `?${queryString}` : ""}`);
   };
 
   const handlePrint = () => {
