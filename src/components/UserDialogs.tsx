@@ -32,8 +32,7 @@ export function UserDialogs({
 }: UserDialogsProps) {
   return (
     <>
-      {canModify && (
-        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>
@@ -50,7 +49,6 @@ export function UserDialogs({
             />
           </DialogContent>
         </Dialog>
-      )}
 
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
