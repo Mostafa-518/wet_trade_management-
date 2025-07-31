@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { UserForm } from '@/components/UserForm';
 import { User } from '@/types/user';
@@ -39,6 +39,9 @@ export function UserDialogs({
               <DialogTitle>
                 {editingUser ? 'Edit User' : 'Add New User'}
               </DialogTitle>
+              <DialogDescription>
+                {editingUser ? 'Update user information and permissions.' : 'Create a new user account with the required information.'}
+              </DialogDescription>
             </DialogHeader>
             <UserForm
               user={editingUser || undefined}
