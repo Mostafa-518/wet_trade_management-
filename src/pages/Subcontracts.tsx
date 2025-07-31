@@ -19,59 +19,70 @@ export function Subcontracts() {
 
   useEffect(() => {
     console.log('Subcontracts page - parsing URL parameters:', location.search);
-    // Parse URL parameters to extract filters from report page
-    const searchParams = new URLSearchParams(location.search);
-    const filters: any = {};
     
-    if (searchParams.get('month')) {
-      filters.month = searchParams.get('month');
-      console.log('Found month filter:', filters.month);
-    }
-    if (searchParams.get('year')) {
-      filters.year = searchParams.get('year');
-      console.log('Found year filter:', filters.year);
-    }
-    if (searchParams.get('location')) {
-      filters.location = searchParams.get('location');
-      console.log('Found location filter:', filters.location);
-    }
-    if (searchParams.get('trades')) {
-      filters.trades = searchParams.get('trades');
-      console.log('Found trades filter:', filters.trades);
-    }
-    if (searchParams.get('projectName')) {
-      filters.projectName = searchParams.get('projectName');
-      console.log('Found projectName filter:', filters.projectName);
-    }
-    if (searchParams.get('projectCode')) {
-      filters.projectCode = searchParams.get('projectCode');
-      console.log('Found projectCode filter:', filters.projectCode);
-    }
-    if (searchParams.get('facilities')) {
-      try {
-        // Handle both JSON array format and comma-separated format
-        const facilitiesParam = searchParams.get('facilities');
-        if (facilitiesParam?.startsWith('[') && facilitiesParam.endsWith(']')) {
-          // JSON array format from report page
-          filters.facilities = JSON.parse(facilitiesParam);
-        } else {
-          // Comma-separated format
-          filters.facilities = facilitiesParam?.split(',') || [];
-        }
-        console.log('Found facilities filter:', filters.facilities);
-      } catch (error) {
-        console.error('Error parsing facilities parameter:', error);
-        filters.facilities = [];
+    // Reset filters first to ensure clean state
+    setReportFilters(null);
+    
+    try {
+      // Parse URL parameters to extract filters from report page
+      const searchParams = new URLSearchParams(location.search);
+      const filters: any = {};
+      
+      if (searchParams.get('month')) {
+        filters.month = searchParams.get('month');
+        console.log('Found month filter:', filters.month);
       }
-    }
-    
-    console.log('Final parsed filters:', filters);
-    
-    if (Object.keys(filters).length > 0) {
-      setReportFilters(filters);
-      console.log('Setting report filters:', filters);
-    } else {
-      console.log('No filters found in URL');
+      if (searchParams.get('year')) {
+        filters.year = searchParams.get('year');
+        console.log('Found year filter:', filters.year);
+      }
+      if (searchParams.get('location')) {
+        filters.location = searchParams.get('location');
+        console.log('Found location filter:', filters.location);
+      }
+      if (searchParams.get('trades')) {
+        filters.trades = searchParams.get('trades');
+        console.log('Found trades filter:', filters.trades);
+      }
+      if (searchParams.get('projectName')) {
+        filters.projectName = decodeURIComponent(searchParams.get('projectName') || '');
+        console.log('Found projectName filter:', filters.projectName);
+      }
+      if (searchParams.get('projectCode')) {
+        filters.projectCode = searchParams.get('projectCode');
+        console.log('Found projectCode filter:', filters.projectCode);
+      }
+      if (searchParams.get('facilities')) {
+        try {
+          // Handle both JSON array format and comma-separated format
+          const facilitiesParam = decodeURIComponent(searchParams.get('facilities') || '');
+          if (facilitiesParam?.startsWith('[') && facilitiesParam.endsWith(']')) {
+            // JSON array format from report page
+            filters.facilities = JSON.parse(facilitiesParam);
+          } else if (facilitiesParam) {
+            // Comma-separated format
+            filters.facilities = facilitiesParam.split(',').filter(f => f.trim());
+          } else {
+            filters.facilities = [];
+          }
+          console.log('Found facilities filter:', filters.facilities);
+        } catch (error) {
+          console.error('Error parsing facilities parameter:', error);
+          filters.facilities = [];
+        }
+      }
+      
+      console.log('Final parsed filters:', filters);
+      
+      if (Object.keys(filters).length > 0) {
+        setReportFilters(filters);
+        console.log('Setting report filters:', filters);
+      } else {
+        console.log('No filters found in URL');
+      }
+    } catch (error) {
+      console.error('Error parsing URL parameters:', error);
+      setReportFilters(null);
     }
   }, [location.search]);
 
