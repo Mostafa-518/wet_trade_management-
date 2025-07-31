@@ -5,7 +5,7 @@ import { SignUp } from "@/pages/SignUp";
 import { AuthGuard } from "@/components/AuthGuard";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PageErrorBoundary } from "@/components/PageErrorBoundary";
-import { Layout } from "@/components/Layout";
+import { DashboardLayout } from "@/layouts";
 import { DataProvider } from "@/contexts/DataContext";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 
@@ -51,7 +51,7 @@ function App() {
           path="/"
           element={
             <AuthGuard>
-              <Layout>
+              <DashboardLayout>
                 <DataProvider>
                   <PageErrorBoundary>
                     <Suspense fallback={<PageLoading />}>
@@ -59,7 +59,7 @@ function App() {
                     </Suspense>
                   </PageErrorBoundary>
                 </DataProvider>
-              </Layout>
+              </DashboardLayout>
             </AuthGuard>
           }
         />
@@ -67,7 +67,7 @@ function App() {
           path="/dashboard"
           element={
             <AuthGuard>
-              <Layout>
+              <DashboardLayout>
                 <DataProvider>
                   <PageErrorBoundary pageName="Dashboard">
                     <Suspense fallback={<PageLoading />}>
@@ -75,23 +75,7 @@ function App() {
                     </Suspense>
                   </PageErrorBoundary>
                 </DataProvider>
-              </Layout>
-            </AuthGuard>
-          }
-        />
-        <Route
-          path="/alerts"
-          element={
-            <AuthGuard>
-              <Layout>
-                <DataProvider>
-                  <PageErrorBoundary pageName="Alerts">
-                    <Suspense fallback={<PageLoading />}>
-                      <Alerts />
-                    </Suspense>
-                  </PageErrorBoundary>
-                </DataProvider>
-              </Layout>
+              </DashboardLayout>
             </AuthGuard>
           }
         />
@@ -99,7 +83,7 @@ function App() {
           path="/projects"
           element={
             <AuthGuard>
-              <Layout>
+              <DashboardLayout>
                 <DataProvider>
                   <PageErrorBoundary pageName="Projects">
                     <Suspense fallback={<PageLoading />}>
@@ -107,7 +91,7 @@ function App() {
                     </Suspense>
                   </PageErrorBoundary>
                 </DataProvider>
-              </Layout>
+              </DashboardLayout>
             </AuthGuard>
           }
         />
@@ -115,7 +99,7 @@ function App() {
           path="/projects/:id"
           element={
             <AuthGuard>
-              <Layout>
+              <DashboardLayout>
                 <DataProvider>
                   <PageErrorBoundary pageName="Project Detail">
                     <Suspense fallback={<PageLoading />}>
@@ -123,7 +107,7 @@ function App() {
                     </Suspense>
                   </PageErrorBoundary>
                 </DataProvider>
-              </Layout>
+              </DashboardLayout>
             </AuthGuard>
           }
         />
@@ -131,7 +115,7 @@ function App() {
           path="/subcontractors"
           element={
             <AuthGuard>
-              <Layout>
+              <DashboardLayout>
                 <DataProvider>
                   <PageErrorBoundary pageName="Subcontractors">
                     <Suspense fallback={<PageLoading />}>
@@ -139,7 +123,7 @@ function App() {
                     </Suspense>
                   </PageErrorBoundary>
                 </DataProvider>
-              </Layout>
+              </DashboardLayout>
             </AuthGuard>
           }
         />
@@ -147,7 +131,7 @@ function App() {
           path="/subcontractors/:id"
           element={
             <AuthGuard>
-              <Layout>
+              <DashboardLayout>
                 <DataProvider>
                   <PageErrorBoundary pageName="Subcontractor Detail">
                     <Suspense fallback={<PageLoading />}>
@@ -155,7 +139,7 @@ function App() {
                     </Suspense>
                   </PageErrorBoundary>
                 </DataProvider>
-              </Layout>
+              </DashboardLayout>
             </AuthGuard>
           }
         />
@@ -163,7 +147,7 @@ function App() {
           path="/trades"
           element={
             <AuthGuard>
-              <Layout>
+              <DashboardLayout>
                 <DataProvider>
                   <PageErrorBoundary pageName="Trades">
                     <Suspense fallback={<PageLoading />}>
@@ -171,15 +155,15 @@ function App() {
                     </Suspense>
                   </PageErrorBoundary>
                 </DataProvider>
-              </Layout>
+              </DashboardLayout>
             </AuthGuard>
           }
         />
         <Route
-          path="/trades/:tradeId"
+          path="/trades/:id"
           element={
             <AuthGuard>
-              <Layout>
+              <DashboardLayout>
                 <DataProvider>
                   <PageErrorBoundary pageName="Trade Detail">
                     <Suspense fallback={<PageLoading />}>
@@ -187,7 +171,7 @@ function App() {
                     </Suspense>
                   </PageErrorBoundary>
                 </DataProvider>
-              </Layout>
+              </DashboardLayout>
             </AuthGuard>
           }
         />
@@ -195,7 +179,7 @@ function App() {
           path="/responsibilities"
           element={
             <AuthGuard>
-              <Layout>
+              <DashboardLayout>
                 <DataProvider>
                   <PageErrorBoundary pageName="Responsibilities">
                     <Suspense fallback={<PageLoading />}>
@@ -203,7 +187,7 @@ function App() {
                     </Suspense>
                   </PageErrorBoundary>
                 </DataProvider>
-              </Layout>
+              </DashboardLayout>
             </AuthGuard>
           }
         />
@@ -211,7 +195,7 @@ function App() {
           path="/subcontracts"
           element={
             <AuthGuard>
-              <Layout>
+              <DashboardLayout>
                 <DataProvider>
                   <PageErrorBoundary pageName="Subcontracts">
                     <Suspense fallback={<PageLoading />}>
@@ -219,7 +203,7 @@ function App() {
                     </Suspense>
                   </PageErrorBoundary>
                 </DataProvider>
-              </Layout>
+              </DashboardLayout>
             </AuthGuard>
           }
         />
@@ -227,7 +211,7 @@ function App() {
           path="/subcontracts/:id"
           element={
             <AuthGuard>
-              <Layout>
+              <DashboardLayout>
                 <DataProvider>
                   <PageErrorBoundary pageName="Subcontract Detail">
                     <Suspense fallback={<PageLoading />}>
@@ -235,31 +219,15 @@ function App() {
                     </Suspense>
                   </PageErrorBoundary>
                 </DataProvider>
-              </Layout>
+              </DashboardLayout>
             </AuthGuard>
           }
         />
         <Route
-          path="/report"
+          path="/subcontracts/filtered"
           element={
             <AuthGuard>
-              <Layout>
-                <DataProvider>
-                  <PageErrorBoundary pageName="Report">
-                    <Suspense fallback={<PageLoading />}>
-                      <Report />
-                    </Suspense>
-                  </PageErrorBoundary>
-                </DataProvider>
-              </Layout>
-            </AuthGuard>
-          }
-        />
-        <Route
-          path="/reports/subcontracts"
-          element={
-            <AuthGuard>
-              <Layout>
+              <DashboardLayout>
                 <DataProvider>
                   <PageErrorBoundary pageName="Filtered Subcontracts">
                     <Suspense fallback={<PageLoading />}>
@@ -267,7 +235,23 @@ function App() {
                     </Suspense>
                   </PageErrorBoundary>
                 </DataProvider>
-              </Layout>
+              </DashboardLayout>
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/report"
+          element={
+            <AuthGuard>
+              <DashboardLayout>
+                <DataProvider>
+                  <PageErrorBoundary pageName="Report">
+                    <Suspense fallback={<PageLoading />}>
+                      <Report />
+                    </Suspense>
+                  </PageErrorBoundary>
+                </DataProvider>
+              </DashboardLayout>
             </AuthGuard>
           }
         />
@@ -275,7 +259,7 @@ function App() {
           path="/users"
           element={
             <AuthGuard>
-              <Layout>
+              <DashboardLayout>
                 <DataProvider>
                   <PageErrorBoundary pageName="Users">
                     <Suspense fallback={<PageLoading />}>
@@ -283,7 +267,7 @@ function App() {
                     </Suspense>
                   </PageErrorBoundary>
                 </DataProvider>
-              </Layout>
+              </DashboardLayout>
             </AuthGuard>
           }
         />
@@ -291,7 +275,7 @@ function App() {
           path="/users/:id"
           element={
             <AuthGuard>
-              <Layout>
+              <DashboardLayout>
                 <DataProvider>
                   <PageErrorBoundary pageName="User Detail">
                     <Suspense fallback={<PageLoading />}>
@@ -299,23 +283,7 @@ function App() {
                     </Suspense>
                   </PageErrorBoundary>
                 </DataProvider>
-              </Layout>
-            </AuthGuard>
-          }
-        />
-        <Route
-          path="/admin/roles"
-          element={
-            <AuthGuard>
-              <Layout>
-                <DataProvider>
-                  <PageErrorBoundary pageName="Role Management">
-                    <Suspense fallback={<PageLoading />}>
-                      <RoleManagementPage />
-                    </Suspense>
-                  </PageErrorBoundary>
-                </DataProvider>
-              </Layout>
+              </DashboardLayout>
             </AuthGuard>
           }
         />
@@ -323,7 +291,7 @@ function App() {
           path="/profile"
           element={
             <AuthGuard>
-              <Layout>
+              <DashboardLayout>
                 <DataProvider>
                   <PageErrorBoundary pageName="Profile">
                     <Suspense fallback={<PageLoading />}>
@@ -331,7 +299,39 @@ function App() {
                     </Suspense>
                   </PageErrorBoundary>
                 </DataProvider>
-              </Layout>
+              </DashboardLayout>
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/alerts"
+          element={
+            <AuthGuard>
+              <DashboardLayout>
+                <DataProvider>
+                  <PageErrorBoundary pageName="Alerts">
+                    <Suspense fallback={<PageLoading />}>
+                      <Alerts />
+                    </Suspense>
+                  </PageErrorBoundary>
+                </DataProvider>
+              </DashboardLayout>
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/role-management"
+          element={
+            <AuthGuard>
+              <DashboardLayout>
+                <DataProvider>
+                  <PageErrorBoundary pageName="Role Management">
+                    <Suspense fallback={<PageLoading />}>
+                      <RoleManagementPage />
+                    </Suspense>
+                  </PageErrorBoundary>
+                </DataProvider>
+              </DashboardLayout>
             </AuthGuard>
           }
         />

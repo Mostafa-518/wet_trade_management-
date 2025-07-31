@@ -15,7 +15,7 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { usePermissions } from "@/hooks/usePermissions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ROUTES } from "@/config/routes";
-import { AlertBadge } from "./AlertBadge";
+import { AlertBadge } from "@/components/AlertBadge";
 import {
   Menu,
   X,
@@ -31,7 +31,7 @@ import {
   Shield,
 } from "lucide-react";
 
-export function Layout({ children }: { children: React.ReactNode }) {
+export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { signOut } = useAuth();
   const { pathname } = useLocation();
   const navigate = useNavigate();
