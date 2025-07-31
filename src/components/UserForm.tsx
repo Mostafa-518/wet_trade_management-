@@ -80,7 +80,15 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form 
+        onSubmit={(e) => {
+          console.log('UserForm: Form submit event triggered');
+          console.log('UserForm: Form errors:', form.formState.errors);
+          console.log('UserForm: Form values:', form.getValues());
+          return form.handleSubmit(handleSubmit)(e);
+        }} 
+        className="space-y-6"
+      >
         {/* Avatar Upload Section */}
         <div className="flex justify-center">
           <AvatarUpload
@@ -218,7 +226,12 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
           <Button type="button" variant="outline" onClick={onCancel} className="w-full sm:w-auto">
             Cancel
           </Button>
-          <Button type="submit" disabled={form.formState.isSubmitting} className="w-full sm:w-auto">
+          <Button 
+            type="submit" 
+            disabled={form.formState.isSubmitting} 
+            className="w-full sm:w-auto"
+            onClick={() => console.log('UserForm: Button clicked, form state:', form.formState)}
+          >
             {form.formState.isSubmitting 
               ? (user ? 'Updating...' : 'Creating...') 
               : (user ? 'Update User' : 'Create User')
