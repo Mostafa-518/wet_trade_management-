@@ -149,8 +149,8 @@ export function setupResponseInterceptors(apiInstance: AxiosInstance) {
 /**
  * Enhance error with additional metadata
  */
-function enhanceError(error: AxiosError, requestId?: string, duration?: number) {
-  const enhancedError = {
+function enhanceError(error: AxiosError, requestId?: string, duration?: number): any {
+  const enhancedError: any = {
     ...error,
     metadata: {
       requestId,

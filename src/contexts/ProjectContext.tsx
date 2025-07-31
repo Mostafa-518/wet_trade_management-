@@ -24,9 +24,15 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
   const value: ProjectContextType = {
     projects: projects || [],
-    addProject,
-    updateProject,
-    deleteProject,
+    addProject: async (data: ProjectFormData) => {
+      await addProject(data);
+    },
+    updateProject: async (id: string, data: ProjectFormData) => {
+      await updateProject(id, data);
+    },
+    deleteProject: async (id: string) => {
+      await deleteProject(id);
+    },
     isLoading
   };
 

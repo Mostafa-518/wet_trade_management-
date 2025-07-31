@@ -57,7 +57,7 @@ export function useApiMutation<TData = any, TError = Error, TVariables = void, T
     ...mutationOptions
   } = options;
 
-  const result = useMutation({
+  const queryResult = useMutation({
     mutationFn,
     onMutate: async (variables: TVariables) => {
       // Perform optimistic update
@@ -113,18 +113,21 @@ export function useApiMutation<TData = any, TError = Error, TVariables = void, T
 
   // Create async state object
   const asyncState: AsyncState<TData, TError> = {
-    data: result.data ?? null,
-    error: result.error,
-    loading: result.isPending,
-    status: result.isPending ? 'loading' : result.error ? 'error' : result.data ? 'success' : 'idle',
+    data: queryResult.data ?? null,
+    error: queryResult.error,
+    loading: queryResult.isPending,
+    status: queryResult.isPending ? 'loading' : queryResult.error ? 'error' : queryResult.data ? 'success' : 'idle',
   };
 
   return {
-    ...result,
+    data: queryResult.data,
+    error: queryResult.error,
+    isPending: queryResult.isPending,
+    mutateAsync: queryResult.mutateAsync,
     asyncState,
-    clearError: result.reset,
+    clearError: queryResult.reset,
     executeAsync: async (variables: TVariables) => {
-      const result = await result.mutateAsync(variables);
+      const result = await queryResult.mutateAsync(variables);
       return result;
     },
   };

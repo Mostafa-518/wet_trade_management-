@@ -149,7 +149,7 @@ export const queryClientUtils = {
     return {
       totalQueries: queries.length,
       staleQueries: queries.filter(q => q.isStale()).length,
-      fetchingQueries: queries.filter(q => q.isFetching()).length,
+      fetchingQueries: queries.filter(q => q.state.fetchStatus === 'fetching').length,
       errorQueries: queries.filter(q => q.state.status === 'error').length,
       successQueries: queries.filter(q => q.state.status === 'success').length,
     };
@@ -169,7 +169,7 @@ export const queryClientUtils = {
         status: query.state.status,
         dataUpdatedAt: new Date(query.state.dataUpdatedAt),
         isStale: query.isStale(),
-        isFetching: query.isFetching(),
+        isFetching: query.state.fetchStatus === 'fetching',
       });
     });
     console.groupEnd();

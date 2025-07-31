@@ -82,7 +82,6 @@ export function usePaginatedQuery<TData = any>(
     fullQueryKey,
     () => queryFn(params),
     {
-      keepPreviousData: true,
       staleTime: 30000, // 30 seconds
       ...options,
     }

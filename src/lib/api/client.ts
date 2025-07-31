@@ -73,14 +73,7 @@ export class ApiClient {
       }
     }
     
-    const response: AxiosResponse<T> = await this.instance.get(fullUrl, {
-      ...axiosConfig,
-      retryConfig: {
-        retries: config.retries || 2,
-        retryDelay: config.retryDelay || 1000,
-        retryCondition: (error) => !error.response || error.response.status >= 500,
-      },
-    });
+    const response: AxiosResponse<T> = await this.instance.get(fullUrl, axiosConfig);
     
     // Cache successful responses
     if (cache && response.status === 200) {
@@ -109,14 +102,7 @@ export class ApiClient {
     data?: any, 
     config: RequestConfig = {}
   ): Promise<T> {
-    const response: AxiosResponse<T> = await this.instance.post(endpoint, data, {
-      ...config,
-      retryConfig: {
-        retries: config.retries || 1,
-        retryDelay: config.retryDelay || 1000,
-        retryCondition: (error) => !error.response || error.response.status >= 500,
-      },
-    });
+    const response: AxiosResponse<T> = await this.instance.post(endpoint, data, config);
     
     // Invalidate related cache entries
     this.invalidateRelatedCache(endpoint, 'POST');
@@ -132,14 +118,7 @@ export class ApiClient {
     data?: any, 
     config: RequestConfig = {}
   ): Promise<T> {
-    const response: AxiosResponse<T> = await this.instance.put(endpoint, data, {
-      ...config,
-      retryConfig: {
-        retries: config.retries || 1,
-        retryDelay: config.retryDelay || 1000,
-        retryCondition: (error) => !error.response || error.response.status >= 500,
-      },
-    });
+    const response: AxiosResponse<T> = await this.instance.put(endpoint, data, config);
     
     // Invalidate related cache entries
     this.invalidateRelatedCache(endpoint, 'PUT');
@@ -155,14 +134,7 @@ export class ApiClient {
     data?: any, 
     config: RequestConfig = {}
   ): Promise<T> {
-    const response: AxiosResponse<T> = await this.instance.patch(endpoint, data, {
-      ...config,
-      retryConfig: {
-        retries: config.retries || 1,
-        retryDelay: config.retryDelay || 1000,
-        retryCondition: (error) => !error.response || error.response.status >= 500,
-      },
-    });
+    const response: AxiosResponse<T> = await this.instance.patch(endpoint, data, config);
     
     // Invalidate related cache entries
     this.invalidateRelatedCache(endpoint, 'PATCH');
@@ -177,14 +149,7 @@ export class ApiClient {
     endpoint: string, 
     config: RequestConfig = {}
   ): Promise<T> {
-    const response: AxiosResponse<T> = await this.instance.delete(endpoint, {
-      ...config,
-      retryConfig: {
-        retries: config.retries || 1,
-        retryDelay: config.retryDelay || 1000,
-        retryCondition: (error) => !error.response || error.response.status >= 500,
-      },
-    });
+    const response: AxiosResponse<T> = await this.instance.delete(endpoint, config);
     
     // Invalidate related cache entries
     this.invalidateRelatedCache(endpoint, 'DELETE');
