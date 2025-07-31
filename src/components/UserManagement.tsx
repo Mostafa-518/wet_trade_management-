@@ -90,15 +90,23 @@ export function UserManagement() {
   };
 
   const handleFormSubmit = async (data: any) => {
+    console.log('UserManagement: handleFormSubmit called with data:', data);
+    console.log('UserManagement: editingUser:', editingUser);
     try {
       if (editingUser) {
-        await updateUserMutation.mutateAsync({ id: editingUser.id, userData: data });
+        console.log('UserManagement: Calling updateUserMutation with:', { id: editingUser.id, userData: data });
+        const result = await updateUserMutation.mutateAsync({ id: editingUser.id, userData: data });
+        console.log('UserManagement: Update result:', result);
       } else {
-        await createUserMutation.mutateAsync(data);
+        console.log('UserManagement: Calling createUserMutation with:', data);
+        const result = await createUserMutation.mutateAsync(data);
+        console.log('UserManagement: Create result:', result);
       }
       setIsFormOpen(false);
       setEditingUser(null);
+      console.log('UserManagement: Form submitted successfully');
     } catch (error) {
+      console.error('UserManagement: Form submission error:', error);
       // Error handling is done in mutation callbacks
     }
   };
