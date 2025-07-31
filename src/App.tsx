@@ -320,7 +320,7 @@ function App() {
           }
         />
         <Route
-          path="/role-management"
+          path="/admin/roles"
           element={
             <AuthGuard>
               <DashboardLayout>
