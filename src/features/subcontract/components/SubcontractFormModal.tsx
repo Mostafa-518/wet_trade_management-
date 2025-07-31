@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { FormData } from '@/types/subcontract';
-import { StepperProgress } from '@/components/subcontract/StepperProgress';
-import { StepperNavigation } from '@/components/subcontract/StepperNavigation';
+import { StepperProgress } from './StepperProgress';
+import { StepperNavigation } from './StepperNavigation';
 
 interface SubcontractFormModalProps {
   formData: FormData;

@@ -1,8 +1,7 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Subcontractor } from '@/types/subcontractor';
-import { useSubcontracts } from '@/hooks/useSubcontracts';
+import { Subcontractor, useSubcontracts } from '@/features/subcontract';
 import { useData } from '@/contexts/DataContext';
 import { SubcontractorDetailHeader } from './subcontractor-detail/SubcontractorDetailHeader';
 import { SubcontractorOverviewCards } from './subcontractor-detail/SubcontractorOverviewCards';
