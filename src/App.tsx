@@ -5,7 +5,7 @@ import { SignUp } from "@/pages/SignUp";
 import { AuthGuard } from "@/components/AuthGuard";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PageErrorBoundary } from "@/components/PageErrorBoundary";
-import { DashboardLayout } from "@/layouts";
+import { DashboardLayout } from "@/layouts/DashboardLayout";
 import { DataProvider } from "@/contexts/DataContext";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 
