@@ -31,7 +31,9 @@ const userSchema = z.object({
   department: z.string().optional(),
   status: z.enum(['active', 'inactive', 'suspended']),
   phone: z.string().optional(),
-  password: z.string().min(6, 'Password must be at least 6 characters').optional(),
+  password: z.string().optional().refine((val) => !val || val.length >= 6, {
+    message: 'Password must be at least 6 characters',
+  }),
   avatar: z.string().optional(),
 });
 
