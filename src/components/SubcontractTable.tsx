@@ -5,6 +5,8 @@ import { SubcontractTableSearch } from './subcontract/SubcontractTableSearch';
 import { SubcontractTableContent } from './subcontract/SubcontractTableContent';
 import { SubcontractTableSummary } from './subcontract/SubcontractTableSummary';
 import { ImportPreviewDialog } from '@/components/ImportPreviewDialog';
+import { SubcontractTableSkeleton } from '@/components/ui/table-skeleton';
+import { ImportLoader } from '@/components/ui/loading-spinner';
 import { useSubcontractTableLogic } from '@/hooks/useSubcontractTableLogic';
 import { useSubcontractsImport } from '@/hooks/useSubcontractsImport';
 
@@ -72,14 +74,7 @@ const SubcontractTable = memo(function SubcontractTable({ onCreateNew, onViewDet
   }, [setShowPreview]);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading subcontracts...</p>
-        </div>
-      </div>
-    );
+    return <SubcontractTableSkeleton />;
   }
 
   return (
@@ -135,16 +130,7 @@ const SubcontractTable = memo(function SubcontractTable({ onCreateNew, onViewDet
         onImport={processImport}
       />
 
-      {isImporting && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <div className="flex items-center gap-3">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-              <span>Processing import...</span>
-            </div>
-          </div>
-        </div>
-      )}
+      {isImporting && <ImportLoader />}
     </div>
   );
 });

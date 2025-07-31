@@ -19,6 +19,7 @@ import {
 } from 'recharts';
 import { useReportData } from '@/hooks/useReportData';
 import { DashboardAlerts } from '@/components/DashboardAlerts';
+import { DashboardSkeleton } from '@/components/ui/loading-skeletons';
 
 
 
@@ -28,14 +29,7 @@ export function Dashboard() {
   const { reportData, isLoading } = useReportData();
 
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold">Dashboard</h2>
-          <p className="text-muted-foreground">Loading analytics...</p>
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   const handleNavigateToSubcontracts = () => {

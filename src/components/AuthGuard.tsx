@@ -14,11 +14,17 @@ export function AuthGuard({ children, requireAuth = true }: AuthGuardProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <Card className="w-full max-w-md">
-          <CardContent className="p-8 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Authenticating...</p>
+          <CardContent className="p-8 text-center space-y-4">
+            <div className="relative">
+              <div className="animate-spin rounded-full h-12 w-12 border-2 border-primary border-t-transparent mx-auto"></div>
+              <div className="absolute inset-0 rounded-full border-2 border-muted"></div>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Authenticating...</p>
+              <p className="text-xs text-muted-foreground">Please wait while we verify your credentials</p>
+            </div>
           </CardContent>
         </Card>
       </div>
