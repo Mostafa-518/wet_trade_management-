@@ -1,72 +1,91 @@
-import { useState, useEffect } from 'react';
-import subcontractService from '@/services/subcontractService';
+import { useQuery } from '@tanstack/react-query';
+import { subcontractService } from '@/services';
+import { Subcontract } from '@/types/subcontract';
+import { useToast } from '@/hooks/use-toast';
+import { mapSubcontractToFrontend } from '@/utils/subcontract';
+import {
+  createSubcontractWithTradeItems,
+  updateSubcontractWithTradeItems,
+  deleteSubcontractWithTradeItems,
+  deleteManySubcontractsWithTradeItems
+} from '@/services/subcontract';
 
 export function useSubcontracts(trades: any[] = [], tradeItems: any[] = [], responsibilities: any[] = [], projects: any[] = []) {
-  const [subcontracts, setSubcontracts] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchSubcontracts = async () => {
-      try {
-        setIsLoading(true);
-        const data = await subcontractService.getAll();
-        setSubcontracts(data);
-      } catch (error) {
-        console.error('Error fetching subcontracts:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const { data: subcontractsRaw = [], refetch: refetchSubcontracts, isLoading: subcontractsLoading } = useQuery({
+    queryKey: ['subcontracts'],
+    queryFn: async () => {
+      console.log('Fetching subcontracts from database...');
+      const data = await subcontractService.getWithTradeItems();
+      console.log('Raw subcontracts from database:', data);
+      return data;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
-    fetchSubcontracts();
-  }, []);
+  // Map database fields to frontend expected format
+  const subcontracts = subcontractsRaw.map(mapSubcontractToFrontend);
 
-  const addSubcontract = async (data: any) => {
+  const addSubcontract = async (data: Partial<Subcontract>) => {
+    console.log('Adding subcontract with data:', data);
     try {
-      const newSubcontract = await subcontractService.create(data);
-      setSubcontracts(prev => [newSubcontract, ...prev]);
+      const result = await createSubcontractWithTradeItems(data, trades, tradeItems, toast, responsibilities, subcontracts, projects);
+      console.log('Subcontract created successfully, refetching data...');
+      await refetchSubcontracts();
+      toast({ title: "Success", description: "Subcontract created successfully" });
+      return result;
     } catch (error) {
       console.error('Error adding subcontract:', error);
+      // Don't show duplicate toast since createSubcontractWithTradeItems already shows error toasts
       throw error;
     }
   };
 
-  const updateSubcontract = async (id: string, data: any) => {
+  const updateSubcontract = async (id: string, data: Partial<Subcontract>) => {
     try {
-      const updatedSubcontract = await subcontractService.update(id, data);
-      setSubcontracts(prev => prev.map(item => item.id === id ? updatedSubcontract : item));
+      await updateSubcontractWithTradeItems(id, data, trades, tradeItems, responsibilities);
+      await refetchSubcontracts();
+      toast({ title: "Success", description: "Subcontract updated successfully" });
     } catch (error) {
       console.error('Error updating subcontract:', error);
+      toast({ title: "Error", description: "Failed to update subcontract", variant: "destructive" });
       throw error;
     }
   };
 
   const deleteSubcontract = async (id: string) => {
     try {
-      await subcontractService.delete(id);
-      setSubcontracts(prev => prev.filter(item => item.id !== id));
+      await deleteSubcontractWithTradeItems(id);
+      await refetchSubcontracts();
+      toast({ title: "Success", description: "Subcontract deleted successfully" });
     } catch (error) {
       console.error('Error deleting subcontract:', error);
+      toast({ title: "Error", description: "Failed to delete subcontract", variant: "destructive" });
       throw error;
     }
   };
 
   const deleteManySubcontracts = async (ids: string[]) => {
     try {
-      await Promise.all(ids.map(id => subcontractService.delete(id)));
-      setSubcontracts(prev => prev.filter(item => !ids.includes(item.id)));
+      await deleteManySubcontractsWithTradeItems(ids);
+      await refetchSubcontracts();
+      toast({ title: "Deleted", description: "Subcontracts deleted successfully" });
     } catch (error) {
-      console.error('Error deleting subcontracts:', error);
+      console.error('Error bulk deleting subcontracts:', error);
+      toast({ title: "Error", description: "Failed to delete selected subcontracts", variant: "destructive" });
       throw error;
     }
   };
 
+  console.log('Final mapped subcontracts:', subcontracts);
+
   return {
     subcontracts,
-    isLoading,
     addSubcontract,
     updateSubcontract,
     deleteSubcontract,
-    deleteManySubcontracts
+    deleteManySubcontracts,
+    isLoading: subcontractsLoading
   };
 }

@@ -5,7 +5,7 @@ import { SubcontractTable } from '@/components/SubcontractTable';
 import { SubcontractStepper } from '@/components/SubcontractStepper';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { useSubcontractContext } from '@/contexts/SubcontractContext';
+import { useData } from '@/contexts/DataContext';
 import { PageErrorBoundary } from '@/components/PageErrorBoundary';
 
 function SubcontractsContent() {
@@ -13,7 +13,7 @@ function SubcontractsContent() {
   const location = useLocation();
   const [showStepper, setShowStepper] = useState(false);
   const [reportFilters, setReportFilters] = useState<any>(null);
-  const { addSubcontract } = useSubcontractContext();
+  const { addSubcontract } = useData();
   const { toast } = useToast();
   const { profile } = useAuth();
   const canModify = profile?.role !== 'viewer';

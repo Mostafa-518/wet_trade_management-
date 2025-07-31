@@ -1,45 +1,48 @@
-import { BaseService } from './base/BaseService';
-import { supabase } from '@/integrations/supabase/client';
-import { Subcontract } from '@/types/subcontract';
 
-class SubcontractService extends BaseService<Subcontract, any, any> {
+import { supabase } from '@/integrations/supabase/client';
+import { BaseService } from './base/BaseService';
+import { Subcontract, SubcontractInsert, SubcontractUpdate } from './types';
+import { subcontractTradeItemService, subcontractResponsibilityService } from './';
+
+export class SubcontractService extends BaseService<Subcontract, SubcontractInsert, SubcontractUpdate> {
   constructor() {
     super('subcontracts');
   }
 
-  async getAll() {
+  async getWithDetails(id: string) {
     const { data, error } = await supabase
       .from('subcontracts')
       .select(`
         *,
-        projects(name),
-        subcontractors(company_name, representative_name)
+        projects(name, code),
+        subcontractors(name, contact_person)
       `)
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data;
+  }
+
+  async getWithTradeItems() {
+    const { data: subcontracts, error } = await supabase
+      .from('subcontracts')
+      .select('*')
       .order('created_at', { ascending: false });
     
     if (error) throw error;
-    
-    // Transform database data to match frontend interface
-    return (data || []).map(item => ({
-      id: item.id,
-      contractId: item.contract_number || '',
-      project: item.projects?.name || '',
-      subcontractor: item.subcontractors?.company_name || '',
-      tradeItems: [], // Will be loaded separately if needed
-      responsibilities: [], // Will be loaded separately if needed
-      totalValue: Number(item.total_value) || 0,
-      status: item.status || 'draft',
-      startDate: item.start_date || '',
-      endDate: item.end_date || '',
-      dateOfIssuing: item.date_of_issuing || '',
-      description: item.description || '',
-      createdAt: item.created_at,
-      updatedAt: item.updated_at,
-      contractType: (item.contract_type as 'subcontract' | 'ADD') || 'subcontract',
-      addendumNumber: item.addendum_number,
-      parentSubcontractId: item.parent_subcontract_id
-    }));
+
+    // Get trade items and responsibilities for each subcontract
+    const subcontractsWithItems = await Promise.all(
+      subcontracts.map(async (subcontract) => {
+        const tradeItems = await subcontractTradeItemService.getBySubcontractId(subcontract.id);
+        const responsibilities = await subcontractResponsibilityService.getBySubcontractId(subcontract.id);
+        return { ...subcontract, tradeItems, responsibilities };
+      })
+    );
+
+    return subcontractsWithItems;
   }
 }
 
-export default new SubcontractService();
+export const subcontractService = new SubcontractService();

@@ -103,7 +103,7 @@ export function FilteredSubcontracts() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">{getHeaderTitle()}</h1>
             <p className="text-muted-foreground">
-              {filteredSubcontracts.filteredData.length} subcontract{filteredSubcontracts.filteredData.length !== 1 ? 's' : ''} found
+              {filteredSubcontracts.length} subcontract{filteredSubcontracts.length !== 1 ? 's' : ''} found
             </p>
           </div>
         </div>
@@ -155,7 +155,7 @@ export function FilteredSubcontracts() {
       )}
 
       {/* Subcontracts List */}
-      {filteredSubcontracts.filteredData.length === 0 ? (
+      {filteredSubcontracts.length === 0 ? (
         <Card>
           <CardContent className="py-12">
             <div className="text-center text-muted-foreground">
@@ -166,7 +166,7 @@ export function FilteredSubcontracts() {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {filteredSubcontracts.filteredData.map((subcontract) => (
+          {filteredSubcontracts.map((subcontract) => (
             <Card key={subcontract.id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-center">

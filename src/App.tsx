@@ -7,7 +7,6 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PageErrorBoundary } from "@/components/PageErrorBoundary";
 import { DashboardLayout } from "@/layouts/DashboardLayout";
 import { DataProvider } from "@/contexts/DataContext";
-import { SubcontractProvider } from "@/contexts/SubcontractContext";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 
 // Lazy load components for better performance
@@ -198,13 +197,11 @@ function App() {
             <AuthGuard>
               <DashboardLayout>
                 <DataProvider>
-                  <SubcontractProvider>
-                    <PageErrorBoundary pageName="Subcontracts">
-                      <Suspense fallback={<PageLoading />}>
-                        <Subcontracts />
-                      </Suspense>
-                    </PageErrorBoundary>
-                  </SubcontractProvider>
+                  <PageErrorBoundary pageName="Subcontracts">
+                    <Suspense fallback={<PageLoading />}>
+                      <Subcontracts />
+                    </Suspense>
+                  </PageErrorBoundary>
                 </DataProvider>
               </DashboardLayout>
             </AuthGuard>

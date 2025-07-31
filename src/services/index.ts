@@ -1,10 +1,10 @@
 export { projectService } from './projectService';
-export { default as subcontractorService } from './subcontractorService';
+export { subcontractorService } from './subcontractorService';
 export { tradeService } from './tradeService';
 export { tradeItemService } from './tradeItemService';
-export { default as subcontractService } from './subcontractService';
-export { default as subcontractTradeItemService } from './subcontractTradeItemService';
-export { default as subcontractResponsibilityService } from './subcontractResponsibilityService';
+export { subcontractService } from './subcontractService';
+export { subcontractTradeItemService } from './subcontractTradeItemService';
+export { subcontractResponsibilityService } from './subcontractResponsibilityService';
 export { responsibilityService } from './responsibilityService';
 export { userProfileService } from './userProfileService';
 export { UserService } from './userService';

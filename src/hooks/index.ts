@@ -28,7 +28,7 @@ export { usePagination as usePaginationBase } from './usePagination';
 export { useAlerts } from './useAlerts';
 export { useReportData } from './useReportData';
 export { useSubcontractorsImport } from './useSubcontractorsImport';
-// export { useSubcontractsImport } from './useSubcontractsImport';
+export { useSubcontractsImport } from './useSubcontractsImport';
 
 // Toast notifications
 export { useToast } from './use-toast';

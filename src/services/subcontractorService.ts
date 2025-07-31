@@ -1,20 +1,11 @@
-class SubcontractorService {
-  async getAll() {
-    return [];
-  }
 
-  async create(data: any) {
-    return data;
-  }
+import { BaseService } from './base/BaseService';
+import { Subcontractor, SubcontractorInsert, SubcontractorUpdate } from './types';
 
-  async update(id: string, data: any) {
-    return data;
-  }
-
-  async delete(id: string) {
-    return { success: true };
+export class SubcontractorService extends BaseService<Subcontractor, SubcontractorInsert, SubcontractorUpdate> {
+  constructor() {
+    super('subcontractors');
   }
 }
 
-// Force refresh
-export default new SubcontractorService();
+export const subcontractorService = new SubcontractorService();
