@@ -61,6 +61,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
   });
 
   const handleSubmit = async (data: UserFormData) => {
+    console.log('=== HANDLESUBMIT CALLED ===');
     console.log('UserForm: Submitting data:', data);
     console.log('UserForm: Current user in edit mode:', user);
     try {
@@ -69,8 +70,9 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
         avatar: avatarUrl || undefined,
       };
       console.log('UserForm: Final submit data:', submitData);
+      console.log('UserForm: About to call onSubmit prop...');
       await onSubmit(submitData);
-      console.log('UserForm: Submit successful');
+      console.log('UserForm: onSubmit completed successfully');
     } catch (error) {
       console.error('UserForm: Submit error:', error);
       // Re-throw error to ensure it's properly handled
