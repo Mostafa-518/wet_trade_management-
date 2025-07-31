@@ -69,7 +69,11 @@ function App() {
             <AuthGuard>
               <Layout>
                 <DataProvider>
-                  <Dashboard />
+                  <PageErrorBoundary pageName="Dashboard">
+                    <Suspense fallback={<PageLoading />}>
+                      <Dashboard />
+                    </Suspense>
+                  </PageErrorBoundary>
                 </DataProvider>
               </Layout>
             </AuthGuard>
@@ -81,7 +85,11 @@ function App() {
             <AuthGuard>
               <Layout>
                 <DataProvider>
-                  <Alerts />
+                  <PageErrorBoundary pageName="Alerts">
+                    <Suspense fallback={<PageLoading />}>
+                      <Alerts />
+                    </Suspense>
+                  </PageErrorBoundary>
                 </DataProvider>
               </Layout>
             </AuthGuard>
@@ -93,7 +101,11 @@ function App() {
             <AuthGuard>
               <Layout>
                 <DataProvider>
-                  <Projects />
+                  <PageErrorBoundary pageName="Projects">
+                    <Suspense fallback={<PageLoading />}>
+                      <Projects />
+                    </Suspense>
+                  </PageErrorBoundary>
                 </DataProvider>
               </Layout>
             </AuthGuard>
@@ -105,7 +117,11 @@ function App() {
             <AuthGuard>
               <Layout>
                 <DataProvider>
-                  <ProjectDetail />
+                  <PageErrorBoundary pageName="Project Detail">
+                    <Suspense fallback={<PageLoading />}>
+                      <ProjectDetail />
+                    </Suspense>
+                  </PageErrorBoundary>
                 </DataProvider>
               </Layout>
             </AuthGuard>
@@ -117,7 +133,11 @@ function App() {
             <AuthGuard>
               <Layout>
                 <DataProvider>
-                  <Subcontractors />
+                  <PageErrorBoundary pageName="Subcontractors">
+                    <Suspense fallback={<PageLoading />}>
+                      <Subcontractors />
+                    </Suspense>
+                  </PageErrorBoundary>
                 </DataProvider>
               </Layout>
             </AuthGuard>
@@ -129,7 +149,11 @@ function App() {
             <AuthGuard>
               <Layout>
                 <DataProvider>
-                  <SubcontractorDetail />
+                  <PageErrorBoundary pageName="Subcontractor Detail">
+                    <Suspense fallback={<PageLoading />}>
+                      <SubcontractorDetail />
+                    </Suspense>
+                  </PageErrorBoundary>
                 </DataProvider>
               </Layout>
             </AuthGuard>
@@ -141,7 +165,11 @@ function App() {
             <AuthGuard>
               <Layout>
                 <DataProvider>
-                  <Trades />
+                  <PageErrorBoundary pageName="Trades">
+                    <Suspense fallback={<PageLoading />}>
+                      <Trades />
+                    </Suspense>
+                  </PageErrorBoundary>
                 </DataProvider>
               </Layout>
             </AuthGuard>
@@ -153,7 +181,11 @@ function App() {
             <AuthGuard>
               <Layout>
                 <DataProvider>
-                  <TradeDetail />
+                  <PageErrorBoundary pageName="Trade Detail">
+                    <Suspense fallback={<PageLoading />}>
+                      <TradeDetail />
+                    </Suspense>
+                  </PageErrorBoundary>
                 </DataProvider>
               </Layout>
             </AuthGuard>
@@ -165,7 +197,11 @@ function App() {
             <AuthGuard>
               <Layout>
                 <DataProvider>
-                  <Responsibilities />
+                  <PageErrorBoundary pageName="Responsibilities">
+                    <Suspense fallback={<PageLoading />}>
+                      <Responsibilities />
+                    </Suspense>
+                  </PageErrorBoundary>
                 </DataProvider>
               </Layout>
             </AuthGuard>
@@ -177,7 +213,11 @@ function App() {
             <AuthGuard>
               <Layout>
                 <DataProvider>
-                  <Subcontracts />
+                  <PageErrorBoundary pageName="Subcontracts">
+                    <Suspense fallback={<PageLoading />}>
+                      <Subcontracts />
+                    </Suspense>
+                  </PageErrorBoundary>
                 </DataProvider>
               </Layout>
             </AuthGuard>
@@ -189,7 +229,11 @@ function App() {
             <AuthGuard>
               <Layout>
                 <DataProvider>
-                  <SubcontractDetail />
+                  <PageErrorBoundary pageName="Subcontract Detail">
+                    <Suspense fallback={<PageLoading />}>
+                      <SubcontractDetail />
+                    </Suspense>
+                  </PageErrorBoundary>
                 </DataProvider>
               </Layout>
             </AuthGuard>
@@ -201,7 +245,11 @@ function App() {
             <AuthGuard>
               <Layout>
                 <DataProvider>
-                  <Report />
+                  <PageErrorBoundary pageName="Report">
+                    <Suspense fallback={<PageLoading />}>
+                      <Report />
+                    </Suspense>
+                  </PageErrorBoundary>
                 </DataProvider>
               </Layout>
             </AuthGuard>
@@ -213,7 +261,11 @@ function App() {
             <AuthGuard>
               <Layout>
                 <DataProvider>
-                  <FilteredSubcontracts />
+                  <PageErrorBoundary pageName="Filtered Subcontracts">
+                    <Suspense fallback={<PageLoading />}>
+                      <FilteredSubcontracts />
+                    </Suspense>
+                  </PageErrorBoundary>
                 </DataProvider>
               </Layout>
             </AuthGuard>
@@ -225,7 +277,11 @@ function App() {
             <AuthGuard>
               <Layout>
                 <DataProvider>
-                  <Users />
+                  <PageErrorBoundary pageName="Users">
+                    <Suspense fallback={<PageLoading />}>
+                      <Users />
+                    </Suspense>
+                  </PageErrorBoundary>
                 </DataProvider>
               </Layout>
             </AuthGuard>
@@ -237,7 +293,11 @@ function App() {
             <AuthGuard>
               <Layout>
                 <DataProvider>
-                  <UserDetail />
+                  <PageErrorBoundary pageName="User Detail">
+                    <Suspense fallback={<PageLoading />}>
+                      <UserDetail />
+                    </Suspense>
+                  </PageErrorBoundary>
                 </DataProvider>
               </Layout>
             </AuthGuard>
@@ -249,7 +309,11 @@ function App() {
             <AuthGuard>
               <Layout>
                 <DataProvider>
-                  <RoleManagementPage />
+                  <PageErrorBoundary pageName="Role Management">
+                    <Suspense fallback={<PageLoading />}>
+                      <RoleManagementPage />
+                    </Suspense>
+                  </PageErrorBoundary>
                 </DataProvider>
               </Layout>
             </AuthGuard>
@@ -261,7 +325,11 @@ function App() {
             <AuthGuard>
               <Layout>
                 <DataProvider>
-                  <Profile />
+                  <PageErrorBoundary pageName="Profile">
+                    <Suspense fallback={<PageLoading />}>
+                      <Profile />
+                    </Suspense>
+                  </PageErrorBoundary>
                 </DataProvider>
               </Layout>
             </AuthGuard>
