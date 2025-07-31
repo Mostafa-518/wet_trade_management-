@@ -4,7 +4,9 @@ import { SubcontractorsTableHeader } from './subcontractors/SubcontractorsTableH
 import { SubcontractorsTableSearch } from './subcontractors/SubcontractorsTableSearch';
 import { SubcontractorsTableActions } from './subcontractors/SubcontractorsTableActions';
 import { SubcontractorsTableContent } from './subcontractors/SubcontractorsTableContent';
-import { useSubcontractorsTable, useSubcontractorsImport, Subcontractor } from '@/features/subcontract';
+import { useSubcontractorsTable } from '@/hooks/useSubcontractorsTable';
+import { useSubcontractorsImport } from '@/hooks/useSubcontractorsImport';
+import { Subcontractor } from '@/types/subcontractor';
 
 interface SubcontractorsTableProps {
   onCreateNew?: () => void;
