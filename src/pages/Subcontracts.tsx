@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-// import { SubcontractTable } from '@/components/SubcontractTable';
-// import { SubcontractStepper } from '@/components/SubcontractStepper';
+import { SubcontractTable } from '@/components/SubcontractTable';
+import { SubcontractStepper } from '@/components/SubcontractStepper';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useData } from '@/contexts/DataContext';

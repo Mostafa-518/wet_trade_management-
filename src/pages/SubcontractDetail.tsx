@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { SubcontractDetailView } from '@/components/SubcontractDetailView';
-// import { SubcontractEditModal } from '@/components/subcontract/SubcontractEditModal';
+import { SubcontractEditModal } from '@/components/subcontract/SubcontractEditModal';
 import { useData } from '@/contexts/DataContext';
 
 export function SubcontractDetail() {
