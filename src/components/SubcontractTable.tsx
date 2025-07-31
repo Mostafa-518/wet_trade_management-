@@ -7,6 +7,7 @@ import { SubcontractTableSummary } from './subcontract/SubcontractTableSummary';
 import { ImportPreviewDialog } from '@/components/ImportPreviewDialog';
 import { SubcontractTableSkeleton } from '@/components/ui/table-skeleton';
 import { ImportLoader } from '@/components/ui/loading-spinner';
+import { TableErrorBoundary } from '@/components/TableErrorBoundary';
 import { useSubcontractTableLogic } from '@/hooks/useSubcontractTableLogic';
 import { useSubcontractsImport } from '@/hooks/useSubcontractsImport';
 
@@ -78,60 +79,62 @@ const SubcontractTable = memo(function SubcontractTable({ onCreateNew, onViewDet
   }
 
   return (
-    <div className="space-y-4">
-      <SubcontractTableHeader 
-        onCreateNew={onCreateNew}
-        onFileUpload={handleFileUpload}
-        onDownloadTemplate={downloadTemplate}
-      />
-      <SubcontractTableSummary filteredData={filteredData} />
-
-
-      <SubcontractTableSearch
-        searchTerm={searchTerm}
-        onSimpleSearch={handleSimpleSearch}
-        onAdvancedSearch={handleAdvancedSearch}
-        subcontracts={subcontracts}
-      />
-
-      <SubcontractTableContent
-        filteredData={filteredData}
-        selectedIds={selectedIds}
-        searchTerm={searchTerm}
-        showAdvancedSearch={showAdvancedSearch}
-        allSelected={allSelected}
-        getProjectName={getProjectName}
-        getProjectCode={getProjectCode}
-        getSubcontractorName={getSubcontractorName}
-        onToggleAll={toggleAll}
-        onToggleOne={toggleOne}
-        onViewDetail={onViewDetail}
-        onEdit={handleEdit}
-        onDelete={deleteSubcontract}
-        onBulkDelete={handleBulkDelete}
-      />
-
-      {/* <SubcontractTableSummary filteredData={filteredData} /> */}
-
-      {editingSubcontract && (
-        <SubcontractEditModal
-          subcontract={editingSubcontract}
-          open={!!editingSubcontract}
-          onClose={handleCloseEdit}
-          onSave={handleSaveEdit}
+    <TableErrorBoundary tableName="Subcontracts" onRetry={() => window.location.reload()}>
+      <div className="space-y-4">
+        <SubcontractTableHeader 
+          onCreateNew={onCreateNew}
+          onFileUpload={handleFileUpload}
+          onDownloadTemplate={downloadTemplate}
         />
-      )}
+        <SubcontractTableSummary filteredData={filteredData} />
 
-      <ImportPreviewDialog
-        open={showPreview}
-        onClose={handleClosePreview}
-        data={importData}
-        columns={importColumns}
-        onImport={processImport}
-      />
 
-      {isImporting && <ImportLoader />}
-    </div>
+        <SubcontractTableSearch
+          searchTerm={searchTerm}
+          onSimpleSearch={handleSimpleSearch}
+          onAdvancedSearch={handleAdvancedSearch}
+          subcontracts={subcontracts}
+        />
+
+        <SubcontractTableContent
+          filteredData={filteredData}
+          selectedIds={selectedIds}
+          searchTerm={searchTerm}
+          showAdvancedSearch={showAdvancedSearch}
+          allSelected={allSelected}
+          getProjectName={getProjectName}
+          getProjectCode={getProjectCode}
+          getSubcontractorName={getSubcontractorName}
+          onToggleAll={toggleAll}
+          onToggleOne={toggleOne}
+          onViewDetail={onViewDetail}
+          onEdit={handleEdit}
+          onDelete={deleteSubcontract}
+          onBulkDelete={handleBulkDelete}
+        />
+
+        {/* <SubcontractTableSummary filteredData={filteredData} /> */}
+
+        {editingSubcontract && (
+          <SubcontractEditModal
+            subcontract={editingSubcontract}
+            open={!!editingSubcontract}
+            onClose={handleCloseEdit}
+            onSave={handleSaveEdit}
+          />
+        )}
+
+        <ImportPreviewDialog
+          open={showPreview}
+          onClose={handleClosePreview}
+          data={importData}
+          columns={importColumns}
+          onImport={processImport}
+        />
+
+        {isImporting && <ImportLoader />}
+      </div>
+    </TableErrorBoundary>
   );
 });
 

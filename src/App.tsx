@@ -3,6 +3,8 @@ import { HashRouter as Router, Route, Routes } from "react-router-dom";
 import { Login } from "@/pages/Login";
 import { SignUp } from "@/pages/SignUp";
 import { AuthGuard } from "@/components/AuthGuard";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { PageErrorBoundary } from "@/components/PageErrorBoundary";
 import { Layout } from "@/components/Layout";
 import { DataProvider } from "@/contexts/DataContext";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
@@ -32,19 +34,30 @@ const PageLoading = () => <div className="p-6"><TableSkeleton columns={5} rows={
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
+    <ErrorBoundary>
+      <Router>
+        <Routes>
+          <Route path="/login" element={
+            <PageErrorBoundary pageName="Login">
+              <Login />
+            </PageErrorBoundary>
+          } />
+          <Route path="/signup" element={
+            <PageErrorBoundary pageName="Sign Up">
+              <SignUp />
+            </PageErrorBoundary>
+          } />
         <Route
           path="/"
           element={
             <AuthGuard>
               <Layout>
                 <DataProvider>
-                  <Suspense fallback={<PageLoading />}>
-                    <Index />
-                  </Suspense>
+                  <PageErrorBoundary>
+                    <Suspense fallback={<PageLoading />}>
+                      <Index />
+                    </Suspense>
+                  </PageErrorBoundary>
                 </DataProvider>
               </Layout>
             </AuthGuard>
@@ -256,7 +269,7 @@ function App() {
         />
       </Routes>
     </Router>
-    
+    </ErrorBoundary>
   );
 }
 
