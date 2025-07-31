@@ -29,7 +29,7 @@ const Dashboard = lazy(() => import("@/pages/Dashboard").then(m => ({ default: m
 const Alerts = lazy(() => import("@/pages/Alerts").then(m => ({ default: m.Alerts })));
 const RoleManagementPage = lazy(() => import("@/pages/RoleManagement").then(m => ({ default: m.RoleManagementPage })));
 
-// Loading fallback
+// Loading fallback component
 const PageLoading = () => <div className="p-6"><TableSkeleton columns={5} rows={3} /></div>;
 
 function App() {
