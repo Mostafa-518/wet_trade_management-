@@ -66,20 +66,13 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
   });
 
   const handleSubmit = async (data: UserFormData) => {
-    console.log('=== HANDLESUBMIT CALLED ===');
-    console.log('UserForm: Submitting data:', data);
-    console.log('UserForm: Current user in edit mode:', user);
     try {
       const submitData = {
         ...data,
         avatar: avatarUrl || undefined,
       };
-      console.log('UserForm: Final submit data:', submitData);
-      console.log('UserForm: About to call onSubmit prop...');
       await onSubmit(submitData);
-      console.log('UserForm: onSubmit completed successfully');
     } catch (error) {
-      console.error('UserForm: Submit error:', error);
       // Re-throw error to ensure it's properly handled
       throw error;
     }
@@ -88,14 +81,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
   return (
     <Form {...form}>
       <form 
-        onSubmit={(e) => {
-          e.preventDefault();
-          console.log('UserForm: Form submit event triggered');
-          console.log('UserForm: Form errors:', form.formState.errors);
-          console.log('UserForm: Form values:', form.getValues());
-          console.log('UserForm: Form is valid?', form.formState.isValid);
-          return form.handleSubmit(handleSubmit)(e);
-        }}
+        onSubmit={form.handleSubmit(handleSubmit)}
         className="space-y-6"
       >
         {/* Avatar Upload Section */}
@@ -236,33 +222,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
             Cancel
           </Button>
           <Button 
-            type="button"
-            onClick={async (e) => {
-              console.log('=== BUTTON CLICKED ===');
-              console.log('Event:', e);
-              console.log('Form state:', form.formState);
-              console.log('Form values:', form.getValues());
-              console.log('Password value specifically:', form.getValues().password);
-              console.log('Password length:', form.getValues().password?.length);
-              console.log('Form is valid:', form.formState.isValid);
-              
-              // Try to validate manually first
-              const isValid = await form.trigger();
-              console.log('Manual validation result:', isValid);
-              console.log('Errors after manual validation:', form.formState.errors);
-              
-              if (isValid) {
-                console.log('Form is valid, calling handleSubmit directly...');
-                try {
-                  const formData = form.getValues();
-                  await handleSubmit(formData);
-                } catch (error) {
-                  console.error('Direct handleSubmit error:', error);
-                }
-              } else {
-                console.log('Form validation failed!');
-              }
-            }}
+            type="submit"
             disabled={form.formState.isSubmitting} 
             className="w-full sm:w-auto"
           >
