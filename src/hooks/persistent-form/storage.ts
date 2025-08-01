@@ -10,18 +10,18 @@ export function createStorageOperations<T extends Record<string, any>>(
 ) {
   const loadFromStorage = (): Partial<T> => {
     try {
-      console.log('Loading from storage with key:', storageKey);
+      // Loading from storage
       const storedData = storage.getItem(storageKey);
       if (storedData) {
         const parsed = JSON.parse(storedData) as StoredFormData<Record<string, any>>;
-        console.log('Parsed storage data:', parsed);
+        // Parsed storage data
         
         // Check if data has expired
         const now = Date.now();
         const expirationTime = parsed.timestamp + (expirationHours * 60 * 60 * 1000);
         
         if (now > expirationTime) {
-          console.log('Storage data expired, clearing...');
+          // Storage data expired, clearing...
           storage.removeItem(storageKey);
           return {};
         }
@@ -36,7 +36,7 @@ export function createStorageOperations<T extends Record<string, any>>(
         
         return filteredData;
       }
-      console.log('No data found in storage');
+      // No data found in storage
     } catch (error) {
       console.warn('Failed to load from storage:', error);
       // Clear corrupted data
@@ -64,7 +64,7 @@ export function createStorageOperations<T extends Record<string, any>>(
           version: '1.0'
         };
         
-        console.log('Saving to storage:', storageKey, dataToStore);
+        // Saving to storage
         storage.setItem(storageKey, JSON.stringify(dataToStore));
       } else {
         // Clear storage if no data to save
@@ -77,7 +77,7 @@ export function createStorageOperations<T extends Record<string, any>>(
 
   const clearStorage = (): void => {
     try {
-      console.log('Clearing storage for key:', storageKey);
+      // Clearing storage
       storage.removeItem(storageKey);
     } catch (error) {
       console.warn('Failed to clear storage:', error);

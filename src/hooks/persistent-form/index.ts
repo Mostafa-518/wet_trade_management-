@@ -43,7 +43,7 @@ export function usePersistentFormState<T extends Record<string, any>>(
   // Load initial state from storage and URL
   const loadPersistedState = useCallback((): T => {
     try {
-      console.log('Loading persisted state for key:', storageKey);
+      // Loading persisted state for key: ${storageKey}
       
       // Start with initial values
       let persistedState = { ...initialValues };
@@ -52,11 +52,11 @@ export function usePersistentFormState<T extends Record<string, any>>(
       if (!isStorageExpired()) {
         const storedData = loadFromStorage();
         if (storedData && Object.keys(storedData).length > 0) {
-          console.log('Loaded from storage:', storedData);
+          // Loaded from storage
           persistedState = { ...persistedState, ...storedData };
         }
       } else {
-        console.log('Storage data expired, using initial values');
+        // Storage data expired, using initial values
         clearStorage();
       }
 
@@ -64,7 +64,7 @@ export function usePersistentFormState<T extends Record<string, any>>(
       if (syncWithUrl && typeof window !== 'undefined') {
         const urlData = loadFromUrl(window.location.search);
         if (urlData && Object.keys(urlData).length > 0) {
-          console.log('Loaded from URL:', urlData);
+          // Loaded from URL
           persistedState = { ...persistedState, ...urlData };
         }
       }
@@ -76,7 +76,7 @@ export function usePersistentFormState<T extends Record<string, any>>(
         }
       });
 
-      console.log('Final persisted state:', persistedState);
+      // Final persisted state loaded
       return persistedState;
     } catch (error) {
       console.warn('Failed to load persisted form state:', error);
@@ -95,10 +95,8 @@ export function usePersistentFormState<T extends Record<string, any>>(
 
   // Generic change handler for all input types
   const handleChange = useCallback((field: keyof T, value: any) => {
-    console.log('Form value changed:', field, value);
     setFormValues(prev => {
       const newValues = { ...prev, [field]: value };
-      console.log('Saving new values:', newValues);
       
       // Save to storage
       debouncedSave(newValues);
@@ -137,7 +135,7 @@ export function usePersistentFormState<T extends Record<string, any>>(
 
   // Reset form to initial values
   const resetForm = useCallback(() => {
-    console.log('Resetting form to initial values');
+    // Resetting form to initial values
     setFormValues(initialValues);
     clearStorage();
     if (syncWithUrl && typeof window !== 'undefined') {
@@ -159,12 +157,12 @@ export function usePersistentFormState<T extends Record<string, any>>(
     if (!initializedRef.current) return;
 
     const handleFocus = () => {
-      console.log('Window focused, checking for updated persisted state');
+      // Window focused, checking for updated persisted state
       if (!isStorageExpired()) {
         const persistedState = loadPersistedState();
         setFormValues(persistedState);
       } else {
-        console.log('Storage expired on focus, clearing...');
+        // Storage expired on focus, clearing...
         clearStorage();
         setFormValues(initialValues);
       }
@@ -188,7 +186,7 @@ export function usePersistentFormState<T extends Record<string, any>>(
   // Auto-cleanup expired data on mount
   useEffect(() => {
     if (isStorageExpired()) {
-      console.log('Storage expired on mount, clearing...');
+      // Storage expired on mount, clearing...
       clearStorage();
     }
   }, [isStorageExpired, clearStorage]);

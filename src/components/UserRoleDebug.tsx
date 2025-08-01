@@ -5,14 +5,7 @@ import { useEffect } from 'react';
 export function UserRoleDebug() {
   const { user, profile, loading } = useAuth();
   
-  useEffect(() => {
-    console.log('User Role Debug - Auth Context:', {
-      user,
-      profile,
-      profileRole: profile?.role,
-      loading
-    });
-  }, [user, profile, loading]);
+  // Debug component - no console logs needed in production
 
   if (loading) {
     return <div>Loading auth state...</div>;
