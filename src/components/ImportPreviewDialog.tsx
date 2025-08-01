@@ -30,9 +30,7 @@ export function ImportPreviewDialog<T extends { [key: string]: any }>({
   const [tableData, setTableData] = useState<T[]>(data);
 
   useEffect(() => {
-    console.log('ImportPreviewDialog - open:', open);
-    console.log('ImportPreviewDialog - data:', data);
-    console.log('ImportPreviewDialog - data length:', data?.length);
+    // Dialog state and data validation
     setTableData(data);
   }, [data, open]);
 
@@ -50,12 +48,12 @@ export function ImportPreviewDialog<T extends { [key: string]: any }>({
   };
 
   const handleImport = () => {
-    console.log('Importing data:', tableData);
+    // Importing data
     onImport(tableData);
   };
 
   const handleClose = () => {
-    console.log('Closing dialog');
+    // Closing dialog
     onClose();
   };
 

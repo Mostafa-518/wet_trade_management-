@@ -72,7 +72,7 @@ export function useSubcontractSearch(subcontracts: Subcontract[]) {
   };
 
   const handleAdvancedSearch = (conditions: SearchCondition[]) => {
-    console.log('Advanced search triggered with conditions:', conditions);
+    // Advanced search triggered with conditions
     setAdvancedSearchConditions(conditions);
     setSearchTerm(''); // Clear simple search when using advanced search
     
@@ -120,7 +120,7 @@ export function useSubcontractSearch(subcontracts: Subcontract[]) {
       return item;
     }).filter(Boolean) as Subcontract[];
     
-    console.log('Filtered results:', filtered.length, 'out of', subcontracts.length);
+    // Filtered results
     setFilteredData(filtered);
   };
 

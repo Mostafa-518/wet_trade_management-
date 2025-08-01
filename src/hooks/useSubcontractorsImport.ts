@@ -15,7 +15,7 @@ export function useSubcontractorsImport() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    console.log('Starting file upload:', file.name, file.type);
+    // Starting file upload
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -31,19 +31,17 @@ export function useSubcontractorsImport() {
           raw: false
         });
 
-        console.log('Raw Excel data:', jsonData);
-
+        // Processing Excel data
+        
         const rows = jsonData as any[][];
-        console.log('All data rows:', rows);
 
         const mappedData: SubcontractorFormData[] = rows
           .filter((row, index) => {
             const hasData = row && row.length > 0 && row.some(cell => cell && String(cell).trim());
-            console.log(`Row ${index + 1} has data:`, hasData, row);
             return hasData;
           })
           .map((row, index) => {
-            console.log(`Processing row ${index + 1}:`, row);
+            // Processing row
             
             const mappedItem = {
               companyName: String(row[0] || '').trim(), // Company Name
@@ -54,17 +52,13 @@ export function useSubcontractorsImport() {
               email: String(row[5] || '').trim(), // Mail
             };
             
-            console.log(`Mapped item ${index + 1}:`, mappedItem);
             return mappedItem;
           })
           .filter(item => {
             const isValid = item.companyName && item.companyName.length > 0;
-            console.log('Item is valid:', isValid, item.companyName);
             return isValid;
           });
 
-        console.log('Final mapped data for import:', mappedData);
-        
         if (mappedData.length === 0) {
           toast({
             title: "No Data Found", 
@@ -74,7 +68,6 @@ export function useSubcontractorsImport() {
           return;
         }
         
-        console.log('Setting import data and showing dialog:', mappedData.length, 'records');
         setImportData(mappedData);
         setShowImportDialog(true);
         
@@ -107,8 +100,6 @@ export function useSubcontractorsImport() {
   };
 
   const handleImport = async (data: SubcontractorFormData[]) => {
-    console.log('Starting import process with data:', data);
-    
     if (!data || data.length === 0) {
       toast({
         title: "Import Error",
@@ -124,10 +115,7 @@ export function useSubcontractorsImport() {
 
     for (const [index, item] of data.entries()) {
       try {
-        console.log(`Importing item ${index + 1}:`, item);
-        
         if (!item.companyName || !item.companyName.trim()) {
-          console.warn(`Skipping item ${index + 1} without company name:`, item);
           errors.push(`Row ${index + 1}: Missing company name`);
           errorCount++;
           continue;
@@ -141,13 +129,10 @@ export function useSubcontractorsImport() {
           email: item.email?.trim() || '',
           phone: item.phone?.trim() || ''
         };
-
-        console.log(`Attempting to add subcontractor:`, subcontractorData);
         await addSubcontractor(subcontractorData);
         successCount++;
-        console.log(`Successfully imported: ${subcontractorData.companyName}`);
       } catch (error) {
-        console.error(`Failed to import item ${index + 1}:`, item, error);
+        // Error importing item
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         errors.push(`Row ${index + 1}: ${item.companyName || 'Unknown'} - ${errorMessage}`);
         errorCount++;
@@ -167,11 +152,6 @@ export function useSubcontractorsImport() {
       });
     }
 
-    if (errors.length > 0) {
-      console.error('Import errors:', errors);
-    }
-
-    console.log('Closing import dialog');
     setShowImportDialog(false);
     setImportData([]);
   };
@@ -188,7 +168,7 @@ export function useSubcontractorsImport() {
     XLSX.writeFile(wb, 'subcontractors_template.xlsx');
   };
 
-  console.log('useSubcontractorsImport state:', { showImportDialog, importDataLength: importData.length });
+  
 
   return {
     showImportDialog,

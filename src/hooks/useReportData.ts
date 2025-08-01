@@ -41,7 +41,7 @@ export function useReportData() {
   const { data: subcontracts = [], isLoading: subcontractsLoading, refetch } = useQuery({
     queryKey: ['report-subcontracts'],
     queryFn: async () => {
-      console.log('Fetching subcontracts for report...');
+      // Fetching subcontracts for report
       const { data, error } = await supabase
         .from('subcontracts')
         .select(`
@@ -73,7 +73,7 @@ export function useReportData() {
         throw error;
       }
       
-      console.log('Fetched subcontracts for report:', data);
+      // Fetched subcontracts for report
       return data as SubcontractWithDetails[];
     },
   });
@@ -102,7 +102,7 @@ export function useReportData() {
   }, [subcontracts, filteredSubcontracts, filters]);
 
   const updateFilter = (key: keyof ReportFilters, value: string | string[]) => {
-    console.log(`Updating filter ${key} to:`, value);
+    // Updating filter
     
     // Handle special cases for project filter switching
     if (key === 'projectFilterType') {

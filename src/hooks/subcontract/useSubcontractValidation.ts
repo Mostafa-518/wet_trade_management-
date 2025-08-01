@@ -8,7 +8,7 @@ export function useSubcontractValidation() {
   const validateStep = (currentStep: number, formData: FormData) => {
     switch (currentStep) {
       case 1:
-        console.log('Validating step 1:', { project: formData.project, subcontractor: formData.subcontractor });
+        // Validating step 1
         if (!formData.project || !formData.subcontractor) {
           toast({
             title: "Missing Information",

@@ -26,11 +26,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    console.log('AuthProvider: Setting up auth state listener...');
+    // Setting up auth state listener
     
     // Set up auth state listener FIRST
     const { data: { subscription } } = AuthService.onAuthStateChange((user) => {
-      console.log('AuthProvider: Auth state changed:', { user });
+      // Auth state changed
       setUser(user);
       
       // Always clear profile immediately when auth state changes
@@ -52,9 +52,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // THEN check for existing session
     AuthService.getSession().then((sessionResponse) => {
-      console.log('AuthProvider: Initial session response:', { sessionResponse });
+      // Initial session response
       const session = sessionResponse;
-      console.log('AuthProvider: Extracted session:', { session });
+      // Extracted session
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -68,18 +68,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => {
-      console.log('AuthProvider: Cleaning up auth subscription...');
+      // Cleaning up auth subscription
       subscription.unsubscribe();
     };
   }, []);
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      console.log('AuthProvider: Fetching user profile for:', userId);
+      // Fetching user profile
       // Clear profile first to avoid showing stale data
       setProfile(null);
       const userProfile = await AuthService.getUserProfile();
-      console.log('AuthProvider: User profile fetched:', userProfile);
+      // User profile fetched
       setProfile(userProfile);
     } catch (error) {
       console.error('AuthProvider: Error fetching user profile:', error);
@@ -89,7 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
-    console.log('AuthProvider: Sign in attempt for:', email);
+    // Sign in attempt
     try {
       // Clear any existing cached data and profile before signing in
       queryClient.clear();
@@ -113,11 +113,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, fullName?: string) => {
-    console.log('AuthProvider: Sign up attempt for:', email, 'with fullName:', fullName);
+    // Sign up attempt
     try {
       const result = await AuthService.signUp(email, password, fullName);
       // Note: user profile will be created automatically by the database trigger
-      console.log('AuthProvider: Sign up successful, user profile should be created automatically');
+      // Sign up successful, user profile should be created automatically
       return { error: null };
     } catch (error) {
       console.error('AuthProvider: Sign up catch:', error);
@@ -126,7 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    console.log('AuthProvider: Sign out attempt...');
+    // Sign out attempt
     try {
       await AuthService.signOut();
       setUser(null);
@@ -141,7 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
-    console.log('AuthProvider: Update profile attempt:', updates);
+    // Update profile attempt
     try {
       const updatedProfile = await AuthService.updateProfile(updates);
       setProfile(updatedProfile);

@@ -42,14 +42,14 @@ export function SubcontractEditForm({ subcontract, onSave, onClose }: Subcontrac
   const validSubcontractors = (subcontractors || []).filter(sub => sub.id && sub.companyName && sub.id.trim() !== '' && sub.companyName.trim() !== '');
 
   useEffect(() => {
-    console.log('SubcontractEditForm: Setting up form data for subcontract:', subcontract);
+    // Setting up form data for subcontract
     if (subcontract) {
       // Calculate total value without wastage
       const calculatedTotal = (subcontract.tradeItems || []).reduce((total, item) => {
         return total + ((item.quantity || 0) * (item.unitPrice || 0));
       }, 0);
 
-      console.log('SubcontractEditForm: Calculated total:', calculatedTotal);
+      // Calculated total
 
       setFormData({
         contractId: subcontract.contractId || '',
@@ -76,15 +76,13 @@ export function SubcontractEditForm({ subcontract, onSave, onClose }: Subcontrac
     const calculatedTotal = (selectedTradeItems || []).reduce((total, item) => {
       return total + ((item.quantity || 0) * (item.unitPrice || 0));
     }, 0);
-    console.log('SubcontractEditForm: Trade items changed, new total:', calculatedTotal);
+    // Trade items changed, new total calculated
     setFormData(prev => ({ ...prev, totalValue: calculatedTotal }));
   }, [selectedTradeItems]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('SubcontractEditForm: Form submitted with data:', formData);
-    console.log('SubcontractEditForm: Trade items:', selectedTradeItems);
-    console.log('SubcontractEditForm: Responsibilities:', selectedResponsibilities);
+    // Form submitted with data
     
     try {
       const updateData = {
@@ -92,12 +90,10 @@ export function SubcontractEditForm({ subcontract, onSave, onClose }: Subcontrac
         tradeItems: selectedTradeItems || [],
         responsibilities: selectedResponsibilities || []
       };
-      console.log('SubcontractEditForm: Calling onSave with:', updateData);
       await onSave(subcontract.id, updateData);
-      console.log('SubcontractEditForm: Save completed successfully');
       onClose();
     } catch (error) {
-      console.error('SubcontractEditForm: Error saving subcontract:', error);
+      // Error saving subcontract
     }
   };
 
@@ -133,7 +129,7 @@ export function SubcontractEditForm({ subcontract, onSave, onClose }: Subcontrac
           <TradeItemForm
             selectedItems={selectedTradeItems || []}
             onItemsChange={(items) => {
-              console.log('SubcontractEditForm: Trade items changed to:', items);
+              // Trade items changed
               setSelectedTradeItems(items);
             }}
             trades={trades || []}
@@ -145,7 +141,7 @@ export function SubcontractEditForm({ subcontract, onSave, onClose }: Subcontrac
           <ResponsibilitiesStep
             selectedResponsibilities={selectedResponsibilities || []}
             onResponsibilitiesChange={(responsibilities) => {
-              console.log('SubcontractEditForm: Responsibilities changed to:', responsibilities);
+              // Responsibilities changed
               setSelectedResponsibilities(responsibilities);
             }}
             responsibilities={responsibilities || []}

@@ -25,23 +25,23 @@ export function useSubcontractForm() {
   ];
 
   const handleNext = (validateStep: () => boolean) => {
-    console.log('Current step validation:', currentStep, formData);
+    // Current step validation
     if (validateStep()) {
-      console.log('Step validation passed, moving to next step');
+      // Step validation passed, moving to next step
       setCurrentStep(prev => Math.min(prev + 1, steps.length));
     } else {
-      console.log('Step validation failed');
+      // Step validation failed
     }
   };
 
   const handlePrev = () => {
-    console.log('Moving to previous step from:', currentStep);
+    // Moving to previous step
     setCurrentStep(prev => Math.max(prev - 1, 1));
   };
 
   const getTotalAmount = () => {
     const total = formData.tradeItems.reduce((sum, item) => sum + item.total, 0);
-    console.log('Calculated total amount:', total);
+    // Calculated total amount
     return total;
   };
 

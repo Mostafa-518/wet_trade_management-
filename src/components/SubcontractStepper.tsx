@@ -29,17 +29,17 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
   const { validateStep, validateFinalSave } = useSubcontractValidation();
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('File upload triggered');
+    // File upload triggered
     const file = event.target.files?.[0];
     if (file && file.type === 'application/pdf') {
-      console.log('Valid PDF file uploaded:', file.name);
+      // Valid PDF file uploaded
       setFormData(prev => ({ ...prev, pdfFile: file }));
       toast({
         title: "File Uploaded",
         description: `${file.name} uploaded successfully`
       });
     } else {
-      console.log('Invalid file type attempted:', file?.type);
+      // Invalid file type attempted
       toast({
         title: "Invalid File",
         description: "Please upload a PDF file",
@@ -49,21 +49,19 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
   };
 
   const handleSave = async () => {
-    console.log('Save button clicked');
-    console.log('Current form data:', formData);
-    console.log('Current step:', currentStep);
+    // Save button clicked - validate current step
 
     if (!validateStep(currentStep, formData)) {
-      console.log('Current step validation failed');
+      // Current step validation failed
       return;
     }
 
     if (!validateFinalSave(formData)) {
-      console.log('Final validation failed');
+      // Final validation failed
       return;
     }
 
-    console.log('All validations passed, proceeding with save');
+    // All validations passed, proceeding with save
 
     // Compose data as expected by backend - contract ID will be auto-generated
     const subcontractData = {
@@ -83,20 +81,16 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
       parentSubcontractId: formData.contractType === 'ADD' ? (formData.parentSubcontractId || undefined) : undefined
     };
 
-    console.log('Final subcontract data before save:', subcontractData);
-
     try {
       setIsSaving(true);
-      console.log('Calling onSave with data:', subcontractData);
       await onSave(subcontractData);
-      console.log('onSave completed successfully');
       toast({
         title: "Success",
         description: `${formData.contractType === 'ADD' ? 'Addendum' : 'Subcontract'} saved and will appear in the table.`
       });
       onClose(); // Close the modal/stepper after save
     } catch (err: any) {
-      console.error('Error saving subcontract:', err);
+      // Error saving subcontract
       toast({
         title: "Save failed",
         description: err?.message || `Could not save ${formData.contractType === 'ADD' ? 'addendum' : 'subcontract'}.`,
@@ -116,7 +110,7 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
           <TradeItemForm
             selectedItems={formData.tradeItems}
             onItemsChange={(items) => {
-              console.log('Trade items changed:', items);
+              // Trade items changed
               setFormData(prev => ({ ...prev, tradeItems: items }));
             }}
             trades={trades || []}
@@ -128,7 +122,7 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
           <ResponsibilitiesStep
             selectedResponsibilities={formData.responsibilities}
             onResponsibilitiesChange={(responsibilities) => {
-              console.log('Responsibilities changed:', responsibilities);
+              // Responsibilities changed
               setFormData(prev => ({ ...prev, responsibilities }));
             }}
             responsibilities={responsibilities || []}
@@ -150,7 +144,7 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
                     className="border rounded px-3 py-2 w-full"
                     value={formData.dateOfIssuing || ''}
                     onChange={e => {
-                      console.log('Date of issuing changed:', e.target.value);
+                      // Date of issuing changed
                       setFormData(prev => ({
                         ...prev,
                         dateOfIssuing: e.target.value
@@ -180,7 +174,7 @@ export function SubcontractStepper({ onClose, onSave }: SubcontractStepperProps)
       onClose={onClose}
       onPrev={handlePrev}
       onNext={() => {
-        console.log('Next button clicked from step:', currentStep);
+        // Next button clicked
         handleNext(() => validateStep(currentStep, formData));
       }}
       onSave={handleSave}
