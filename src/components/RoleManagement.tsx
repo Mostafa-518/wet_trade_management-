@@ -93,12 +93,12 @@ export function RoleManagement() {
         'manage_projects', 'manage_subcontractors', 'manage_trades',
         'manage_responsibilities', 'manage_subcontracts'
       ] as Permission[],
-      project_manager: [
+      procurement_manager: [
         'read', 'create', 'update', 'view_reports', 'manage_projects',
         'manage_subcontractors', 'manage_trades', 'manage_responsibilities',
         'manage_subcontracts'
       ] as Permission[],
-      supervisor: [
+      procurement_engineer: [
         'read', 'create', 'update', 'view_reports', 'manage_subcontractors',
         'manage_trades', 'manage_responsibilities', 'manage_subcontracts'
       ] as Permission[],
@@ -122,7 +122,7 @@ export function RoleManagement() {
 
       {/* Role Definitions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {(['admin', 'project_manager', 'supervisor', 'viewer'] as Role[]).map((role) => (
+      {(['admin', 'procurement_manager', 'procurement_engineer', 'viewer'] as Role[]).map((role) => (
           <Card key={role}>
             <CardHeader>
               <CardTitle className="capitalize">{role.replace('_', ' ')}</CardTitle>
@@ -160,14 +160,14 @@ export function RoleManagement() {
                 <div className="flex items-center gap-4">
                   <Badge variant={
                     user.role === 'admin' ? 'default' : 
-                    user.role === 'project_manager' ? 'secondary' : 
-                    user.role === 'supervisor' ? 'secondary' : 'outline'
+                    user.role === 'procurement_manager' ? 'secondary' : 
+                    user.role === 'procurement_engineer' ? 'secondary' : 'outline'
                   }>
                     {user.role.replace('_', ' ')}
                   </Badge>
                   
                   <div className="flex gap-2">
-                    {(['admin', 'project_manager', 'supervisor', 'viewer'] as Role[]).map((role) => (
+                    {(['admin', 'procurement_manager', 'procurement_engineer', 'viewer'] as Role[]).map((role) => (
                       <Button
                         key={role}
                         variant={user.role === role ? 'default' : 'outline'}
