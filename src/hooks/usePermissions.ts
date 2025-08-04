@@ -13,7 +13,7 @@ export type Permission =
   | 'manage_responsibilities'
   | 'manage_subcontracts';
 
-export type Role = 'admin' | 'project_manager' | 'supervisor' | 'viewer';
+export type Role = 'admin' | 'procurement_manager' | 'procurement_engineer' | 'viewer';
 
 const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   admin: [
@@ -29,7 +29,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     'manage_responsibilities',
     'manage_subcontracts'
   ],
-  project_manager: [
+  procurement_manager: [
     'read',
     'create',
     'update',
@@ -40,7 +40,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     'manage_responsibilities',
     'manage_subcontracts'
   ],
-  supervisor: [
+  procurement_engineer: [
     'read',
     'create',
     'update',

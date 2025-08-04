@@ -28,7 +28,7 @@ import { User } from '@/types/user';
 const createUserSchema = (isEditing: boolean) => z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
-  role: z.enum(['admin', 'project_manager', 'supervisor', 'viewer']),
+  role: z.enum(['admin', 'procurement_manager', 'procurement_engineer', 'viewer']),
   department: z.string().optional(),
   status: z.enum(['active', 'inactive', 'suspended']),
   phone: z.string().optional(),
@@ -136,8 +136,8 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
                   </FormControl>
                   <SelectContent>
                     <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="project_manager">Project Manager</SelectItem>
-                    <SelectItem value="supervisor">Supervisor</SelectItem>
+                    <SelectItem value="procurement_manager">Procurement Manager</SelectItem>
+                    <SelectItem value="procurement_engineer">Procurement Engineer</SelectItem>
                     <SelectItem value="viewer">Viewer</SelectItem>
                   </SelectContent>
                 </Select>

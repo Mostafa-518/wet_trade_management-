@@ -3,7 +3,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'project_manager' | 'supervisor' | 'viewer';
+  role: 'admin' | 'procurement_manager' | 'procurement_engineer' | 'viewer';
   department: string;
   status: 'active' | 'inactive' | 'suspended';
   createdAt: string;
