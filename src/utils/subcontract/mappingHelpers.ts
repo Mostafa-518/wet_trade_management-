@@ -22,7 +22,7 @@ export function mapSubcontractToFrontend(dbRow: any): Subcontract {
       
       const quantity = dbTradeItem.quantity || 0;
       const unitPrice = dbTradeItem.unit_price || 0;
-      // Calculate total WITHOUT wastage: just QTY * Rate
+      // Calculate total without wastage: QTY * Rate only
       const total = quantity * unitPrice;
       
       return {

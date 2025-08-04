@@ -47,9 +47,7 @@ export function TradeItemForm({ selectedItems, onItemsChange, trades, tradeItems
       return;
     }
 
-    const baseTotal = quantity * unitPrice;
-    const wastageAmount = baseTotal * (wastagePercentage / 100);
-    const total = baseTotal + wastageAmount;
+    const total = quantity * unitPrice; // Total without wastage
 
     const newItem: TradeItem = {
       id: `temp-${Date.now()}`,
@@ -185,18 +183,15 @@ export function TradeItemForm({ selectedItems, onItemsChange, trades, tradeItems
           <CardContent>
             <div className="space-y-3">
               {(selectedItems || []).map((item) => {
-                const baseAmount = item.quantity * item.unitPrice;
-                const wastageAmount = baseAmount * ((item.wastagePercentage || 0) / 100);
-                
                 return (
                   <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex-1">
                       <div className="font-medium">{item.trade} - {item.item}</div>
                       <div className="text-sm text-muted-foreground">
-                        {item.quantity} {item.unit} × {formatCurrency(item.unitPrice)} = {formatCurrency(baseAmount)}
+                        {item.quantity} {item.unit} × {formatCurrency(item.unitPrice)}
                         {(item.wastagePercentage || 0) > 0 && (
                           <span className="ml-2 text-orange-600">
-                            + {item.wastagePercentage}% wastage ({formatCurrency(wastageAmount)})
+                            (Wastage: {item.wastagePercentage}%)
                           </span>
                         )}
                       </div>
