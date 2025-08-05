@@ -452,7 +452,13 @@ export type Database = {
         | "active"
         | "completed"
         | "cancelled"
-      user_role: "admin" | "project_manager" | "supervisor" | "viewer"
+      user_role:
+        | "admin"
+        | "project_manager"
+        | "supervisor"
+        | "viewer"
+        | "procurement_manager"
+        | "procurement_engineer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -594,7 +600,14 @@ export const Constants = {
         "completed",
         "cancelled",
       ],
-      user_role: ["admin", "project_manager", "supervisor", "viewer"],
+      user_role: [
+        "admin",
+        "project_manager",
+        "supervisor",
+        "viewer",
+        "procurement_manager",
+        "procurement_engineer",
+      ],
     },
   },
 } as const
