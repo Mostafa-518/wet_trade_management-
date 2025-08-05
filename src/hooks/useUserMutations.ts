@@ -38,18 +38,10 @@ export function useUserMutations() {
         await new Promise(resolve => setTimeout(resolve, 2000));
         
         try {
-          // Map frontend roles back to database roles
-          const dbRoleMapping: Record<string, string> = {
-            'admin': 'admin',
-            'procurement_manager': 'project_manager',
-            'procurement_engineer': 'supervisor', 
-            'viewer': 'viewer'
-          };
-          
           // Update the profile with additional data including avatar
           await UserService.update(data.user.id, {
             full_name: userData.name,
-            role: dbRoleMapping[userData.role] || userData.role,
+            role: userData.role, // Direct mapping now that DB uses new role names
             phone: userData.phone,
             avatar_url: userData.avatar
           });
@@ -85,19 +77,11 @@ export function useUserMutations() {
     mutationFn: async ({ id, userData }: { id: string; userData: any }) => {
       console.log('Updating user with ID:', id, 'Data:', userData);
       
-      // Map frontend roles back to database roles
-      const dbRoleMapping: Record<string, string> = {
-        'admin': 'admin',
-        'procurement_manager': 'project_manager',
-        'procurement_engineer': 'supervisor', 
-        'viewer': 'viewer'
-      };
-      
       // Map the form data to the correct database field names
       const updateData = {
         full_name: userData.name,
         email: userData.email,
-        role: dbRoleMapping[userData.role] || userData.role,
+        role: userData.role, // Direct mapping now that DB uses new role names
         phone: userData.phone,
         avatar_url: userData.avatar
       };
