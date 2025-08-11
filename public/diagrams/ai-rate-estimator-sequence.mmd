@@ -1,0 +1,42 @@
+sequenceDiagram
+  autonumber
+  participant U as User
+  participant UI as Rate Estimator UI
+  participant V as Client Validation
+  participant DB as Supabase (trade_items)
+  participant EMB as Embeddings/Search (Edge Fn)
+  participant AI as AI Model (Breakdown + Rate)
+  participant PR as Pricing Engine (Client)
+  participant EXP as Exporter (PDF/Excel)
+  participant T as Toast/Notifications
+
+  U->>UI: Open "AI Rate Estimator" page
+  UI->>UI: Preload dropdowns (trades, units)
+  U->>UI: Enter inputs (trade, item, unit, specs, location, quantity)
+  UI->>V: Validate inputs
+  V-->>UI: Valid
+
+  UI->>DB: Fetch recent similar recorded items (by trade, unit, text match)
+  DB-->>UI: Matched items (name, unit, rate, date, project)
+  alt Embeddings enabled
+    UI->>EMB: Find semantically similar items
+    EMB-->>UI: Similar items + scores
+  end
+
+  UI->>AI: Prompt with context (inputs + matched data)
+  AI-->>UI: Estimated rate, breakdown, confidence, notes
+
+  UI->>PR: Recalculate totals and unit rate
+  PR-->>UI: Totals updated
+  UI-->>U: Show Rate, Breakdown, Confidence
+
+  U->>UI: Edit line items (prices/qty) [optional]
+  UI->>PR: Recompute live
+  PR-->>UI: Updated totals
+
+  U->>UI: Save / Export
+  UI->>EXP: Generate PDF/Excel
+  EXP-->>UI: File ready
+  UI-->>T: Success toast
+
+  Note over AI,UI: SLA target 1–3s; fallback to cached estimates

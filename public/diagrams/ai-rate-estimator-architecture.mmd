@@ -1,0 +1,44 @@
+graph TD
+  %% Client
+  subgraph Client [Client (React + Vite + Tailwind)]
+    A[RateEstimatorPage]
+    B[Form: trade, item, unit, specs, location, qty]
+    C[React Query]
+    D[Pricing Engine (client calc)]
+    E[Exporter (PDF/Excel)]
+    F[Toasts / Notifications]
+  end
+
+  %% Supabase
+  subgraph Supabase [Supabase]
+    G[(trade_items)]
+    H[(trades)]
+    I[(optional: estimates table)]
+    J[Policies (RLS) & Functions]
+  end
+
+  %% Edge Functions / AI layer
+  subgraph Edge [Edge Functions]
+    K[Embeddings Search\n(similarity over items)]
+    L[AI Breakdown Generator\n(GPT-4o or gpt-4o-mini)]
+  end
+
+  %% Flows
+  A-->B
+  A-. data fetching .->C
+  C-->G
+  C-->H
+
+  B==user inputs==>K
+  G==context data==>K
+  K==top-k similar==>L
+  B==specs/constraints==>L
+  L==rate + breakdown + confidence==>A
+
+  A-->D
+  D-->A
+  A-->E
+  A-->F
+
+  %% Notes
+  %% Estimation target: 1–3s; sensitive data protected by RLS
