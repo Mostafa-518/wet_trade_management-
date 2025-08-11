@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useTrades } from "@/hooks/useTrades";
 import { useApiMutation } from "@/hooks/core/useApiMutation";
 import { estimateService } from "@/services/estimateService";
+import { useQuery } from "@tanstack/react-query";
 
 const formSchema = z.object({
   item_name: z.string().min(2, "Item name is required"),
@@ -70,6 +71,15 @@ export function RateEstimator() {
           </CardHeader>
           <CardContent>
             <EstimatorForm />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Drafts</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RecentDrafts />
           </CardContent>
         </Card>
 
@@ -318,6 +328,38 @@ function EstimatorForm() {
         </div>
       </form>
     </Form>
+  );
+}
+
+function RecentDrafts() {
+  const { data = [], isLoading, error } = useQuery({
+    queryKey: ["estimates", "recent"],
+    queryFn: () => estimateService.listMyRecent(10),
+    staleTime: 60_000,
+  });
+
+  if (isLoading) return <div className="text-sm text-muted-foreground">Loading recent drafts...</div>;
+  if (error) return <div className="text-sm text-destructive">Failed to load drafts</div>;
+  if (!data.length) return <div className="text-sm text-muted-foreground">No drafts yet.</div>;
+
+  return (
+    <ul className="space-y-2">
+      {data.map((e: any) => (
+        <li key={e.id} className="flex items-center justify-between border rounded-md p-2">
+          <div className="text-sm">
+            <div className="font-medium">
+              {e.item_name} <span className="text-muted-foreground">({e.unit})</span>
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Created {new Date(e.created_at).toLocaleString()}
+            </div>
+          </div>
+          <span className="text-xs px-2 py-1 rounded bg-secondary text-secondary-foreground">
+            {e.status}
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
