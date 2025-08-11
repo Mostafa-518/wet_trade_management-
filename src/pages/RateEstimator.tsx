@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,6 +12,14 @@ import { useTrades } from "@/hooks/useTrades";
 import { useApiMutation } from "@/hooks/core/useApiMutation";
 import { estimateService } from "@/services/estimateService";
 import { useQuery } from "@tanstack/react-query";
+import RateSummary from "@/components/estimator/RateSummary";
+import BreakdownTable, { BreakdownItem } from "@/components/estimator/BreakdownTable";
+import FeedbackBar, { FeedbackRating } from "@/components/estimator/FeedbackBar";
+import MatchedItemsModal, { TopContextItem } from "@/components/estimator/MatchedItemsModal";
+import type { AiEstimateResult, CreateEstimateInput } from "@/services/estimateService";
+import { useToast } from "@/hooks/use-toast";
+import jsPDF from "jspdf";
+import * as XLSX from "xlsx";
 
 const formSchema = z.object({
   item_name: z.string().min(2, "Item name is required"),
@@ -82,6 +90,15 @@ export function RateEstimator() {
           </CardHeader>
           <CardContent>
             <RecentDrafts />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>AI Estimation</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AiEstimatorPanel />
           </CardContent>
         </Card>
 
@@ -392,6 +409,238 @@ function RecentDrafts() {
         </li>
       ))}
     </ul>
+  );
+}
+
+function AiEstimatorPanel() {
+  const { toast } = useToast();
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      item_name: "",
+      unit: "m²",
+      trade_id: undefined,
+      quantity: undefined,
+      currency: "EGP",
+      specs: "",
+      location: "",
+    },
+  });
+
+  const [result, setResult] = useState<AiEstimateResult | null>(null);
+  const [items, setItems] = useState<BreakdownItem[]>([]);
+  const [contextOpen, setContextOpen] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [savedId, setSavedId] = useState<string | null>(null);
+
+  const grandTotal = useMemo(() => items.reduce((s, l) => s + (Number.isFinite(l.total) ? Number(l.total) : 0), 0), [items]);
+
+  const onGenerate = async (values: z.infer<typeof formSchema>) => {
+    setGenerating(true);
+    setSavedId(null);
+    try {
+      const res = await estimateService.estimateWithAI(values as any);
+      setResult(res);
+      const mapped: BreakdownItem[] = (res.breakdown || []).map((l: any) => ({
+        category: String(l.category || 'materials'),
+        name: String(l.name || 'Line'),
+        qty: Number(l.qty ?? 1),
+        unit: String(l.unit || values.unit),
+        unit_price: Number(l.unit_price ?? 0),
+        total: Number(l.total ?? 0),
+      }));
+      setItems(mapped);
+      toast({ title: 'AI estimate ready', description: `Unit rate: ${(res.unit_rate ?? 0).toFixed(2)} ${res.currency}` });
+    } catch (e: any) {
+      toast({ title: 'Failed to generate estimate', description: e?.message ?? 'Unknown error' });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const onSave = async () => {
+    if (!result) return;
+    setSaving(true);
+    try {
+      const inputs = form.getValues() as unknown as CreateEstimateInput;
+      const id = await estimateService.saveEstimateFromResult(inputs, { ...result, unit_rate: grandTotal > 0 ? grandTotal : result.unit_rate });
+      setSavedId(id);
+      toast({ title: 'Estimate saved', description: 'Your estimate was saved as a draft.' });
+    } catch (e: any) {
+      toast({ title: 'Failed to save', description: e?.message ?? 'Unknown error' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const exportPDF = () => {
+    if (!result) return;
+    const currency = result.currency;
+    const doc = new jsPDF();
+    doc.setFontSize(14);
+    doc.text('AI Rate Estimate', 14, 16);
+    doc.setFontSize(10);
+    doc.text(`Item: ${form.getValues().item_name}  |  Unit: ${form.getValues().unit}`, 14, 24);
+    const rate = (grandTotal > 0 ? grandTotal : result.unit_rate).toFixed(2);
+    doc.text(`Unit Rate: ${rate} ${currency}/${form.getValues().unit}`, 14, 30);
+    doc.text(`Confidence: ${Math.round((result.confidence ?? 0) * 100)}%`, 14, 36);
+    doc.text(`Rationale: ${result.rationale}`, 14, 44, { maxWidth: 180 });
+
+    let y = 56;
+    doc.text('Breakdown:', 14, y);
+    y += 6;
+    items.forEach((l) => {
+      const line = `${l.category} | ${l.name} | ${l.qty} ${l.unit} x ${l.unit_price.toFixed(2)} = ${Number(l.total ?? 0).toFixed(2)} ${currency}`;
+      doc.text(line, 14, y, { maxWidth: 180 });
+      y += 6;
+      if (y > 280) { doc.addPage(); y = 16; }
+    });
+
+    doc.save('rate-estimate.pdf');
+  };
+
+  const exportExcel = () => {
+    if (!result) return;
+    const data = items.map((l) => ({
+      Category: l.category,
+      Name: l.name,
+      Qty: l.qty,
+      Unit: l.unit,
+      UnitPrice: l.unit_price,
+      Total: l.total,
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Breakdown');
+    XLSX.writeFile(wb, 'rate-estimate.xlsx');
+  };
+
+  return (
+    <div className="space-y-4">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onGenerate)} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <FormField control={form.control} name="trade_id" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Trade</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select trade (optional)" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {/* Minimal - reuse existing trades hook not here to keep it fast */}
+                  {/* Consider enhancing with suggestions later */}
+                </SelectContent>
+              </Select>
+            </FormItem>
+          )} />
+          <FormField control={form.control} name="item_name" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Item name</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g., 20mm plaster on walls" {...field} />
+              </FormControl>
+            </FormItem>
+          )} />
+          <FormField control={form.control} name="unit" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Unit</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g., m²" {...field} />
+              </FormControl>
+            </FormItem>
+          )} />
+          <FormField control={form.control} name="specs" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Specifications</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g., 20mm thickness, cement-sand 1:4" {...field} />
+              </FormControl>
+            </FormItem>
+          )} />
+          <FormField control={form.control} name="location" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Location</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g., Cairo" {...field} />
+              </FormControl>
+            </FormItem>
+          )} />
+          <FormField control={form.control} name="quantity" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Quantity</FormLabel>
+              <FormControl>
+                <Input type="number" step="0.01" placeholder="e.g., 1500" value={field.value as any ?? ''} onChange={field.onChange} />
+              </FormControl>
+            </FormItem>
+          )} />
+          <FormField control={form.control} name="currency" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Currency</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select currency" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="EGP">EGP</SelectItem>
+                  <SelectItem value="USD">USD</SelectItem>
+                  <SelectItem value="EUR">EUR</SelectItem>
+                </SelectContent>
+              </Select>
+            </FormItem>
+          )} />
+
+          <div className="md:col-span-3 flex justify-end gap-2">
+            <Button type="submit" disabled={generating}>{generating ? 'Generating…' : 'Generate with AI'}</Button>
+          </div>
+        </form>
+      </Form>
+
+      {result && (
+        <div className="space-y-3">
+          <RateSummary
+            itemName={form.getValues().item_name}
+            unit={form.getValues().unit}
+            currency={result.currency}
+            unitRate={grandTotal > 0 ? grandTotal : result.unit_rate}
+            confidence={result.confidence}
+            rationale={result.rationale}
+            contextSize={result.context_size}
+            generatedAt={result.generated_at}
+            onShowContext={() => setContextOpen(true)}
+          />
+
+          <BreakdownTable items={items} currency={result.currency} onChange={setItems} />
+
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex gap-2">
+              <Button variant="secondary" onClick={onSave} disabled={saving}>{saving ? 'Saving…' : (savedId ? 'Saved' : 'Save Estimate')}</Button>
+              <Button variant="outline" onClick={exportPDF} disabled={!result}>Export PDF</Button>
+              <Button variant="outline" onClick={exportExcel} disabled={!result}>Export Excel</Button>
+            </div>
+            <FeedbackBar onSubmit={async (rating: FeedbackRating, reason?: string) => {
+              if (!savedId) {
+                toast({ title: 'Save required', description: 'Please save the estimate before submitting feedback.' });
+                return;
+              }
+              try {
+                await estimateService.submitFeedback(savedId, rating, reason);
+                toast({ title: 'Feedback recorded', description: 'Thank you!' });
+              } catch (e: any) {
+                toast({ title: 'Failed to submit feedback', description: e?.message ?? 'Unknown error' });
+              }
+            }} />
+          </div>
+
+          <MatchedItemsModal items={(result.top_context as TopContextItem[]) ?? []} open={contextOpen} onOpenChange={setContextOpen} />
+        </div>
+      )}
+    </div>
   );
 }
 

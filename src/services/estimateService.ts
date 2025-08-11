@@ -98,6 +98,69 @@ export class EstimateService {
     if (error) throw error;
     return data as AiEstimateResult;
   }
+
+  async saveEstimateFromResult(input: CreateEstimateInput, result: AiEstimateResult) {
+    // Create a draft first to ensure ownership via RLS
+    const draft = await this.createDraft(input as any);
+
+    const sourceIds = result.top_context?.map((t) => t.id) ?? null;
+
+    // Update the estimate with AI fields
+    const { data: updated, error: upErr } = await supabase
+      .from('estimates')
+      .update({
+        ai_rate: result.unit_rate,
+        ai_confidence: result.confidence,
+        ai_notes: result.rationale,
+        final_rate: result.unit_rate,
+        source_item_ids: sourceIds,
+      })
+      .eq('id', draft.id)
+      .select('*')
+      .single();
+    if (upErr) throw upErr;
+
+    // Insert line items
+    const mapType = (cat: string): 'material' | 'labor' | 'equipment' | 'overhead' => {
+      const c = (cat || '').toLowerCase();
+      if (c.startsWith('material')) return 'material';
+      if (c.startsWith('labor')) return 'labor';
+      if (c.startsWith('equip')) return 'equipment';
+      return 'overhead';
+    };
+
+    const lines = (result.breakdown || []).map((l) => ({
+      estimate_id: draft.id,
+      type: mapType((l as any).category) as any,
+      name: (l as any).name,
+      unit: (l as any).unit,
+      qty: (l as any).qty,
+      unit_price: (l as any).unit_price,
+      total_price: (l as any).total,
+      source_ref: null,
+    }));
+
+    if (lines.length) {
+      const { error: liErr } = await supabase.from('estimate_line_items').insert(lines as any);
+      if (liErr) throw liErr;
+    }
+
+    return updated?.id ?? draft.id as string;
+  }
+
+  async submitFeedback(estimate_id: string, rating: 'accurate' | 'too_high' | 'too_low' | 'wrong_composition', reason?: string) {
+    const { data: auth } = await supabase.auth.getUser();
+    const user = auth?.user;
+    if (!user) throw new Error('You must be logged in to submit feedback');
+
+    const { error } = await supabase.from('estimate_feedback').insert({
+      estimate_id,
+      user_id: user.id,
+      rating,
+      reason: reason ?? null,
+    } as any);
+    if (error) throw error;
+  }
 }
 
 export const estimateService = new EstimateService();
