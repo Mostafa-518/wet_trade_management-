@@ -25,6 +25,8 @@ const formSchema = z.object({
       message: "Quantity must be a positive number",
     }),
   currency: z.string().default("EGP"),
+  specs: z.string().optional(),
+  location: z.string().optional(),
 });
 
 export function RateEstimator() {
@@ -220,6 +222,8 @@ function EstimatorForm() {
       trade_id: undefined,
       quantity: undefined,
       currency: "EGP",
+      specs: "",
+      location: "",
     },
   });
 
@@ -280,6 +284,34 @@ function EstimatorForm() {
               <FormLabel>Unit</FormLabel>
               <FormControl>
                 <Input placeholder="e.g., m²" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="specs"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Specifications (optional)</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g., 20mm thickness, cement-sand 1:4" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="location"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Location / Project Type (optional)</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g., Cairo, Residential" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
