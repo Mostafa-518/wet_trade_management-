@@ -19,6 +19,15 @@ interface AuditLog {
   created_at: string;
 }
 
+// ✅ Entities that support Undo and their matching Supabase RPC functions
+const undoableEntitiesMap: Record<string, string> = {
+  subcontracts: 'admin_undo_subcontract',
+  projects: 'admin_undo_project',
+  subcontractors: 'admin_undo_subcontractor',
+  trades: 'admin_undo_trade',
+  trade_items: 'admin_undo_trade_item'
+};
+
 export function ActivityLog() {
   const { toast } = useToast();
   const { userRole } = usePermissions();
@@ -80,7 +89,7 @@ export function ActivityLog() {
     );
   }, [logs, entityFilter, actionFilter, search]);
 
-  // Selection helpers
+  // ✅ Selection helpers
   const toggleSelect = (id: string, checked: boolean) => {
     setSelectedIds(prev => {
       const next = new Set(prev);
@@ -100,7 +109,6 @@ export function ActivityLog() {
   };
 
   useEffect(() => {
-    // prune selections that are no longer present
     setSelectedIds(prev => {
       const next = new Set<string>();
       filtered.forEach(l => { if (prev.has(l.id)) next.add(l.id); });
@@ -150,14 +158,18 @@ export function ActivityLog() {
     }
   };
 
+  // ✅ Updated handleUndo for multiple entities
   const handleUndo = async (log: AuditLog) => {
     if (!isAdmin) return;
+
+    const rpcFunction = undoableEntitiesMap[log.entity];
+    if (!rpcFunction) {
+      toast({ title: 'Undo not available', description: `Undo is not available for ${log.entity}.` });
+      return;
+    }
+
     try {
-      if (log.entity !== 'subcontracts') {
-        toast({ title: 'Undo not available', description: 'Undo is currently supported for subcontracts only.' });
-        return;
-      }
-      const { error } = await supabase.rpc('admin_undo_subcontract', { p_log_id: log.id });
+      const { error } = await supabase.rpc(rpcFunction, { p_log_id: log.id });
       if (error) throw error;
       toast({ title: 'Undone', description: 'Action has been undone.' });
       fetchLogs();
@@ -167,14 +179,14 @@ export function ActivityLog() {
     }
   };
 
-  const entities = ['all', 'subcontracts', 'projects', 'subcontractors', 'trades', 'trade_items'];
+  const entities = ['all', ...Object.keys(undoableEntitiesMap)];
   const actions = ['all', 'insert', 'delete'];
 
   return (
     <div>
       <header className="mb-4">
         <h1 className="text-2xl font-bold">Activity Log</h1>
-        <p className="text-sm text-muted-foreground">Track all changes across key entities. Admins can undo subcontract actions.</p>
+        <p className="text-sm text-muted-foreground">Track all changes across key entities. Admins can undo supported actions.</p>
       </header>
 
       <Card>
@@ -256,7 +268,7 @@ export function ActivityLog() {
               <div className={isAdmin ? 'col-span-1 capitalize' : 'col-span-2 capitalize'}>{log.action}</div>
               <div className="col-span-2 truncate" title={log.entity_id || ''}>{log.entity_id || '-'}</div>
               <div className="col-span-1 text-right">
-                {isAdmin && log.entity === 'subcontracts' && (
+                {isAdmin && undoableEntitiesMap[log.entity] && (
                   <Button size="sm" variant="outline" onClick={() => handleUndo(log)}>Undo</Button>
                 )}
               </div>
@@ -272,3 +284,4 @@ export function ActivityLog() {
 }
 
 export default ActivityLog;
+
