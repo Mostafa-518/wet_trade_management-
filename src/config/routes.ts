@@ -18,6 +18,7 @@ export const ROUTES = {
   SUBCONTRACT_DETAIL: '/subcontracts/:id',
   ALERTS: '/alerts',
   REPORT: '/report',
+  RATE_ESTIMATOR: '/rate-estimator',
   FILTERED_SUBCONTRACTS: '/reports/subcontracts',
   USERS: '/users',
   USER_DETAIL: '/users/:id',
