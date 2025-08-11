@@ -107,6 +107,175 @@ export type Database = {
         }
         Relationships: []
       }
+      estimate_feedback: {
+        Row: {
+          created_at: string
+          estimate_id: string
+          id: string
+          rating: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          estimate_id: string
+          id?: string
+          rating: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          estimate_id?: string
+          id?: string
+          rating?: string
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimate_feedback_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estimate_line_items: {
+        Row: {
+          created_at: string
+          estimate_id: string
+          id: string
+          name: string
+          qty: number | null
+          source_ref: string | null
+          total_price: number | null
+          type: Database["public"]["Enums"]["estimate_line_type"]
+          unit: string | null
+          unit_price: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          estimate_id: string
+          id?: string
+          name: string
+          qty?: number | null
+          source_ref?: string | null
+          total_price?: number | null
+          type: Database["public"]["Enums"]["estimate_line_type"]
+          unit?: string | null
+          unit_price?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          estimate_id?: string
+          id?: string
+          name?: string
+          qty?: number | null
+          source_ref?: string | null
+          total_price?: number | null
+          type?: Database["public"]["Enums"]["estimate_line_type"]
+          unit?: string | null
+          unit_price?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimate_line_items_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estimates: {
+        Row: {
+          ai_confidence: number | null
+          ai_notes: string | null
+          ai_rate: number | null
+          created_at: string
+          currency: string
+          final_rate: number | null
+          id: string
+          inflation_ref_month: string | null
+          item_name: string
+          location: string | null
+          market_factor: number
+          project_id: string | null
+          quantity: number | null
+          source_item_ids: string[] | null
+          specs: string | null
+          status: Database["public"]["Enums"]["estimate_status"]
+          trade_id: string | null
+          unit: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_confidence?: number | null
+          ai_notes?: string | null
+          ai_rate?: number | null
+          created_at?: string
+          currency?: string
+          final_rate?: number | null
+          id?: string
+          inflation_ref_month?: string | null
+          item_name: string
+          location?: string | null
+          market_factor?: number
+          project_id?: string | null
+          quantity?: number | null
+          source_item_ids?: string[] | null
+          specs?: string | null
+          status?: Database["public"]["Enums"]["estimate_status"]
+          trade_id?: string | null
+          unit: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_confidence?: number | null
+          ai_notes?: string | null
+          ai_rate?: number | null
+          created_at?: string
+          currency?: string
+          final_rate?: number | null
+          id?: string
+          inflation_ref_month?: string | null
+          item_name?: string
+          location?: string | null
+          market_factor?: number
+          project_id?: string | null
+          quantity?: number | null
+          source_item_ids?: string[] | null
+          specs?: string | null
+          status?: Database["public"]["Enums"]["estimate_status"]
+          trade_id?: string | null
+          unit?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimates_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimates_trade_id_fkey"
+            columns: ["trade_id"]
+            isOneToOne: false
+            referencedRelation: "trades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           code: string
@@ -486,8 +655,14 @@ export type Database = {
         Args: { user_id: string }
         Returns: boolean
       }
+      purge_old_audit_logs: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
     }
     Enums: {
+      estimate_line_type: "material" | "labor" | "equipment" | "overhead"
+      estimate_status: "draft" | "final"
       project_status:
         | "planning"
         | "active"
@@ -634,6 +809,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      estimate_line_type: ["material", "labor", "equipment", "overhead"],
+      estimate_status: ["draft", "final"],
       project_status: [
         "planning",
         "active",
