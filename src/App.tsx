@@ -28,6 +28,7 @@ const Profile = lazy(() => import("@/pages/Profile").then(m => ({ default: m.Pro
 const Dashboard = lazy(() => import("@/pages/Dashboard").then(m => ({ default: m.Dashboard })));
 const Alerts = lazy(() => import("@/pages/Alerts").then(m => ({ default: m.Alerts })));
 const RoleManagementPage = lazy(() => import("@/pages/RoleManagement").then(m => ({ default: m.RoleManagementPage })));
+const ActivityLog = lazy(() => import("@/pages/ActivityLog").then(m => ({ default: m.ActivityLog })));
 
 // Loading fallback component
 const PageLoading = () => <div className="p-6"><TableSkeleton columns={5} rows={3} /></div>;
@@ -328,6 +329,22 @@ function App() {
                   <PageErrorBoundary pageName="Role Management">
                     <Suspense fallback={<PageLoading />}>
                       <RoleManagementPage />
+                    </Suspense>
+                  </PageErrorBoundary>
+                </DataProvider>
+              </DashboardLayout>
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/admin/activity-log"
+          element={
+            <AuthGuard>
+              <DashboardLayout>
+                <DataProvider>
+                  <PageErrorBoundary pageName="Activity Log">
+                    <Suspense fallback={<PageLoading />}>
+                      <ActivityLog />
                     </Suspense>
                   </PageErrorBoundary>
                 </DataProvider>

@@ -29,6 +29,7 @@ import {
   BarChart3,
   UserCheck,
   Shield,
+  History,
 } from "lucide-react";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -64,7 +65,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     { to: ROUTES.REPORT, label: "Reports", icon: BarChart3, permission: 'view_reports' },
     ...(canManageUsers ? [
       { to: ROUTES.USERS, label: "Users", icon: UserCheck, permission: 'manage_users' },
-      { to: ROUTES.ROLE_MANAGEMENT, label: "Role Management", icon: Shield, permission: 'manage_users' }
+      { to: ROUTES.ROLE_MANAGEMENT, label: "Role Management", icon: Shield, permission: 'manage_users' },
+      { to: ROUTES.ACTIVITY_LOG, label: "Activity Log", icon: History, permission: 'manage_users' },
     ] : []),
   ].filter(item => !item.permission || hasPermission(item.permission as any));
 

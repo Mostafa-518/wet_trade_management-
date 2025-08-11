@@ -23,4 +23,5 @@ export const ROUTES = {
   USER_DETAIL: '/users/:id',
   ROLE_MANAGEMENT: '/admin/roles',
   PROFILE: '/profile',
+  ACTIVITY_LOG: '/admin/activity-log',
 } as const;
