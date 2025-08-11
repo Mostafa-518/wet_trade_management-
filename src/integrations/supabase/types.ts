@@ -466,6 +466,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_clear_audit_logs: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      admin_delete_audit_logs: {
+        Args: { ids: string[] }
+        Returns: number
+      }
       admin_undo_subcontract: {
         Args: { p_log_id: string }
         Returns: undefined
