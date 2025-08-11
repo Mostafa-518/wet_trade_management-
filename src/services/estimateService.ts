@@ -78,6 +78,24 @@ export class EstimateService {
     if (error) throw error;
     return data ?? [];
   }
+
+  async estimateWithAI(input: CreateEstimateInput & { k?: number; decay_months?: number }) {
+    const { data, error } = await supabase.functions.invoke('estimate-with-ai', {
+      body: input,
+    });
+    if (error) throw error;
+    return data as {
+      unit_rate: number;
+      currency: string;
+      confidence: number;
+      rationale: string;
+      breakdown: Array<{ category: string; name: string; qty: number; unit: string; unit_price: number; total: number }>; 
+      baseline: number | null;
+      context_size: number;
+      context_window: number;
+      generated_at: string;
+    };
+  }
 }
 
 export const estimateService = new EstimateService();
