@@ -1,5 +1,30 @@
 import React, { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useTrades } from "@/hooks/useTrades";
+import { useApiMutation } from "@/hooks/core/useApiMutation";
+import { estimateService } from "@/services/estimateService";
+
+const formSchema = z.object({
+  item_name: z.string().min(2, "Item name is required"),
+  unit: z.string().min(1, "Unit is required"),
+  trade_id: z.string().optional(),
+  quantity: z
+    .string()
+    .optional()
+    .transform((v) => (v ? Number(v) : undefined))
+    .refine((v) => v === undefined || (!Number.isNaN(v) && v >= 0), {
+      message: "Quantity must be a positive number",
+    }),
+  currency: z.string().default("EGP"),
+});
 
 export function RateEstimator() {
   // Basic SEO for this page
@@ -39,6 +64,15 @@ export function RateEstimator() {
       </header>
 
       <main className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Create Draft Estimate</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <EstimatorForm />
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Purpose & Goal</CardTitle>
@@ -162,6 +196,128 @@ export function RateEstimator() {
         </Card>
       </main>
     </div>
+  );
+}
+
+function EstimatorForm() {
+  const { trades, isLoading } = useTrades();
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      item_name: "",
+      unit: "m²",
+      trade_id: undefined,
+      quantity: undefined,
+      currency: "EGP",
+    },
+  });
+
+  const { executeAsync, isPending } = useApiMutation(estimateService.createDraft, {
+    successMessage: "Draft estimate created",
+  });
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    await executeAsync(values as any);
+    form.reset({ ...form.getValues(), item_name: "" });
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <FormField
+          control={form.control}
+          name="trade_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Trade</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value} disabled={isLoading}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder={isLoading ? "Loading trades..." : "Select trade (optional)"} />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {trades.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="item_name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Item name</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g., 20mm plaster on walls" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="unit"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Unit</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g., m²" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="quantity"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Quantity (optional)</FormLabel>
+              <FormControl>
+                <Input type="number" step="0.01" placeholder="e.g., 1500" value={field.value as any ?? ""} onChange={field.onChange} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="currency"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Currency</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select currency" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="EGP">EGP</SelectItem>
+                  <SelectItem value="USD">USD</SelectItem>
+                  <SelectItem value="EUR">EUR</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="md:col-span-3 flex justify-end gap-2">
+          <Button type="submit" disabled={isPending}>Save Draft</Button>
+        </div>
+      </form>
+    </Form>
   );
 }
 
