@@ -1,0 +1,48 @@
+graph TD
+  subgraph Auth
+    A1[/Login/]
+    A2[/SignUp/]
+  end
+
+  subgraph Main
+    M0[/Home/]
+    M1[/Dashboard/]
+    PF[/Profile/]
+    AL[/Alerts/]
+    RP[/Report/]
+    RS[/Reports: Subcontracts/]
+  end
+
+  subgraph Entities
+    PR[/Projects/]
+    PRD[/Project Detail/:id/]
+    SB[/Subcontractors/]
+    SBD[/Subcontractor Detail/:id/]
+    TR[/Trades/]
+    TRD[/Trade Detail/:tradeId/]
+    RSY[/Responsibilities/]
+    SC[/Subcontracts/]
+    SCD[/Subcontract Detail/:id/]
+    US[/Users/]
+    USD[/User Detail/:id/]
+  end
+
+  subgraph Admin
+    AR[/Role Management/]
+    LG[/Activity Log/]
+  end
+
+  A1-->M1
+  A2-->M1
+  M0-->M1
+  M1-->PR --> PRD
+  M1-->SB --> SBD
+  M1-->TR --> TRD
+  M1-->RSY
+  M1-->SC --> SCD
+  M1-->US --> USD
+  M1-->AL
+  M1-->RP --> RS
+  M1-->PF
+  M1-->AR
+  M1-->LG

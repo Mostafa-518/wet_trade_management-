@@ -1,0 +1,27 @@
+sequenceDiagram
+  participant U as User
+  participant R as React Router
+  participant P as Page Component
+  participant H as Feature Hook (useX)
+  participant Q as React Query (useQuery/useMutation)
+  participant S as Service (BaseService + Supabase SDK)
+  participant SB as Supabase PostgREST
+  participant DB as DB (Tables, RLS, Triggers/Functions)
+  participant T as Toast/Alerts
+
+  U->>R: Navigate to route
+  R->>P: Render matched page
+  P->>H: Invoke domain hooks
+  H->>Q: Initiate query/mutation
+  Q->>S: Call typed service
+  S->>SB: supabase.from(...).select/insert/update
+  SB->>DB: Execute with RLS
+  DB-->>SB: Rows + side-effects (triggers/functions)
+  SB-->>S: Response
+  S-->>Q: Data/Error
+  Q-->>P: Cache + re-render
+  P-->>T: Show success/error toasts
+
+  loop Live updates
+    P->>Q: Refetch alerts/unread counts
+  end
