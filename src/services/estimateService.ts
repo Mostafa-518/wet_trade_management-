@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export type CreateEstimateInput = {
@@ -10,6 +9,19 @@ export type CreateEstimateInput = {
   location?: string;
   specs?: string;
   project_id?: string;
+};
+
+export type AiEstimateResult = {
+  unit_rate: number;
+  currency: string;
+  confidence: number;
+  rationale: string;
+  breakdown: Array<{ category: string; name: string; qty: number; unit: string; unit_price: number; total: number }>;
+  baseline: number | null;
+  context_size: number;
+  context_window: number;
+  generated_at: string;
+  top_context?: Array<{ id: string; item_name: string; unit: string; rate: number | null; currency: string | null; created_at: string }>
 };
 
 export class EstimateService {
@@ -84,17 +96,7 @@ export class EstimateService {
       body: input,
     });
     if (error) throw error;
-    return data as {
-      unit_rate: number;
-      currency: string;
-      confidence: number;
-      rationale: string;
-      breakdown: Array<{ category: string; name: string; qty: number; unit: string; unit_price: number; total: number }>; 
-      baseline: number | null;
-      context_size: number;
-      context_window: number;
-      generated_at: string;
-    };
+    return data as AiEstimateResult;
   }
 }
 

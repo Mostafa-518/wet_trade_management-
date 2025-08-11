@@ -177,6 +177,7 @@ If context is weak, use reasonable local assumptions.\nReturn STRICT JSON with k
       breakdown: normalized,
       context_size: topContext.length,
       context_window: decay_months,
+      top_context: topContext,
       generated_at: new Date().toISOString(),
     };
 
