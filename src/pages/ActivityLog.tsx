@@ -93,8 +93,8 @@ export function ActivityLog() {
     }
   };
 
-  const entities = ['all', 'subcontracts', 'subcontract_trade_items', 'subcontract_responsibilities', 'projects', 'subcontractors'];
-  const actions = ['all', 'insert', 'update', 'delete'];
+  const entities = ['all', 'subcontracts', 'projects', 'subcontractors', 'trades', 'trade_items'];
+  const actions = ['all', 'insert', 'delete'];
 
   return (
     <div>
