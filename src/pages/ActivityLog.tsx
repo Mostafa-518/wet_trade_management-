@@ -26,6 +26,7 @@ export function ActivityLog() {
   const [entityFilter, setEntityFilter] = useState<string>('all');
   const [actionFilter, setActionFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
+  const [userMap, setUserMap] = useState<Record<string, { full_name: string | null; email: string | null }>>({});
 
   const fetchLogs = async () => {
     setLoading(true);
@@ -44,6 +45,28 @@ export function ActivityLog() {
   };
 
   useEffect(() => { fetchLogs(); }, []);
+
+  useEffect(() => {
+    const loadUsers = async () => {
+      const ids = Array.from(new Set(logs.map(l => l.user_id).filter(Boolean) as string[]));
+      if (ids.length === 0) {
+        setUserMap({});
+        return;
+      }
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('id, full_name, email')
+        .in('id', ids);
+      if (!error && data) {
+        const map: Record<string, { full_name: string | null; email: string | null }> = {};
+        (data as any[]).forEach((u) => {
+          map[u.id] = { full_name: u.full_name ?? null, email: u.email ?? null };
+        });
+        setUserMap(map);
+      }
+    };
+    loadUsers();
+  }, [logs]);
 
   const filtered = useMemo(() => {
     return logs.filter(l =>
@@ -126,7 +149,7 @@ export function ActivityLog() {
           {filtered.map((log) => (
             <div key={log.id} className="grid grid-cols-12 px-4 py-2 items-center text-sm">
               <div className="col-span-3">{new Date(log.created_at).toLocaleString()}</div>
-              <div className="col-span-2">{log.user_id ? log.user_id.slice(0,8) : 'system'}</div>
+              <div className="col-span-2">{log.user_id ? (userMap[log.user_id]?.full_name || userMap[log.user_id]?.email || log.user_id.slice(0,8)) : 'system'}</div>
               <div className="col-span-2">{log.entity}</div>
               <div className="col-span-2 capitalize">{log.action}</div>
               <div className="col-span-2 truncate" title={log.entity_id || ''}>{log.entity_id || '-'}</div>
