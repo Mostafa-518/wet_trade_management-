@@ -259,6 +259,7 @@ export type Database = {
           end_date: string | null
           id: string
           parent_subcontract_id: string | null
+          pdf_url: string | null
           project_id: string | null
           start_date: string | null
           status: Database["public"]["Enums"]["subcontract_status"] | null
@@ -276,6 +277,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           parent_subcontract_id?: string | null
+          pdf_url?: string | null
           project_id?: string | null
           start_date?: string | null
           status?: Database["public"]["Enums"]["subcontract_status"] | null
@@ -293,6 +295,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           parent_subcontract_id?: string | null
+          pdf_url?: string | null
           project_id?: string | null
           start_date?: string | null
           status?: Database["public"]["Enums"]["subcontract_status"] | null
