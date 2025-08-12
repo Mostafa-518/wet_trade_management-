@@ -95,12 +95,12 @@ export function RoleManagement() {
         'manage_responsibilities', 'manage_subcontracts'
       ] as Permission[],
       procurement_manager: [
-        'read', 'create', 'update', 'view_reports', 'manage_projects',
+        'read', 'create', 'update', 'delete', 'view_reports', 'manage_projects',
         'manage_subcontractors', 'manage_trades', 'manage_responsibilities',
         'manage_subcontracts'
       ] as Permission[],
       procurement_engineer: [
-        'read', 'create', 'update', 'view_reports', 'manage_subcontractors',
+        'read', 'create', 'update', 'delete', 'view_reports', 'manage_subcontractors',
         'manage_trades', 'manage_responsibilities', 'manage_subcontracts'
       ] as Permission[],
       viewer: ['read', 'view_reports'] as Permission[]
