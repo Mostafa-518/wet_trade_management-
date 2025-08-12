@@ -8,6 +8,7 @@ import { Trade, TradeFormData, TradeItem, TradeItemFormData } from '@/types/trad
 import { useData } from '@/contexts/DataContext';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { usePermissions } from '@/hooks/usePermissions';
 
 export function Trades() {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ export function Trades() {
   const { addTrade, updateTrade, deleteTrade, bulkDeleteTrades, addTradeItem, updateTradeItem, deleteTradeItem, bulkDeleteTradeItems } = useData();
   const { toast } = useToast();
   const { profile } = useAuth();
-  const canModify = profile?.role !== 'viewer';
+  const { canModify } = usePermissions();
 
   const handleCreateNewTrade = () => {
     if (!canModify) return;
