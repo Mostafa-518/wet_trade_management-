@@ -5,6 +5,7 @@ import { TradesTable } from '@/components/TradesTable';
 import { TradeForm } from '@/components/TradeForm';
 import { TradeItemForm } from '@/components/TradeItemForm';
 import { Trade, TradeFormData, TradeItem, TradeItemFormData } from '@/types/trade';
+import { PermissionGuard } from '@/components/PermissionGuard';
 import { useData } from '@/contexts/DataContext';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -158,6 +159,7 @@ export function Trades() {
   }
 
   return (
+        <PermissionGuard permission="manage_trades">
     <TradesTable 
       onCreateNew={canModify ? handleCreateNewTrade : undefined}
       onViewDetail={handleViewDetail}
@@ -169,5 +171,6 @@ export function Trades() {
       onDeleteItem={canDelete ? handleDeleteItem : undefined}
       onBulkDeleteItems={canDelete ? handleBulkDeleteItems : undefined}
     />
+              </PermissionGuard>
   );
 }
