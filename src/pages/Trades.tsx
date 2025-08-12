@@ -21,7 +21,7 @@ export function Trades() {
   const { addTrade, updateTrade, deleteTrade, bulkDeleteTrades, addTradeItem, updateTradeItem, deleteTradeItem, bulkDeleteTradeItems } = useData();
   const { toast } = useToast();
   const { profile } = useAuth();
-  const { canModify } = usePermissions();
+  const { canModify, canDelete } = usePermissions();
 
   const handleCreateNewTrade = () => {
     if (!canModify) return;
@@ -40,7 +40,7 @@ export function Trades() {
   };
 
   const handleDeleteTrade = (tradeId: string) => {
-    if (!canModify) return;
+    if (!canDelete) return;
     deleteTrade(tradeId);
     toast({
       title: "Trade deleted",
@@ -49,7 +49,7 @@ export function Trades() {
   };
 
   const handleBulkDeleteTrades = (tradeIds: string[]) => {
-    if (!canModify) return;
+    if (!canDelete) return;
     bulkDeleteTrades(tradeIds);
     toast({
       title: "Trades deleted",
@@ -94,7 +94,7 @@ export function Trades() {
   };
 
   const handleDeleteItem = (itemId: string) => {
-    if (!canModify) return;
+    if (!canDelete) return;
     deleteTradeItem(itemId);
     toast({
       title: "Trade item deleted",
@@ -103,7 +103,7 @@ export function Trades() {
   };
 
   const handleBulkDeleteItems = (itemIds: string[]) => {
-    if (!canModify) return;
+    if (!canDelete) return;
     bulkDeleteTradeItems(itemIds);
     toast({
       title: "Trade items deleted",
@@ -162,12 +162,12 @@ export function Trades() {
       onCreateNew={canModify ? handleCreateNewTrade : undefined}
       onViewDetail={handleViewDetail}
       onEdit={canModify ? handleEditTrade : undefined}
-      onDelete={canModify ? handleDeleteTrade : undefined}
-      onBulkDelete={canModify ? handleBulkDeleteTrades : undefined}
+      onDelete={canDelete ? handleDeleteTrade : undefined}
+      onBulkDelete={canDelete ? handleBulkDeleteTrades : undefined}
       onAddItem={canModify ? handleAddItem : undefined}
       onEditItem={canModify ? handleEditItem : undefined}
-      onDeleteItem={canModify ? handleDeleteItem : undefined}
-      onBulkDeleteItems={canModify ? handleBulkDeleteItems : undefined}
+      onDeleteItem={canDelete ? handleDeleteItem : undefined}
+      onBulkDeleteItems={canDelete ? handleBulkDeleteItems : undefined}
     />
   );
 }
