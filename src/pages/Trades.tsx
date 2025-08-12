@@ -159,18 +159,18 @@ export function Trades() {
   }
 
   return (
-        <PermissionGuard permission="manage_trades">
-    <TradesTable 
-      onCreateNew={canModify ? handleCreateNewTrade : undefined}
-      onViewDetail={handleViewDetail}
-      onEdit={canModify ? handleEditTrade : undefined}
-      onDelete={canDelete ? handleDeleteTrade : undefined}
-      onBulkDelete={canDelete ? handleBulkDeleteTrades : undefined}
-      onAddItem={canModify ? handleAddItem : undefined}
-      onEditItem={canModify ? handleEditItem : undefined}
-      onDeleteItem={canDelete ? handleDeleteItem : undefined}
-      onBulkDeleteItems={canDelete ? handleBulkDeleteItems : undefined}
-    />
-              </PermissionGuard>
+    <PermissionGuard permission="manage_trades">
+       <TradesTable 
+         onCreateNew={canModify ? handleCreateNewTrade : undefined}
+         onViewDetail={handleViewDetail}
+         onEdit={canModify ? handleEditTrade : undefined}
+         onDelete={canDelete ? handleDeleteTrade : undefined}
+         onBulkDelete={canDelete ? handleBulkDeleteTrades : undefined}
+         onAddItem={canModify ? handleAddItem : undefined}
+         onEditItem={canModify ? handleEditItem : undefined}
+         onDeleteItem={canDelete ? handleDeleteItem : undefined}
+         onBulkDeleteItems={canDelete ? handleBulkDeleteItems : undefined}
+        />
+    </PermissionGuard>
   );
 }
