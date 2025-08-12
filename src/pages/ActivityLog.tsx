@@ -167,7 +167,7 @@ export function ActivityLog() {
       return;
     }
     try {
-      const { error } = await supabase.rpc(rpcName, { p_log_id: log.id });
+      const { error } = await supabase.rpc(rpcName as any, { p_log_id: log.id });
       if (error) throw error;
       toast({ title: 'Undone', description: 'Action has been undone.' });
       fetchLogs();

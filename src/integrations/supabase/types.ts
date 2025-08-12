@@ -643,7 +643,23 @@ export type Database = {
         Args: { ids: string[] }
         Returns: number
       }
+      admin_undo_project: {
+        Args: { p_log_id: string }
+        Returns: undefined
+      }
       admin_undo_subcontract: {
+        Args: { p_log_id: string }
+        Returns: undefined
+      }
+      admin_undo_subcontractor: {
+        Args: { p_log_id: string }
+        Returns: undefined
+      }
+      admin_undo_trade: {
+        Args: { p_log_id: string }
+        Returns: undefined
+      }
+      admin_undo_trade_item: {
         Args: { p_log_id: string }
         Returns: undefined
       }
