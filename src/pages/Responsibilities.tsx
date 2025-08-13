@@ -7,6 +7,8 @@ import { Responsibility, ResponsibilityFormData } from '@/types/responsibility';
 import { useData } from '@/contexts/DataContext';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { usePermissions } from '@/hooks/usePermissions';
+import { PermissionGuard } from '@/components/PermissionGuard';
 
 export function Responsibilities() {
   const navigate = useNavigate();
@@ -17,7 +19,7 @@ export function Responsibilities() {
   const { responsibilities, addResponsibility, updateResponsibility, deleteResponsibility } = useData();
   const { toast } = useToast();
   const { profile } = useAuth();
-  const canModify = profile?.role !== 'viewer';
+  const { canModify, canDelete } = usePermissions();
 
   const handleCreateNew = () => {
     if (!canModify) return;
@@ -95,11 +97,13 @@ export function Responsibilities() {
   }
 
   return (
-    <ResponsibilitiesTable
-      onCreateNew={canModify ? handleCreateNew : undefined}
-      onEdit={canModify ? handleEdit : undefined}
-      onDelete={canModify ? handleDelete : undefined}
-      onViewDetail={handleViewDetail}
-    />
+    <PermissionGuard permission="manage_responsibilities">
+      <ResponsibilitiesTable
+        onCreateNew={canModify ? handleCreateNew : undefined}
+        onEdit={canModify ? handleEdit : undefined}
+        onDelete={canDelete ? handleDelete : undefined}
+        onViewDetail={handleViewDetail}
+      />
+    </PermissionGuard>
   );
 }
