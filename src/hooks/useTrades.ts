@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { tradeService } from '@/services';
 import { TradeFormData } from '@/types/trade';
 import { useToast } from '@/hooks/use-toast';
+import { useRealtimeSubscription } from './useRealtimeSubscription';
 
 export function useTrades() {
   const { toast } = useToast();
@@ -11,6 +12,12 @@ export function useTrades() {
     queryKey: ['trades'],
     queryFn: () => tradeService.getAll(),
     staleTime: 5 * 60 * 1000,
+  });
+
+  // Setup real-time subscription for trades
+  useRealtimeSubscription({
+    table: 'trades',
+    queryKeys: [['trades']],
   });
 
   const addTrade = async (data: TradeFormData): Promise<void> => {

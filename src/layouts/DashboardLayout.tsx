@@ -16,6 +16,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ROUTES } from "@/config/routes";
 import { AlertBadge } from "@/components/AlertBadge";
+import { RealtimeStatus } from "@/components/RealtimeStatus";
 import {
   Menu,
   X,
@@ -182,6 +183,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <header className="h-16 px-6 border-b border-gray-200 flex items-center justify-between">
             <div></div> {/* Empty left side */}
             <div className="flex items-center gap-4">
+              <RealtimeStatus />
               <AlertBadge />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

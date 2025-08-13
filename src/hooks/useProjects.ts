@@ -4,6 +4,7 @@ import { ProjectFormData } from '@/types/project';
 import { useListQuery } from '@/hooks/core/useApiQuery';
 import { useCreateMutation, useUpdateMutation, useDeleteMutation } from '@/hooks/core/useApiMutation';
 import { queryKeys } from '@/lib/query/keys';
+import { useRealtimeSubscription } from './useRealtimeSubscription';
 
 export function useProjects() {
   // Enhanced query with better error handling
@@ -14,6 +15,12 @@ export function useProjects() {
       staleTime: 5 * 60 * 1000, // 5 minutes
     }
   );
+
+  // Setup real-time subscription for projects
+  useRealtimeSubscription({
+    table: 'projects',
+    queryKeys: [['projects']],
+  });
 
   // Enhanced mutations with automatic cache invalidation
   const createMutation = useCreateMutation(

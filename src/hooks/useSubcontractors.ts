@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { subcontractorService } from '@/services';
 import { SubcontractorFormData } from '@/types/subcontractor';
 import { useToast } from '@/hooks/use-toast';
+import { useRealtimeSubscription } from './useRealtimeSubscription';
 
 export function useSubcontractors() {
   const { toast } = useToast();
@@ -11,6 +12,12 @@ export function useSubcontractors() {
     queryKey: ['subcontractors'],
     queryFn: () => subcontractorService.getAll(),
     staleTime: 5 * 60 * 1000,
+  });
+
+  // Setup real-time subscription for subcontractors
+  useRealtimeSubscription({
+    table: 'subcontractors',
+    queryKeys: [['subcontractors']],
   });
 
   const addSubcontractor = async (data: SubcontractorFormData): Promise<void> => {

@@ -9,6 +9,7 @@ import {
   deleteSubcontractWithTradeItems,
   deleteManySubcontractsWithTradeItems
 } from '@/services/subcontract';
+import { useRealtimeSubscription } from './useRealtimeSubscription';
 
 export function useSubcontracts(trades: any[] = [], tradeItems: any[] = [], responsibilities: any[] = [], projects: any[] = []) {
   const { toast } = useToast();
@@ -22,6 +23,22 @@ export function useSubcontracts(trades: any[] = [], tradeItems: any[] = [], resp
       return data;
     },
     staleTime: 5 * 60 * 1000,
+  });
+
+  // Setup real-time subscription for subcontracts and related tables
+  useRealtimeSubscription({
+    table: 'subcontracts',
+    queryKeys: [['subcontracts']],
+  });
+
+  useRealtimeSubscription({
+    table: 'subcontract_trade_items',
+    queryKeys: [['subcontracts']],
+  });
+
+  useRealtimeSubscription({
+    table: 'subcontract_responsibilities',
+    queryKeys: [['subcontracts']],
   });
 
   // Map database fields to frontend expected format

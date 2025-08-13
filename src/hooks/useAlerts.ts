@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { alertService } from '@/services/alertService';
 import { useToast } from '@/hooks/use-toast';
+import { useRealtimeSubscription } from './useRealtimeSubscription';
 
 export function useAlerts() {
   const { toast } = useToast();
@@ -11,16 +12,18 @@ export function useAlerts() {
     queryKey: ['alerts'],
     queryFn: () => alertService.getWithDetails(),
     staleTime: 0, // Always consider data stale for immediate refresh
-    refetchInterval: 5 * 1000, // Refetch every 5 seconds
-    refetchIntervalInBackground: true, // Continue refetching when tab is not active
   });
 
   const { data: unreadCount = 0 } = useQuery({
     queryKey: ['alerts', 'unread-count'],
     queryFn: () => alertService.getUnreadCount(),
     staleTime: 0, // Always consider data stale for immediate refresh
-    refetchInterval: 3 * 1000, // Refetch every 3 seconds
-    refetchIntervalInBackground: true, // Continue refetching when tab is not active
+  });
+
+  // Setup real-time subscription for alerts (replaces polling)
+  useRealtimeSubscription({
+    table: 'alerts',
+    queryKeys: [['alerts'], ['alerts', 'unread-count']],
   });
 
   const markAsReadMutation = useMutation({

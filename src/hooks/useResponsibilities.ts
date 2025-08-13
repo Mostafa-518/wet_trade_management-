@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { responsibilityService } from '@/services';
 import { Responsibility } from '@/types/responsibility';
 import { useToast } from '@/hooks/use-toast';
+import { useRealtimeSubscription } from './useRealtimeSubscription';
 
 export function useResponsibilities() {
   const { toast } = useToast();
@@ -11,6 +12,12 @@ export function useResponsibilities() {
     queryKey: ['responsibilities'],
     queryFn: () => responsibilityService.getAll(),
     staleTime: 5 * 60 * 1000,
+  });
+
+  // Setup real-time subscription for responsibilities
+  useRealtimeSubscription({
+    table: 'responsibilities',
+    queryKeys: [['responsibilities']],
   });
 
   const addResponsibility = async (data: Partial<Responsibility>): Promise<void> => {
