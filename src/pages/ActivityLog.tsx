@@ -24,6 +24,24 @@ export function ActivityLog() {
   const { userRole } = usePermissions();
   const isAdmin = userRole === 'admin';
 
+  // Restrict access to admins only for security
+  if (!isAdmin) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-center">Access Restricted</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <p className="text-muted-foreground">
+              Access to activity logs is restricted to administrators only for security purposes.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [entityFilter, setEntityFilter] = useState<string>('all');
